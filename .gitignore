@@ -28,6 +28,7 @@ Thumbs.db
 
 # Test coverage
 coverage/
+*.lcov
 
 # Logs
 *.log
