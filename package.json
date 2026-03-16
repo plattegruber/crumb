@@ -13,7 +13,8 @@
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "docs:dev": "pnpm --filter docs dev"
+    "docs:dev": "pnpm --filter docs dev",
+    "prepare": "lefthook install"
   },
   "engines": {
     "node": ">=20"
@@ -25,6 +26,7 @@
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-svelte": "^3.15.2",
     "globals": "^17.4.0",
+    "lefthook": "^2.1.4",
     "prettier": "^3.8.1",
     "prettier-plugin-svelte": "^3.5.1",
     "typescript-eslint": "^8.57.0"
