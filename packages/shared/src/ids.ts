@@ -125,7 +125,7 @@ export function createUrl(value: string): Url | null {
     return null;
   }
   try {
-    new globalThis.URL(value);
+    new URL(value);
     return value as Url;
   } catch {
     return null;

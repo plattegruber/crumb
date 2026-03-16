@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import type { Context } from "hono";
 import type { AppEnv } from "./middleware/auth.js";
 import { clerkAuth } from "./middleware/auth.js";
 import { requestLogger } from "./middleware/request-logger.js";
@@ -43,7 +44,11 @@ app.use("*", async (c, next) => {
       return;
     }
   }
-  return clerkAuth()(c, next);
+  // AppEnvWithLogger is a superset of AppEnv (same Bindings, extra Variables).
+  // The cast is safe because the auth middleware only reads Bindings and sets
+  // creatorId, which exists in both types.
+  const ctx = c as unknown as Context<AppEnv, string>;
+  return clerkAuth()(ctx, next);
 });
 
 // ---------------------------------------------------------------------------

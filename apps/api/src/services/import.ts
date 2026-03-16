@@ -726,10 +726,10 @@ export function createImportService(deps: ImportServiceDeps) {
       confidence: extract.confidence ?? null,
     });
 
-    if (extract.confidence !== undefined && extract.confidence !== null && extract.confidence < 0.5) {
+    if (extract.confidence.overall < 0.5) {
       logger.warn("import_low_confidence_extraction", {
         jobId,
-        confidence: extract.confidence,
+        confidence: extract.confidence.overall,
       });
     }
 

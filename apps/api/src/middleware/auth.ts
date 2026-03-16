@@ -12,17 +12,11 @@
 import { createMiddleware } from "hono/factory";
 import { verifyToken } from "@clerk/backend";
 import type { Env } from "../env.js";
-import type { AuthContext, CreatorId } from "../types/auth.js";
+import type { CreatorId } from "../types/auth.js";
 import { AuthErrorReason } from "../types/auth.js";
 
-/**
- * Hono generic that includes both the Worker bindings and the
- * variables our middleware writes into context.
- */
-export type AppEnv = {
-  Bindings: Env;
-  Variables: AuthContext;
-};
+import type { AppEnv } from "../types/hono.js";
+export type { AppEnv, AppEnvWithLogger } from "../types/hono.js";
 
 /**
  * Options for configuring the auth middleware. Mainly useful for

@@ -534,7 +534,9 @@ describe("Product Service", () => {
       expect(result.ok).toBe(false);
       if (result.ok) return;
       expect(result.error.type).toBe("invariant_violation");
-      expect(result.error.message).toContain("LeadMagnet");
+      if (result.error.type === "invariant_violation") {
+        expect(result.error.message).toContain("LeadMagnet");
+      }
     });
 
     it("returns not_found for non-existent parent", async () => {
@@ -657,7 +659,9 @@ describe("Product Service", () => {
       expect(result.ok).toBe(false);
       if (result.ok) return;
       expect(result.error.type).toBe("invariant_violation");
-      expect(result.error.message).toContain("AI copy must be reviewed");
+      if (result.error.type === "invariant_violation") {
+        expect(result.error.message).toContain("AI copy must be reviewed");
+      }
     });
   });
 
@@ -678,7 +682,9 @@ describe("Product Service", () => {
       expect(result.ok).toBe(false);
       if (result.ok) return;
       expect(result.error.type).toBe("invariant_violation");
-      expect(result.error.message).toContain("PDF");
+      if (result.error.type === "invariant_violation") {
+        expect(result.error.message).toContain("PDF");
+      }
     });
 
     it("publishes successfully when all guards pass", async () => {
