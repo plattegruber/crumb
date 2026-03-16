@@ -45,6 +45,10 @@ export type FetchFn = typeof globalThis.fetch;
 // ---------------------------------------------------------------------------
 
 export interface KitClientConfig {
+  /** Kit v4 API key for direct auth (dev/testing). Uses X-Kit-Api-Key header. */
+  readonly apiKey?: string;
+  /** OAuth access token for production auth. Uses Authorization: Bearer header. */
+  readonly accessToken?: string;
   /** An injected `fetch` function for testability. */
   readonly fetchFn: FetchFn;
 }
@@ -117,10 +121,19 @@ async function request<T>(
   const url = `${BASE_URL}${path}`;
   const startTime = Date.now();
   const headers: Record<string, string> = {
-    Authorization: `Bearer ${accessToken}`,
     "Content-Type": "application/json",
     Accept: "application/json",
   };
+
+  // Use API key auth (X-Kit-Api-Key header) when configured, otherwise
+  // fall back to OAuth Bearer token. The per-call accessToken parameter
+  // takes precedence over config.accessToken for backward compatibility.
+  if (config.apiKey) {
+    headers["X-Kit-Api-Key"] = config.apiKey;
+  } else {
+    const token = accessToken || config.accessToken || "";
+    headers["Authorization"] = `Bearer ${token}`;
+  }
 
   let response: Response;
   try {

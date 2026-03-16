@@ -6,6 +6,7 @@ import { Hono } from "hono";
 import type { AppEnv } from "../middleware/auth.js";
 import { createDb } from "../db/index.js";
 import { createImportJobId } from "@crumb/shared";
+import { createLogger } from "../lib/logger.js";
 import {
   createImportService,
   createDefaultFetcher,
@@ -23,9 +24,55 @@ const imports = new Hono<AppEnv>();
 function getImportService(c: { env: AppEnv["Bindings"] }) {
   const db = createDb(c.env.DB);
 
+  const importLogger = createLogger("import-routes");
+
   const queue: ImportQueue = {
     async send(message: { importJobId: string }) {
-      await c.env.IMPORT_QUEUE.send(message);
+      try {
+        await c.env.IMPORT_QUEUE.send(message);
+      } catch (e: unknown) {
+        // Queues are not available in local dev — fall back to synchronous
+        // processing so the import pipeline works end-to-end locally.
+        const errorMsg = e instanceof Error ? e.message : "Unknown error";
+        importLogger.warn("queue_send_fallback", {
+          importJobId: message.importJobId,
+          reason: errorMsg,
+          hint: "Queue unavailable (expected in local dev). Processing synchronously.",
+        });
+
+        // Process the job synchronously as a dev fallback
+        const fallbackDb = createDb(c.env.DB);
+        const fallbackFetcher = createDefaultFetcher();
+        const fallbackWordpress = createDefaultWordPressClient(fallbackFetcher);
+        const fallbackExtractor: RecipeExtractor = {
+          async extract(_text: string) {
+            return {
+              ok: false as const,
+              error: {
+                type: "ExtractionFailed" as const,
+                reason: "AI extraction not yet configured",
+              },
+            };
+          },
+        };
+
+        const fallbackService = createImportService({
+          db: fallbackDb,
+          queue: { async send() {} },
+          extractor: fallbackExtractor,
+          fetcher: fallbackFetcher,
+          wordpress: fallbackWordpress,
+        });
+
+        const jobId = createImportJobId(message.importJobId);
+        const result = await fallbackService.processImportJob(jobId);
+        if (!result.ok) {
+          importLogger.warn("queue_fallback_processing_failed", {
+            importJobId: message.importJobId,
+            error: result.error.type,
+          });
+        }
+      }
     },
   };
 

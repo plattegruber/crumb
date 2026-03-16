@@ -4,6 +4,9 @@ compatibility_date = "2025-04-01"
 compatibility_flags = ["nodejs_compat"]
 
 # ---------- Bindings ----------
+# Note: The placeholder IDs below are fine for local development.
+# Wrangler automatically creates local D1/KV/R2 instances for `wrangler dev`.
+# Replace these with real IDs only when deploying to Cloudflare.
 
 [[d1_databases]]
 binding = "DB"
@@ -42,10 +45,12 @@ max_retries = 3
 
 [vars]
 CLERK_PUBLISHABLE_KEY = "pk_test_placeholder"
-KIT_CLIENT_ID = "placeholder"
 LOG_LEVEL = "info"
+# KIT_CLIENT_ID = "placeholder"  # Optional — only needed for production OAuth flow
 
 # ---------- Local Development ----------
 
 [dev]
 port = 8787
+# Local D1/KV/R2 state persists to .wrangler/state/ by default across
+# restarts. Override with: npx wrangler dev --persist-to <dir>

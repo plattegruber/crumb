@@ -795,6 +795,112 @@ describe("Kit Client — Network errors", () => {
 });
 
 // ---------------------------------------------------------------------------
+// API key authentication (X-Kit-Api-Key header)
+// ---------------------------------------------------------------------------
+
+describe("Kit Client — API key auth", () => {
+  it("sends X-Kit-Api-Key header when apiKey is configured", async () => {
+    const subscriber = {
+      id: 1,
+      first_name: "Alice",
+      email_address: "alice@example.com",
+      state: "active",
+      created_at: "2024-01-01T00:00:00Z",
+      fields: {},
+    };
+
+    const config: KitClientConfig = {
+      apiKey: "kit_test_api_key_123",
+      fetchFn: (async (_url: string, init?: RequestInit) => {
+        const headers = init?.headers as Record<string, string> | undefined;
+        // Should use X-Kit-Api-Key, not Authorization Bearer
+        expect(headers?.["X-Kit-Api-Key"]).toBe("kit_test_api_key_123");
+        expect(headers?.["Authorization"]).toBeUndefined();
+        return jsonResponse({ subscribers: [subscriber] });
+      }) as typeof globalThis.fetch,
+    };
+
+    const result = await getSubscriber(config, "", "alice@example.com");
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.value.email_address).toBe("alice@example.com");
+    }
+  });
+
+  it("uses Bearer token when apiKey is not configured", async () => {
+    const subscriber = {
+      id: 1,
+      first_name: "Alice",
+      email_address: "alice@example.com",
+      state: "active",
+      created_at: "2024-01-01T00:00:00Z",
+      fields: {},
+    };
+
+    const config: KitClientConfig = {
+      fetchFn: (async (_url: string, init?: RequestInit) => {
+        const headers = init?.headers as Record<string, string> | undefined;
+        // Should use Authorization Bearer, not X-Kit-Api-Key
+        expect(headers?.["Authorization"]).toBe("Bearer my-oauth-token");
+        expect(headers?.["X-Kit-Api-Key"]).toBeUndefined();
+        return jsonResponse({ subscribers: [subscriber] });
+      }) as typeof globalThis.fetch,
+    };
+
+    const result = await getSubscriber(config, "my-oauth-token", "alice@example.com");
+    expect(result.ok).toBe(true);
+  });
+
+  it("prefers apiKey over accessToken when both are configured", async () => {
+    const subscriber = {
+      id: 1,
+      first_name: "Alice",
+      email_address: "alice@example.com",
+      state: "active",
+      created_at: "2024-01-01T00:00:00Z",
+      fields: {},
+    };
+
+    const config: KitClientConfig = {
+      apiKey: "kit_test_api_key_123",
+      accessToken: "should-not-be-used",
+      fetchFn: (async (_url: string, init?: RequestInit) => {
+        const headers = init?.headers as Record<string, string> | undefined;
+        expect(headers?.["X-Kit-Api-Key"]).toBe("kit_test_api_key_123");
+        expect(headers?.["Authorization"]).toBeUndefined();
+        return jsonResponse({ subscribers: [subscriber] });
+      }) as typeof globalThis.fetch,
+    };
+
+    const result = await getSubscriber(config, "param-token", "alice@example.com");
+    expect(result.ok).toBe(true);
+  });
+
+  it("uses config.accessToken when no per-call token is provided", async () => {
+    const subscriber = {
+      id: 1,
+      first_name: "Alice",
+      email_address: "alice@example.com",
+      state: "active",
+      created_at: "2024-01-01T00:00:00Z",
+      fields: {},
+    };
+
+    const config: KitClientConfig = {
+      accessToken: "config-level-token",
+      fetchFn: (async (_url: string, init?: RequestInit) => {
+        const headers = init?.headers as Record<string, string> | undefined;
+        expect(headers?.["Authorization"]).toBe("Bearer config-level-token");
+        return jsonResponse({ subscribers: [subscriber] });
+      }) as typeof globalThis.fetch,
+    };
+
+    const result = await getSubscriber(config, "", "alice@example.com");
+    expect(result.ok).toBe(true);
+  });
+});
+
+// ---------------------------------------------------------------------------
 // Rate limiting response
 // ---------------------------------------------------------------------------
 

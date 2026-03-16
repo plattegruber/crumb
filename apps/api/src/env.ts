@@ -18,8 +18,12 @@ export interface Env {
   CLERK_SECRET_KEY: string;
 
   // --- Kit (ConvertKit) ---
-  KIT_CLIENT_ID: string;
-  KIT_CLIENT_SECRET: string;
+  /** Kit v4 API key — used for local dev / testing (X-Kit-Api-Key header). */
+  KIT_API_KEY?: string;
+  /** Kit OAuth client ID — required for production OAuth flow. */
+  KIT_CLIENT_ID?: string;
+  /** Kit OAuth client secret — required for production OAuth flow. */
+  KIT_CLIENT_SECRET?: string;
 
   // --- Observability ---
   LOG_LEVEL: string;

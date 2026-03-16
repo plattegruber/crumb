@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { cors } from "hono/cors";
 import { clerkAuth } from "./middleware/auth.js";
 import { requestLogger } from "./middleware/request-logger.js";
 import type { AppEnvWithLogger } from "./middleware/request-logger.js";
@@ -26,6 +27,17 @@ const PUBLIC_PATHS = new Set(["/health"]);
 const PUBLIC_PATH_PREFIXES = ["/webhooks/", "/save/"];
 
 const app = new Hono<AppEnvWithLogger>();
+
+// CORS — allow the SvelteKit dev server (localhost:5173) to call the API.
+app.use(
+  "*",
+  cors({
+    origin: ["http://localhost:5173", "http://127.0.0.1:5173"],
+    allowMethods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
+  }),
+);
 
 // Apply request logging middleware to all routes (first in chain).
 app.use("*", requestLogger());
