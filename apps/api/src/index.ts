@@ -42,7 +42,7 @@ app.use("*", async (c, next) => {
       return;
     }
   }
-  return clerkAuth()(c, next);
+  return clerkAuth()(c as unknown as Parameters<ReturnType<typeof clerkAuth>>[0], next);
 });
 
 // ---------------------------------------------------------------------------
