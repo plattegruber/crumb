@@ -33,6 +33,7 @@ const TEST_ENV: Env = {
   CLERK_SECRET_KEY: "sk_test_xxx",
   KIT_CLIENT_ID: "kit_id",
   KIT_CLIENT_SECRET: "kit_secret",
+  LOG_LEVEL: "info",
 };
 
 const VALID_USER_ID = "user_2abc123def456" as CreatorId;

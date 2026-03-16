@@ -43,6 +43,7 @@ max_retries = 3
 [vars]
 CLERK_PUBLISHABLE_KEY = "pk_test_placeholder"
 KIT_CLIENT_ID = "placeholder"
+LOG_LEVEL = "info"
 
 # ---------- Local Development ----------
 

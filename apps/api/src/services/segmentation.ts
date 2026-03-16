@@ -17,6 +17,7 @@ import type {
   SegmentStat,
 } from "@crumb/shared";
 import { DIETARY_TAG } from "@crumb/shared";
+import { createLogger, type Logger } from "../lib/logger.js";
 
 import type { KitClientConfig } from "../lib/kit/client.js";
 import {
@@ -51,6 +52,8 @@ function segError(
 ): SegmentationError {
   return { code, message };
 }
+
+const defaultLogger = createLogger("segmentation");
 
 // ---------------------------------------------------------------------------
 // Keyword lists for dietary tag inference (SPEC 9.3)
@@ -786,6 +789,7 @@ export async function inferAndStoreDietaryTags(
   db: DrizzleD1Database,
   recipeId: RecipeId,
   creatorId: CreatorId,
+  logger: Logger = defaultLogger,
 ): Promise<
   Result<
     DietaryTagInferenceResult,
@@ -876,6 +880,12 @@ export async function inferAndStoreDietaryTags(
     })
     .where(eq(recipes.id, recipeId));
 
+  logger.info("dietary_tags_inferred", {
+    recipeId,
+    tagsInferred: tagArray,
+    ambiguousCount: result.ambiguous.size,
+  });
+
   return ok(result);
 }
 
@@ -909,6 +919,7 @@ export async function computeSegmentProfile(
   creatorId: CreatorId,
   kitConfig: KitClientConfig,
   accessToken: string,
+  logger: Logger = defaultLogger,
 ): Promise<Result<StoredSegmentProfile, SegmentationError>> {
   // 1. Fetch all Kit tags for the account
   const tagsResult = await listTags(kitConfig, accessToken);
@@ -973,6 +984,11 @@ export async function computeSegmentProfile(
     creator_id: creatorId,
     computed_at: computedAt,
     segments: segmentsData,
+  });
+
+  logger.info("segment_profile_computed", {
+    creator: creatorId,
+    tagCount: Object.keys(segmentsData).length,
   });
 
   return ok(profile);

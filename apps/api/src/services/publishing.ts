@@ -20,6 +20,7 @@ import {
 import type { CreatorScopedDb } from "../middleware/creator-scope.js";
 import type { Result, PublishPlatform } from "@crumb/shared";
 import { ok, err, PUBLISH_PLATFORM } from "@crumb/shared";
+import { createLogger, type Logger } from "../lib/logger.js";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -371,11 +372,14 @@ export function validatePlatform(
  * 3. Store PublishedListing record.
  * 4. If product has a lead magnet, update the lead magnet's relationship.
  */
+const publishingLogger = createLogger("publishing");
+
 export async function publishToPlatform(
   scopedDb: CreatorScopedDb<Database>,
   productId: string,
   platform: PublishPlatform,
   adapter: PlatformAdapter,
+  logger: Logger = publishingLogger,
 ): Promise<Result<PublishedListingRow, PublishError>> {
   const { db, creatorId } = scopedDb;
 
@@ -411,8 +415,19 @@ export async function publishToPlatform(
   }
 
   // Step 2: Call adapter to create listing
+  logger.info("publish_attempt", {
+    productId,
+    platform,
+    creator: creatorId,
+  });
+
   const uploadResult = await adapter.uploadProduct(product, product.pdf_url);
   if (!uploadResult.ok) {
+    logger.error("publish_failed", {
+      productId,
+      platform,
+      errorType: uploadResult.error.type,
+    });
     return uploadResult;
   }
 
@@ -453,6 +468,12 @@ export async function publishToPlatform(
       // That integration is handled by the automation engine.
     }
   }
+
+  logger.info("publish_success", {
+    productId,
+    platform,
+    listingUrl: insertedRows[0].listing_url,
+  });
 
   return ok(insertedRows[0]);
 }
@@ -666,6 +687,7 @@ const ASSET_FORMATS: readonly {
 export async function generateShareAssets(
   scopedDb: CreatorScopedDb<Database>,
   productId: string,
+  logger: Logger = publishingLogger,
 ): Promise<Result<ShareAssetsResult, PublishError>> {
   const { db, creatorId } = scopedDb;
 
@@ -730,6 +752,11 @@ export async function generateShareAssets(
       safeZones: formatDef.safeZones,
     });
   }
+
+  logger.info("share_assets_generated", {
+    productId,
+    assetCount: assets.length,
+  });
 
   return ok({
     assets,

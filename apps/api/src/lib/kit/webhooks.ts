@@ -10,6 +10,7 @@
 import type { Result } from "@crumb/shared";
 import { ok, err } from "@crumb/shared";
 import type { KitWebhookEventName } from "./types.js";
+import { createLogger } from "../logger.js";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -57,6 +58,8 @@ export interface KitWebhookPayload {
  * @param secret - The webhook signing secret.
  * @returns `ok(undefined)` if valid, `err(WebhookVerificationError)` if not.
  */
+const webhookLogger = createLogger("kit-webhooks");
+
 export async function verifyWebhookSignature(
   payload: string,
   signature: string,
@@ -87,12 +90,14 @@ export async function verifyWebhookSignature(
 
   // Constant-time comparison to prevent timing attacks
   if (!constantTimeEqual(signature, expectedHex)) {
+    webhookLogger.warn("webhook_signature_rejected");
     return err({
       type: "invalid_signature",
       message: "Webhook signature verification failed",
     });
   }
 
+  webhookLogger.debug("webhook_signature_verified");
   return ok(undefined);
 }
 

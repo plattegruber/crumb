@@ -7,6 +7,7 @@
 import type { Database } from "../db/index.js";
 import type { ImportJobId } from "@crumb/shared";
 import { createImportJobId } from "@crumb/shared";
+import { createLogger } from "../lib/logger.js";
 import {
   createImportService,
   createDefaultFetcher,
@@ -44,6 +45,7 @@ export async function handleImportQueue(
   batch: QueueBatch,
   deps: QueueHandlerDeps,
 ): Promise<void> {
+  const logger = createLogger("queue-handler");
   const fetcher = createDefaultFetcher();
   const wordpress = createDefaultWordPressClient(fetcher);
 
@@ -53,6 +55,7 @@ export async function handleImportQueue(
     extractor: deps.extractor,
     fetcher,
     wordpress,
+    logger,
   });
 
   for (const message of batch.messages) {

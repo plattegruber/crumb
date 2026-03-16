@@ -20,6 +20,7 @@ import {
 } from "../db/schema.js";
 import type { Result } from "@crumb/shared";
 import { ok, err } from "@crumb/shared";
+import { createLogger, type Logger } from "../lib/logger.js";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -72,6 +73,8 @@ export type AnalyticsError =
   | { readonly type: "database_error"; readonly message: string }
   | { readonly type: "duplicate_event" };
 
+const defaultLogger = createLogger("analytics");
+
 // ---------------------------------------------------------------------------
 // Privacy helper: hash subscriber IDs for aggregate views
 // ---------------------------------------------------------------------------
@@ -100,6 +103,7 @@ export async function hashSubscriberId(subscriberId: string): Promise<string> {
 export async function recordEngagementEvent(
   db: Database,
   input: RecordEngagementEventInput,
+  logger: Logger = defaultLogger,
 ): Promise<Result<{ readonly id: string }, AnalyticsError>> {
   // Check for existing event (idempotent duplicate handling)
   const existing = await db
@@ -129,6 +133,13 @@ export async function recordEngagementEvent(
     occurred_at: input.occurredAt,
   });
 
+  logger.info("engagement_event_recorded", {
+    eventId: input.id,
+    eventType: input.eventType,
+    recipeId: input.recipeId,
+    creator: input.creatorId,
+  });
+
   return ok({ id: input.id });
 }
 
@@ -153,6 +164,7 @@ export async function computeEngagementScores(
   db: Database,
   creatorId: string,
   cache: KVNamespace | null,
+  logger: Logger = defaultLogger,
 ): Promise<Result<readonly EngagementScoreRow[], AnalyticsError>> {
   const now = new Date();
   const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
@@ -332,6 +344,11 @@ export async function computeEngagementScores(
     });
   }
 
+  logger.info("engagement_scores_computed", {
+    creator: creatorId,
+    recipeCount: results.length,
+  });
+
   return ok(results);
 }
 
@@ -410,6 +427,7 @@ export async function getRecipeEngagementScore(
 export async function computeRecommendations(
   db: Database,
   creatorId: string,
+  logger: Logger = defaultLogger,
 ): Promise<Result<readonly ProductRecommendation[], AnalyticsError>> {
   // Get segment profile for the creator
   const profiles = await db
@@ -490,6 +508,11 @@ export async function computeRecommendations(
     });
   }
 
+  logger.info("recommendations_computed", {
+    creator: creatorId,
+    recommendationCount: recommendations.length,
+  });
+
   return ok(recommendations);
 }
 
@@ -510,6 +533,7 @@ export async function computeRevenueAttribution(
   creatorId: string,
   subscriberId: string,
   productId: string,
+  logger: Logger = defaultLogger,
 ): Promise<Result<readonly string[], AnalyticsError>> {
   const now = new Date();
   const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
@@ -609,6 +633,12 @@ export async function computeRevenueAttribution(
 
     attributedEventIds.push(eventId);
   }
+
+  logger.info("revenue_attribution_computed", {
+    creator: creatorId,
+    productId,
+    attributedRecipeCount: attributedEventIds.length,
+  });
 
   return ok(attributedEventIds);
 }

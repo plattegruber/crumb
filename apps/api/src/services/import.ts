@@ -27,6 +27,7 @@ import {
   createUrl,
   createSlug,
 } from "@crumb/shared";
+import { createLogger, type Logger } from "../lib/logger.js";
 
 // ---------------------------------------------------------------------------
 // Import status constants
@@ -430,10 +431,12 @@ export interface ImportServiceDeps {
   readonly fetcher: HttpFetcher;
   readonly wordpress: WordPressClient;
   readonly generateId?: () => string;
+  readonly logger?: Logger;
 }
 
 export function createImportService(deps: ImportServiceDeps) {
   const generateId = deps.generateId ?? (() => crypto.randomUUID());
+  const logger = deps.logger ?? createLogger("import");
 
   // -------------------------------------------------------------------------
   // createImportJob
@@ -462,8 +465,19 @@ export function createImportService(deps: ImportServiceDeps) {
 
       await deps.queue.send({ importJobId: id });
 
+      logger.info("import_job_created", {
+        jobId: id,
+        sourceType,
+        creator: creatorId,
+      });
+
       return ok({ id });
     } catch (e) {
+      logger.error("import_job_creation_failed", {
+        sourceType,
+        creator: creatorId,
+        error: e instanceof Error ? e.message : "Unknown error",
+      });
       return err({
         type: "DatabaseError",
         message: e instanceof Error ? e.message : "Unknown database error",
@@ -544,6 +558,11 @@ export function createImportService(deps: ImportServiceDeps) {
     const now = new Date().toISOString();
 
     // Transition to Processing
+    logger.info("import_job_state_transition", {
+      jobId,
+      from: IMPORT_STATUS.Pending,
+      to: IMPORT_STATUS.Processing,
+    });
     await deps.db
       .update(schema.importJobs)
       .set({
@@ -610,6 +629,7 @@ export function createImportService(deps: ImportServiceDeps) {
     const result = await Promise.race([processingPromise, timeoutPromise]);
 
     if (timedOut) {
+      logger.error("import_job_timeout", { jobId });
       const timeoutNow = new Date().toISOString();
       await deps.db
         .update(schema.importJobs)
@@ -655,6 +675,7 @@ export function createImportService(deps: ImportServiceDeps) {
       });
 
       if (!fetchResult.ok) {
+        logger.error("import_fetch_failed", { jobId, url });
         await markFailed(
           jobId,
           "FetchFailed",
@@ -697,6 +718,20 @@ export function createImportService(deps: ImportServiceDeps) {
     }
 
     const extract = extractResult.value;
+
+    logger.info("import_extraction_result", {
+      jobId,
+      title: extract.title ?? null,
+      ingredientGroupCount: extract.ingredients.length,
+      confidence: extract.confidence ?? null,
+    });
+
+    if (extract.confidence !== undefined && extract.confidence !== null && extract.confidence < 0.5) {
+      logger.warn("import_low_confidence_extraction", {
+        jobId,
+        confidence: extract.confidence,
+      });
+    }
 
     // SS14.1: AI extraction produces no title or no ingredients -> failed
     if (
@@ -1263,6 +1298,13 @@ export function createImportService(deps: ImportServiceDeps) {
       }
     }
 
+    logger.info("wordpress_sync_completed", {
+      creator: creatorId,
+      created,
+      updated,
+      flaggedDeleted,
+    });
+
     return ok({ created, updated, flagged_deleted: flaggedDeleted });
   }
 
@@ -1275,6 +1317,13 @@ export function createImportService(deps: ImportServiceDeps) {
     errorType: string,
     reason: string,
   ): Promise<void> {
+    logger.info("import_job_state_transition", {
+      jobId,
+      from: "Processing",
+      to: IMPORT_STATUS.Failed,
+      errorType,
+      reason,
+    });
     const now = new Date().toISOString();
     await deps.db
       .update(schema.importJobs)

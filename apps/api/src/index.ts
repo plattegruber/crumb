@@ -1,6 +1,8 @@
 import { Hono } from "hono";
 import type { AppEnv } from "./middleware/auth.js";
 import { clerkAuth } from "./middleware/auth.js";
+import { requestLogger } from "./middleware/request-logger.js";
+import type { AppEnvWithLogger } from "./middleware/request-logger.js";
 import { recipeRoutes } from "./routes/recipes.js";
 import { collectionRoutes } from "./routes/collections.js";
 import { segmentationRoutes } from "./routes/segmentation.js";
@@ -11,9 +13,11 @@ import { productRoutes } from "./routes/products.js";
 import { publishingRoutes } from "./routes/publishing.js";
 import { createDb } from "./db/index.js";
 import { handleImportQueue } from "./services/queue-handlers.js";
+import { createLogger } from "./lib/logger.js";
 import type { Env } from "./env.js";
 
 export type { AppEnv } from "./middleware/auth.js";
+export type { AppEnvWithLogger } from "./middleware/request-logger.js";
 export type { AuthContext, CreatorId } from "./types/auth.js";
 
 /** Paths that do not require authentication. */
@@ -22,7 +26,10 @@ const PUBLIC_PATHS = new Set(["/health"]);
 /** Paths/prefixes that are public (webhook HMAC or save redirect). */
 const PUBLIC_PATH_PREFIXES = ["/webhooks/", "/save/"];
 
-const app = new Hono<AppEnv>();
+const app = new Hono<AppEnvWithLogger>();
+
+// Apply request logging middleware to all routes (first in chain).
+app.use("*", requestLogger());
 
 // Apply Clerk JWT auth to every route except public paths.
 app.use("*", async (c, next) => {
@@ -91,6 +98,12 @@ export default {
     batch: MessageBatch<Record<string, unknown>>,
     env: Env,
   ): Promise<void> {
+    const logger = createLogger("queue-handler", undefined, env.LOG_LEVEL);
+    logger.info("queue_batch_received", {
+      queueName: "import-pipeline",
+      messageCount: batch.messages.length,
+    });
+
     const db = createDb(env.DB);
 
     const queue = {
@@ -122,5 +135,10 @@ export default {
       },
       { db, queue, extractor },
     );
+
+    logger.info("queue_batch_completed", {
+      queueName: "import-pipeline",
+      messageCount: batch.messages.length,
+    });
   },
 };

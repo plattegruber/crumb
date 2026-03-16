@@ -14,6 +14,7 @@ import { ok, err } from "@crumb/shared";
 import type { KitApiError, KitOAuthTokenResponse } from "./types.js";
 import { KIT_API_ERROR_CODE } from "./types.js";
 import type { FetchFn } from "./client.js";
+import { createLogger } from "../logger.js";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -21,6 +22,7 @@ import type { FetchFn } from "./client.js";
 
 const AUTHORIZE_URL = "https://api.kit.com/v4/oauth/authorize";
 const TOKEN_URL = "https://api.kit.com/v4/oauth/token";
+const oauthLogger = createLogger("kit-oauth");
 
 /**
  * All OAuth scopes required by the application per SPEC 4.1.
@@ -163,6 +165,11 @@ async function tokenRequest(
       messages = [`HTTP ${response.status}`];
     }
 
+    oauthLogger.error("token_exchange_failed", {
+      grantType: body["grant_type"] ?? "unknown",
+      status: response.status,
+    });
+
     return err({
       status: response.status,
       code:
@@ -175,8 +182,14 @@ async function tokenRequest(
 
   try {
     const data = (await response.json()) as KitOAuthTokenResponse;
+    oauthLogger.info("token_exchange_success", {
+      grantType: body["grant_type"] ?? "unknown",
+    });
     return ok(data);
   } catch {
+    oauthLogger.error("token_parse_failed", {
+      grantType: body["grant_type"] ?? "unknown",
+    });
     return err({
       status: response.status,
       code: KIT_API_ERROR_CODE.Unknown,
