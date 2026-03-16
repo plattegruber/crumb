@@ -28,7 +28,9 @@
   }
 
   onMount(async () => {
-    // Configure API base URL -- in production this would come from env
+    // Configure API base URL
+    // In local dev, Vite proxies /api → localhost:8787
+    // In production, set VITE_API_BASE_URL to the Worker URL
     setApiBaseUrl(import.meta.env.VITE_API_BASE_URL ?? "/api");
 
     // Initialize Clerk
@@ -93,7 +95,15 @@
   <title>crumb</title>
 </svelte:head>
 
-{#if !signedIn && !isPublicPage && clerkLoaded}
+{#if !clerkLoaded && !isPublicPage}
+  <!-- Clerk still loading — show a minimal loading state instead of flashing content -->
+  <div class="auth-gate">
+    <div class="auth-gate-content">
+      <h1>crumb</h1>
+      <p>Loading...</p>
+    </div>
+  </div>
+{:else if !signedIn && !isPublicPage && clerkLoaded}
   <!-- Unauthenticated user on protected route — show sign-in prompt -->
   <div class="auth-gate">
     <div class="auth-gate-content">
