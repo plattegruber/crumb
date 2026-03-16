@@ -25,8 +25,39 @@ export async function getClerk(publishableKey: string): Promise<Clerk> {
   }
 
   clerkPromise = (async () => {
-    const { Clerk: ClerkConstructor } = await import("@clerk/clerk-js");
-    const clerk = new ClerkConstructor(publishableKey);
+    // Use the Clerk browser bundle via a script tag for full UI support.
+    // The NPM ESM import strips UI components in Vite's bundler.
+    const clerkFapiHost = "genuine-panda-65.clerk.accounts.dev";
+    const scriptUrl = `https://${clerkFapiHost}/npm/@clerk/clerk-js@5/dist/clerk.browser.js`;
+
+    await new Promise<void>((resolve, reject) => {
+      // Check if already loaded
+      if ((window as Record<string, unknown>).Clerk) {
+        resolve();
+        return;
+      }
+      const script = document.createElement("script");
+      script.src = scriptUrl;
+      script.crossOrigin = "anonymous";
+      script.dataset.clerkPublishableKey = publishableKey;
+      script.onload = () => resolve();
+      script.onerror = () => reject(new Error("Failed to load Clerk script"));
+      document.head.appendChild(script);
+    });
+
+    // Wait for Clerk global to be ready
+    const win = window as Record<string, unknown>;
+    let attempts = 0;
+    while (!win.Clerk && attempts < 50) {
+      await new Promise((r) => setTimeout(r, 100));
+      attempts++;
+    }
+
+    const clerk = win.Clerk as import("@clerk/clerk-js").default;
+    if (!clerk) {
+      throw new Error("Clerk failed to initialize");
+    }
+
     await clerk.load();
     clerkInstance = clerk;
     return clerk;

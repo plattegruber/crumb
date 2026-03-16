@@ -23,11 +23,23 @@
         return;
       }
 
+      // Wait briefly for Clerk UI components to finish lazy-loading
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
       if (mountEl) {
-        clerk.mountSignUp(mountEl, {
-          afterSignInUrl: "/library",
-          afterSignUpUrl: "/library",
-        });
+        try {
+          clerk.mountSignUp(mountEl, {
+            afterSignInUrl: "/library",
+            afterSignUpUrl: "/library",
+          });
+        } catch {
+          // If mount fails (UI not ready), retry after a longer delay
+          await new Promise((resolve) => setTimeout(resolve, 1000));
+          clerk.mountSignUp(mountEl, {
+            afterSignInUrl: "/library",
+            afterSignUpUrl: "/library",
+          });
+        }
       }
     } catch (e) {
       error = "Failed to load authentication.";
