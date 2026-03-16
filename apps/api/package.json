@@ -7,6 +7,7 @@
     "dev": "npx wrangler dev",
     "build": "npx wrangler deploy --dry-run --outdir=dist",
     "test": "npx vitest run",
+    "test:coverage": "npx vitest run --coverage",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
@@ -20,6 +21,7 @@
     "@cloudflare/workers-types": "^4.20250310.0",
     "drizzle-kit": "^0.30.0",
     "typescript": "^5.7.0",
+    "@vitest/coverage-istanbul": "~3.0.0",
     "vitest": "~3.0.0",
     "wrangler": "^4.0.0"
   }

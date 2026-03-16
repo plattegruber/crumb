@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "pnpm --filter api dev",
-    "test": "pnpm --filter api test",
+    "test": "pnpm -r test",
+    "test:coverage": "pnpm -r test:coverage",
     "build": "pnpm -r build",
     "typecheck": "pnpm -r typecheck"
   },
