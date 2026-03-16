@@ -27,6 +27,7 @@ import type { Result } from "@crumb/shared";
 import { ok, err } from "@crumb/shared";
 import type { EbookFormat, ProductId, RecipeId, BrandKitId } from "@crumb/shared";
 import type { Env } from "../env.js";
+import { createLogger, type Logger } from "../lib/logger.js";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -542,6 +543,7 @@ export function renderTemplate(
 const DEFAULT_PER_PAGE = 20;
 const MAX_PER_PAGE = 100;
 const FREE_TIER_PUBLISHED_PRODUCT_LIMIT = 1;
+const defaultLogger = createLogger("product");
 
 // ---------------------------------------------------------------------------
 // Product Assembly
@@ -553,6 +555,7 @@ const FREE_TIER_PUBLISHED_PRODUCT_LIMIT = 1;
 export async function createEbook(
   scopedDb: CreatorScopedDb<Database>,
   input: CreateEbookInput,
+  logger: Logger = defaultLogger,
 ): Promise<Result<ProductWithDetail, ProductError>> {
   const { db, creatorId } = scopedDb;
 
@@ -597,6 +600,12 @@ export async function createEbook(
     intro_copy: input.intro_copy,
     author_bio: input.author_bio,
     format: input.format,
+  });
+
+  logger.info("product_created", {
+    productId: input.id,
+    type: PRODUCT_TYPE.Ebook,
+    recipeCount: input.recipe_ids.length,
   });
 
   return getProduct(scopedDb, input.id);
@@ -1049,8 +1058,10 @@ export async function publishProduct(
 export async function enqueueRender(
   productId: string,
   env: Env,
+  logger: Logger = defaultLogger,
 ): Promise<Result<{ queued: true }, ProductError>> {
   await env.RENDER_QUEUE.send({ productId });
+  logger.info("render_enqueued", { productId });
   return ok({ queued: true });
 }
 

@@ -9,6 +9,7 @@
 
 import type { Result } from "@crumb/shared";
 import { ok, err } from "@crumb/shared";
+import { createLogger } from "../logger.js";
 import type {
   KitApiError,
   KitSubscriber,
@@ -31,6 +32,7 @@ import { KIT_API_ERROR_CODE } from "./types.js";
 // ---------------------------------------------------------------------------
 
 const BASE_URL = "https://api.kit.com/v4";
+const kitLogger = createLogger("kit-client");
 
 // ---------------------------------------------------------------------------
 // Fetch function type — allows dependency injection for tests
@@ -118,6 +120,7 @@ async function request<T>(
   body?: unknown,
 ): Promise<Result<{ data: T; status: number }, KitApiError>> {
   const url = `${BASE_URL}${path}`;
+  const startTime = Date.now();
   const headers: Record<string, string> = {
     Authorization: `Bearer ${accessToken}`,
     "Content-Type": "application/json",
@@ -133,23 +136,54 @@ async function request<T>(
     });
   } catch (e: unknown) {
     const message = e instanceof Error ? e.message : "Network error";
+    kitLogger.error("kit_api_network_error", {
+      method,
+      endpoint: path,
+      durationMs: Date.now() - startTime,
+      error: message,
+    });
     return err(networkError(message));
   }
 
+  const durationMs = Date.now() - startTime;
+
+  // Warn on approaching rate limit
+  const rateLimitRemaining = response.headers.get("X-RateLimit-Remaining");
+  if (rateLimitRemaining !== null) {
+    const remaining = parseInt(rateLimitRemaining, 10);
+    if (!isNaN(remaining) && remaining < 20) {
+      kitLogger.warn("kit_api_rate_limit_approaching", {
+        method,
+        endpoint: path,
+        remaining,
+      });
+    }
+  }
+
   if (response.status === 204) {
+    kitLogger.debug("kit_api_call", { method, endpoint: path, status: 204, durationMs });
     // 204 No Content — return empty object as T
     return ok({ data: undefined as unknown as T, status: 204 });
   }
 
   if (!response.ok) {
     const messages = await parseErrorBody(response);
+    kitLogger.error("kit_api_error", {
+      method,
+      endpoint: path,
+      status: response.status,
+      durationMs,
+      errorMessages: messages,
+    });
     return err(kitError(response.status, messages));
   }
 
   try {
     const data = (await response.json()) as T;
+    kitLogger.debug("kit_api_call", { method, endpoint: path, status: response.status, durationMs });
     return ok({ data, status: response.status });
   } catch {
+    kitLogger.error("kit_api_parse_error", { method, endpoint: path, status: response.status, durationMs });
     return err(
       kitError(response.status, ["Failed to parse response JSON"]),
     );

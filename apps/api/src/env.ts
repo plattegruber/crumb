@@ -20,4 +20,7 @@ export interface Env {
   // --- Kit (ConvertKit) ---
   KIT_CLIENT_ID: string;
   KIT_CLIENT_SECRET: string;
+
+  // --- Observability ---
+  LOG_LEVEL: string;
 }

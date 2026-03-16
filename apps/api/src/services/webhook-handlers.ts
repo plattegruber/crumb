@@ -16,6 +16,7 @@ import {
 } from "./analytics.js";
 import type { Result } from "@crumb/shared";
 import { ok, err } from "@crumb/shared";
+import { createLogger, type Logger } from "../lib/logger.js";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -39,6 +40,8 @@ export interface WebhookHandlerResult {
 /** URL pattern for "Save This Recipe" links. */
 const SAVE_RECIPE_URL_PATTERN = /\/save-recipe\/([a-zA-Z0-9_-]+)/;
 
+const defaultLogger = createLogger("webhook-handlers");
+
 // ---------------------------------------------------------------------------
 // Main Dispatcher
 // ---------------------------------------------------------------------------
@@ -54,7 +57,13 @@ export async function handleWebhookEvent(
   db: Database,
   creatorId: string,
   payload: KitWebhookPayload,
+  logger: Logger = defaultLogger,
 ): Promise<Result<WebhookHandlerResult, WebhookHandlerError>> {
+  logger.info("webhook_event_received", {
+    eventType: payload.event,
+    creator: creatorId,
+  });
+
   switch (payload.event) {
     case KIT_WEBHOOK_EVENT.LinkClick:
       return handleLinkClick(db, creatorId, payload);
@@ -72,6 +81,10 @@ export async function handleWebhookEvent(
       return handleSubscriberUnsubscribed(creatorId, payload);
 
     default:
+      logger.warn("webhook_unhandled_event_type", {
+        eventType: payload.event,
+        creator: creatorId,
+      });
       return ok({
         handled: false,
         eventType: payload.event,

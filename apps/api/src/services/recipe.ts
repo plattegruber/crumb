@@ -34,6 +34,7 @@ import type {
   PhotoId,
 } from "@crumb/shared";
 import { multiply } from "@crumb/shared";
+import { createLogger, type Logger } from "../lib/logger.js";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -243,6 +244,8 @@ const DEFAULT_PER_PAGE = 20;
 const MAX_PER_PAGE = 100;
 const DUPLICATE_THRESHOLD = 0.85;
 
+const defaultLogger = createLogger("recipe");
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
@@ -275,6 +278,7 @@ function deserializeQuantityToJson(
 export async function createRecipe(
   scopedDb: CreatorScopedDb<Database>,
   input: CreateRecipeInput,
+  logger: Logger = defaultLogger,
 ): Promise<Result<RecipeWithRelations, RecipeError>> {
   const { db, creatorId } = scopedDb;
 
@@ -437,6 +441,12 @@ export async function createRecipe(
   }
 
   // Fetch and return the created recipe
+  logger.info("recipe_created", {
+    recipeId: input.id,
+    creator: creatorId,
+    slug: finalSlug,
+    title: input.title,
+  });
   return getRecipe(scopedDb, input.id);
 }
 
@@ -447,6 +457,7 @@ export async function updateRecipe(
   scopedDb: CreatorScopedDb<Database>,
   recipeId: string,
   input: UpdateRecipeInput,
+  logger: Logger = defaultLogger,
 ): Promise<Result<RecipeWithRelations, RecipeError>> {
   const { db, creatorId } = scopedDb;
 
@@ -629,6 +640,13 @@ export async function updateRecipe(
     }
   }
 
+  // Log fields that were changed
+  const fieldsChanged = Object.keys(updateData).filter((k) => k !== "updated_at");
+  logger.info("recipe_updated", {
+    recipeId,
+    fieldsChanged,
+  });
+
   return getRecipe(scopedDb, recipeId);
 }
 
@@ -638,6 +656,7 @@ export async function updateRecipe(
 export async function deleteRecipe(
   scopedDb: CreatorScopedDb<Database>,
   recipeId: string,
+  logger: Logger = defaultLogger,
 ): Promise<Result<{ readonly id: string }, RecipeError>> {
   const { db, creatorId } = scopedDb;
 
@@ -655,6 +674,8 @@ export async function deleteRecipe(
     .update(recipes)
     .set({ status: "Archived", updated_at: new Date().toISOString() })
     .where(and(eq(recipes.id, recipeId), eq(recipes.creator_id, creatorId)));
+
+  logger.info("recipe_deleted", { recipeId });
 
   return ok({ id: recipeId });
 }
@@ -779,6 +800,7 @@ export async function getRecipe(
 export async function listRecipes(
   scopedDb: CreatorScopedDb<Database>,
   params: ListRecipesParams,
+  logger: Logger = defaultLogger,
 ): Promise<Result<PaginatedResult<RecipeRow>, RecipeError>> {
   const { db, creatorId } = scopedDb;
 
@@ -898,6 +920,19 @@ export async function listRecipes(
     .limit(perPage)
     .offset(offset);
 
+  logger.debug("recipe_search", {
+    query: params.q ?? null,
+    filters: {
+      dietaryTags: params.dietaryTags ?? null,
+      cuisine: params.cuisine ?? null,
+      mealType: params.mealType ?? null,
+      season: params.season ?? null,
+      status: params.status ?? null,
+    },
+    resultCount: rows.length,
+    total,
+  });
+
   return ok({
     data: rows,
     total,
@@ -914,6 +949,7 @@ export async function checkDuplicates(
   scopedDb: CreatorScopedDb<Database>,
   title: string,
   excludeRecipeId?: string,
+  logger: Logger = defaultLogger,
 ): Promise<Result<DuplicateCheckResult, RecipeError>> {
   const { db, creatorId } = scopedDb;
 
@@ -945,6 +981,15 @@ export async function checkDuplicates(
 
   // Sort by similarity descending
   duplicates.sort((a, b) => b.similarity - a.similarity);
+
+  if (duplicates.length > 0) {
+    logger.warn("duplicate_detection_matches", {
+      title,
+      matchCount: duplicates.length,
+      topMatch: duplicates[0]?.title ?? null,
+      topSimilarity: duplicates[0]?.similarity ?? 0,
+    });
+  }
 
   return ok({ duplicates });
 }

@@ -40,6 +40,7 @@ import type { KitApiError, BroadcastDraftParams } from "../lib/kit/types.js";
 import type { Result } from "@crumb/shared";
 import { ok, err } from "@crumb/shared";
 import type { DietaryTag, Slug } from "@crumb/shared";
+import { createLogger, type Logger } from "../lib/logger.js";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -105,6 +106,7 @@ export interface SeasonalDropProcessResult {
 // ---------------------------------------------------------------------------
 
 const FREE_TIER_SENDS_PER_MONTH = 3;
+const defaultLogger = createLogger("automation");
 
 // ---------------------------------------------------------------------------
 // SS10.1 Save This Recipe Sequence
@@ -128,6 +130,7 @@ export async function handleSaveThisRecipe(
   subscriberId: string,
   accessToken: string,
   kitConfig: KitClientConfig,
+  logger: Logger = defaultLogger,
 ): Promise<Result<SaveRecipeResult, AutomationError>> {
   // Find the recipe by slug + creator
   const recipeRows = await db
@@ -265,6 +268,13 @@ export async function handleSaveThisRecipe(
     });
   }
 
+  logger.info("save_this_recipe_handled", {
+    recipeSlug,
+    creator: creatorId,
+    sequenceEnrolled: true,
+    tagsApplied,
+  });
+
   return ok({
     sequenceEnrolled: true,
     sequenceId,
@@ -290,6 +300,7 @@ export async function createNewRecipeBroadcast(
   recipeId: string,
   accessToken: string,
   kitConfig: KitClientConfig,
+  logger: Logger = defaultLogger,
 ): Promise<Result<BroadcastDraftResult, AutomationError>> {
   // Check free tier send limit
   const limitCheck = await checkFreeTierSendLimit(db, creatorId);
@@ -333,6 +344,13 @@ export async function createNewRecipeBroadcast(
   // Increment sends counter
   await incrementSendsCounter(db, creatorId);
 
+  logger.info("broadcast_draft_created", {
+    broadcastId: String(result.value.id),
+    recipeId,
+    creator: creatorId,
+    subject,
+  });
+
   return ok({
     broadcastId: String(result.value.id),
     subject,
@@ -362,6 +380,7 @@ export async function createLeadMagnetSequence(
   productId: string,
   accessToken: string,
   kitConfig: KitClientConfig,
+  logger: Logger = defaultLogger,
 ): Promise<Result<LeadMagnetSequenceResult, AutomationError>> {
   // Find the product
   const productRows = await db
@@ -435,6 +454,13 @@ export async function createLeadMagnetSequence(
       updated_at: new Date().toISOString(),
     })
     .where(eq(productBase.id, productId));
+
+  logger.info("lead_magnet_sequence_created", {
+    productId,
+    creator: creatorId,
+    sequenceId,
+    emailCount: 4,
+  });
 
   return ok({
     sequenceId,
@@ -534,6 +560,7 @@ export async function processSeasonalDrops(
   creatorId: string,
   accessToken: string,
   kitConfig: KitClientConfig,
+  logger: Logger = defaultLogger,
 ): Promise<Result<SeasonalDropProcessResult, AutomationError>> {
   // Check free tier send limit
   const limitCheck = await checkFreeTierSendLimit(db, creatorId);
@@ -645,6 +672,12 @@ export async function processSeasonalDrops(
     dropsProcessed += 1;
     await incrementSendsCounter(db, creatorId);
   }
+
+  logger.info("seasonal_drops_processed", {
+    creator: creatorId,
+    dropsProcessed,
+    broadcastsCreated: broadcastsCreated.length,
+  });
 
   return ok({
     dropsProcessed,
