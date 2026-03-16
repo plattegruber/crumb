@@ -68,14 +68,22 @@ export async function createTestTables(d1: D1Database): Promise<void> {
     `CREATE TABLE IF NOT EXISTS meal_plan_details (product_id TEXT PRIMARY KEY, days TEXT NOT NULL, shopping_list TEXT)`,
   );
   await d1.exec(
+    `CREATE TABLE IF NOT EXISTS published_listings (id INTEGER PRIMARY KEY AUTOINCREMENT, product_id TEXT NOT NULL, platform TEXT NOT NULL, listing_url TEXT, platform_id TEXT, published_at TEXT NOT NULL)`,
+  );
+  await d1.exec(
     `CREATE TABLE IF NOT EXISTS lead_magnets (product_id TEXT PRIMARY KEY, parent_product_id TEXT NOT NULL, recipe_ids TEXT NOT NULL)`,
   );
   await d1.exec(
     `CREATE TABLE IF NOT EXISTS brand_kits (id TEXT PRIMARY KEY, creator_id TEXT NOT NULL, name TEXT NOT NULL, logo_url TEXT, primary_color TEXT NOT NULL, secondary_color TEXT, accent_color TEXT, heading_font_family TEXT NOT NULL, heading_font_fallback TEXT NOT NULL, body_font_family TEXT NOT NULL, body_font_fallback TEXT NOT NULL, created_at TEXT NOT NULL, updated_at TEXT NOT NULL)`,
   );
+  await d1.exec(
+    `CREATE TABLE IF NOT EXISTS team_members (id TEXT PRIMARY KEY, creator_id TEXT NOT NULL, email TEXT NOT NULL, role TEXT NOT NULL DEFAULT 'Member', invited_at TEXT NOT NULL, accepted_at TEXT)`,
+  );
 }
 
 export async function cleanTestTables(d1: D1Database): Promise<void> {
+  await d1.exec(`DELETE FROM published_listings`);
+  await d1.exec(`DELETE FROM lead_magnets`);
   await d1.exec(`DELETE FROM recipe_engagement_events`);
   await d1.exec(`DELETE FROM recipe_engagement_scores`);
   await d1.exec(`DELETE FROM segment_profiles`);
@@ -84,8 +92,11 @@ export async function cleanTestTables(d1: D1Database): Promise<void> {
   await d1.exec(`DELETE FROM lead_magnets`);
   await d1.exec(`DELETE FROM meal_plan_details`);
   await d1.exec(`DELETE FROM recipe_card_packs`);
+  await d1.exec(`DELETE FROM meal_plan_details`);
   await d1.exec(`DELETE FROM ebook_details`);
+  await d1.exec(`DELETE FROM team_members`);
   await d1.exec(`DELETE FROM product_base`);
+  await d1.exec(`DELETE FROM brand_kits`);
   await d1.exec(`DELETE FROM ingredients`);
   await d1.exec(`DELETE FROM ingredient_groups`);
   await d1.exec(`DELETE FROM instructions`);
