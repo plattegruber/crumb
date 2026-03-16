@@ -80,10 +80,7 @@ segmentationRoutes.put("/recipes/:id/dietary-tags/confirm", async (c) => {
   const confirmedTags: DietaryTag[] = [];
   for (const tag of body.tags) {
     if (!validTags.has(tag)) {
-      return c.json(
-        { error: `Invalid dietary tag: ${tag}`, code: "INVALID_INPUT" },
-        400,
-      );
+      return c.json({ error: `Invalid dietary tag: ${tag}`, code: "INVALID_INPUT" }, 400);
     }
     confirmedTags.push(tag as DietaryTag);
   }
@@ -146,18 +143,10 @@ segmentationRoutes.post("/segments/compute", async (c) => {
   // creator's stored Kit connection. For now, require it in headers.
   const kitAccessToken = c.req.header("X-Kit-Access-Token");
   if (!kitAccessToken) {
-    return c.json(
-      { error: "Kit access token required", code: "INVALID_INPUT" },
-      400,
-    );
+    return c.json({ error: "Kit access token required", code: "INVALID_INPUT" }, 400);
   }
 
-  const result = await computeSegmentProfile(
-    db,
-    creatorId,
-    kitConfig,
-    kitAccessToken,
-  );
+  const result = await computeSegmentProfile(db, creatorId, kitConfig, kitAccessToken);
 
   if (!result.ok) {
     return c.json({ error: result.error.message, code: result.error.code }, 500);
@@ -180,22 +169,13 @@ segmentationRoutes.post("/segments/preference-form", async (c) => {
 
   const kitAccessToken = c.req.header("X-Kit-Access-Token");
   if (!kitAccessToken) {
-    return c.json(
-      { error: "Kit access token required", code: "INVALID_INPUT" },
-      400,
-    );
+    return c.json({ error: "Kit access token required", code: "INVALID_INPUT" }, 400);
   }
 
-  const result = await createPreferenceCaptureForm(
-    db,
-    creatorId,
-    kitConfig,
-    kitAccessToken,
-  );
+  const result = await createPreferenceCaptureForm(db, creatorId, kitConfig, kitAccessToken);
 
   if (!result.ok) {
-    const statusCode =
-      result.error.code === "FORM_NOT_FOUND" ? 404 : 500;
+    const statusCode = result.error.code === "FORM_NOT_FOUND" ? 404 : 500;
     return c.json({ error: result.error.message, code: result.error.code }, statusCode);
   }
 

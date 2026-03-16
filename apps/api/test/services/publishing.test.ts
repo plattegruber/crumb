@@ -70,11 +70,14 @@ async function insertProduct(
   },
 ): Promise<void> {
   const status = overrides?.status ?? "Published";
-  const pdfUrl = overrides?.pdfUrl === undefined ? "https://storage.example.com/test.pdf" : overrides.pdfUrl;
+  const pdfUrl =
+    overrides?.pdfUrl === undefined ? "https://storage.example.com/test.pdf" : overrides.pdfUrl;
   const productType = overrides?.productType ?? "Ebook";
   const title = overrides?.title ?? "Test Product";
-  const description = overrides?.description === undefined ? "A test product" : overrides.description;
-  const priceCents = overrides?.suggestedPriceCents === undefined ? 1999 : overrides.suggestedPriceCents;
+  const description =
+    overrides?.description === undefined ? "A test product" : overrides.description;
+  const priceCents =
+    overrides?.suggestedPriceCents === undefined ? 1999 : overrides.suggestedPriceCents;
   await d1.exec(
     `INSERT INTO product_base (id, creator_id, product_type, status, title, description, brand_kit_id, template_id, pdf_url, epub_url, kit_form_id, kit_sequence_id, suggested_price_cents, currency, ai_copy_reviewed, created_at, updated_at) VALUES ('${id}', '${creatorId}', '${productType}', '${status}', '${title}', ${description === null ? "NULL" : `'${description}'`}, '${BRAND_KIT_ID}', 'template-1', ${pdfUrl === null ? "NULL" : `'${pdfUrl}'`}, NULL, NULL, NULL, ${priceCents === null ? "NULL" : String(priceCents)}, 'USD', 0, '${NOW_ISO}', '${NOW_ISO}')`,
   );
@@ -179,10 +182,13 @@ describe("Publishing Pipeline Service", () => {
       await insertProduct(env.DB, "prod-1", TEST_CREATOR_ID);
       const scopedDb = withCreatorScope(db, TEST_CREATOR_ID);
 
-      const adapter = createMockAdapter(PUBLISH_PLATFORM.StanStore, ok({
-        listing_url: "https://stan.store/product/123",
-        platform_id: "ss-123",
-      }));
+      const adapter = createMockAdapter(
+        PUBLISH_PLATFORM.StanStore,
+        ok({
+          listing_url: "https://stan.store/product/123",
+          platform_id: "ss-123",
+        }),
+      );
 
       const result = await publishToPlatform(
         scopedDb,
@@ -204,18 +210,16 @@ describe("Publishing Pipeline Service", () => {
       await insertProduct(env.DB, "prod-1", TEST_CREATOR_ID);
       const scopedDb = withCreatorScope(db, TEST_CREATOR_ID);
 
-      const adapter = createMockAdapter(PUBLISH_PLATFORM.Gumroad, err({
-        type: "platform_unavailable",
-        platform: "Gumroad",
-        message: "Gumroad API returned 503",
-      }));
-
-      const result = await publishToPlatform(
-        scopedDb,
-        "prod-1",
+      const adapter = createMockAdapter(
         PUBLISH_PLATFORM.Gumroad,
-        adapter,
+        err({
+          type: "platform_unavailable",
+          platform: "Gumroad",
+          message: "Gumroad API returned 503",
+        }),
       );
+
+      const result = await publishToPlatform(scopedDb, "prod-1", PUBLISH_PLATFORM.Gumroad, adapter);
 
       expect(result.ok).toBe(false);
       if (result.ok) return;
@@ -228,17 +232,15 @@ describe("Publishing Pipeline Service", () => {
       await insertProduct(env.DB, "prod-1", TEST_CREATOR_ID);
       const scopedDb = withCreatorScope(db, TEST_CREATOR_ID);
 
-      const adapter = createMockAdapter(PUBLISH_PLATFORM.LTK, ok({
-        listing_url: "https://ltk.com/product/456",
-        platform_id: "ltk-456",
-      }));
-
-      await publishToPlatform(
-        scopedDb,
-        "prod-1",
+      const adapter = createMockAdapter(
         PUBLISH_PLATFORM.LTK,
-        adapter,
+        ok({
+          listing_url: "https://ltk.com/product/456",
+          platform_id: "ltk-456",
+        }),
       );
+
+      await publishToPlatform(scopedDb, "prod-1", PUBLISH_PLATFORM.LTK, adapter);
 
       // Verify listing was stored
       const listingsResult = await getProductListings(scopedDb, "prod-1");
@@ -252,10 +254,13 @@ describe("Publishing Pipeline Service", () => {
       await insertProduct(env.DB, "prod-1", TEST_CREATOR_ID);
       const scopedDb = withCreatorScope(db, TEST_CREATOR_ID);
 
-      const adapter = createMockAdapter(PUBLISH_PLATFORM.StanStore, ok({
-        listing_url: null,
-        platform_id: "ss-789",
-      }));
+      const adapter = createMockAdapter(
+        PUBLISH_PLATFORM.StanStore,
+        ok({
+          listing_url: null,
+          platform_id: "ss-789",
+        }),
+      );
 
       const result = await publishToPlatform(
         scopedDb,
@@ -273,10 +278,13 @@ describe("Publishing Pipeline Service", () => {
     it("returns not_found for non-existent product", async () => {
       const scopedDb = withCreatorScope(db, TEST_CREATOR_ID);
 
-      const adapter = createMockAdapter(PUBLISH_PLATFORM.StanStore, ok({
-        listing_url: null,
-        platform_id: null,
-      }));
+      const adapter = createMockAdapter(
+        PUBLISH_PLATFORM.StanStore,
+        ok({
+          listing_url: null,
+          platform_id: null,
+        }),
+      );
 
       const result = await publishToPlatform(
         scopedDb,
@@ -294,10 +302,13 @@ describe("Publishing Pipeline Service", () => {
       await insertProduct(env.DB, "prod-draft", TEST_CREATOR_ID, { status: "Draft" });
       const scopedDb = withCreatorScope(db, TEST_CREATOR_ID);
 
-      const adapter = createMockAdapter(PUBLISH_PLATFORM.StanStore, ok({
-        listing_url: null,
-        platform_id: null,
-      }));
+      const adapter = createMockAdapter(
+        PUBLISH_PLATFORM.StanStore,
+        ok({
+          listing_url: null,
+          platform_id: null,
+        }),
+      );
 
       const result = await publishToPlatform(
         scopedDb,
@@ -318,10 +329,13 @@ describe("Publishing Pipeline Service", () => {
       });
       const scopedDb = withCreatorScope(db, TEST_CREATOR_ID);
 
-      const adapter = createMockAdapter(PUBLISH_PLATFORM.StanStore, ok({
-        listing_url: null,
-        platform_id: null,
-      }));
+      const adapter = createMockAdapter(
+        PUBLISH_PLATFORM.StanStore,
+        ok({
+          listing_url: null,
+          platform_id: null,
+        }),
+      );
 
       const result = await publishToPlatform(
         scopedDb,
@@ -340,10 +354,13 @@ describe("Publishing Pipeline Service", () => {
       await insertProduct(env.DB, "prod-other", OTHER_CREATOR_ID);
       const scopedDb = withCreatorScope(db, TEST_CREATOR_ID);
 
-      const adapter = createMockAdapter(PUBLISH_PLATFORM.StanStore, ok({
-        listing_url: null,
-        platform_id: null,
-      }));
+      const adapter = createMockAdapter(
+        PUBLISH_PLATFORM.StanStore,
+        ok({
+          listing_url: null,
+          platform_id: null,
+        }),
+      );
 
       const result = await publishToPlatform(
         scopedDb,
@@ -369,10 +386,13 @@ describe("Publishing Pipeline Service", () => {
 
       const scopedDb = withCreatorScope(db, TEST_CREATOR_ID);
 
-      const adapter = createMockAdapter(PUBLISH_PLATFORM.StanStore, ok({
-        listing_url: "https://stan.store/product/parent-123",
-        platform_id: "ss-parent-123",
-      }));
+      const adapter = createMockAdapter(
+        PUBLISH_PLATFORM.StanStore,
+        ok({
+          listing_url: "https://stan.store/product/parent-123",
+          platform_id: "ss-parent-123",
+        }),
+      );
 
       const result = await publishToPlatform(
         scopedDb,
@@ -397,11 +417,14 @@ describe("Publishing Pipeline Service", () => {
       await insertProduct(env.DB, "prod-1", TEST_CREATOR_ID);
       const scopedDb = withCreatorScope(db, TEST_CREATOR_ID);
 
-      const adapter = createMockAdapter(PUBLISH_PLATFORM.StanStore, err({
-        type: "file_upload_rejected",
-        platform: "StanStore",
-        message: "File type not supported. Only PDF files are accepted.",
-      }));
+      const adapter = createMockAdapter(
+        PUBLISH_PLATFORM.StanStore,
+        err({
+          type: "file_upload_rejected",
+          platform: "StanStore",
+          message: "File type not supported. Only PDF files are accepted.",
+        }),
+      );
 
       const result = await publishToPlatform(
         scopedDb,
@@ -689,11 +712,14 @@ describe("Publishing Pipeline Service", () => {
 
   describe("StanStoreAdapter", () => {
     it("returns upload result on success", async () => {
-      const mockFetch = async (_url: string | URL | Request, _init?: RequestInit): Promise<Response> => {
-        return new Response(
-          JSON.stringify({ url: "https://stan.store/product/abc", id: "abc" }),
-          { status: 200, headers: { "Content-Type": "application/json" } },
-        );
+      const mockFetch = async (
+        _url: string | URL | Request,
+        _init?: RequestInit,
+      ): Promise<Response> => {
+        return new Response(JSON.stringify({ url: "https://stan.store/product/abc", id: "abc" }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        });
       };
 
       const adapter = createStanStoreAdapter({

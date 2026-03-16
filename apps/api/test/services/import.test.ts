@@ -12,7 +12,6 @@ import {
   extractSchemaOrgRecipe,
   extractVisibleText,
   parseDuration,
-  IMPORT_STATUS,
   type RecipeExtractor,
   type HttpFetcher,
   type WordPressClient,
@@ -20,22 +19,9 @@ import {
   type ImportServiceDeps,
   type WordPressRecipe,
 } from "../../src/services/import.js";
-import {
-  handleImportQueue,
-  type QueueMessage,
-  type QueueBatch,
-} from "../../src/services/queue-handlers.js";
-import type {
-  RecipeExtract,
-  ImportError,
-  Result,
-} from "@crumb/shared";
-import {
-  ok,
-  err,
-  createImportJobId,
-  createCreatorId,
-} from "@crumb/shared";
+import { handleImportQueue, type QueueMessage } from "../../src/services/queue-handlers.js";
+import type { RecipeExtract, ImportError, Result } from "@crumb/shared";
+import { ok, err, createImportJobId, createCreatorId } from "@crumb/shared";
 import type { Database } from "../../src/db/index.js";
 
 // @ts-expect-error -- Vite handles ?raw imports at build time
@@ -188,9 +174,7 @@ async function dropAllTables() {
 const now = new Date().toISOString();
 const CREATOR_ID = createCreatorId("creator-1");
 
-function makeCreator(
-  overrides: Partial<typeof schema.creators.$inferInsert> = {},
-) {
+function makeCreator(overrides: Partial<typeof schema.creators.$inferInsert> = {}) {
   return {
     id: CREATOR_ID as string,
     email: "test@example.com",
@@ -228,10 +212,7 @@ function createMockQueue(): ImportQueue & {
 function createMockFetcher(
   responses: Map<
     string,
-    Result<
-      { status: number; text: string; headers: Record<string, string> },
-      ImportError
-    >
+    Result<{ status: number; text: string; headers: Record<string, string> }, ImportError>
   >,
 ): HttpFetcher {
   return {
@@ -246,9 +227,7 @@ function createMockFetcher(
   };
 }
 
-function createSuccessExtractor(
-  extract: RecipeExtract,
-): RecipeExtractor {
+function createSuccessExtractor(extract: RecipeExtract): RecipeExtractor {
   return {
     async extract(_text: string) {
       return ok(extract);
@@ -256,9 +235,7 @@ function createSuccessExtractor(
   };
 }
 
-function createFailingExtractor(
-  error: ImportError,
-): RecipeExtractor {
+function createFailingExtractor(error: ImportError): RecipeExtractor {
   return {
     async extract(_text: string) {
       return err(error);
@@ -269,25 +246,16 @@ function createFailingExtractor(
 function createMockWordPress(
   opts: {
     testConnectionResult?: Result<{ name: string }, ImportError>;
-    detectPluginResult?: Result<
-      "WpRecipeMaker" | "TastyRecipes",
-      ImportError
-    >;
+    detectPluginResult?: Result<"WpRecipeMaker" | "TastyRecipes", ImportError>;
     fetchRecipesResult?: Result<readonly WordPressRecipe[], ImportError>;
   } = {},
 ): WordPressClient {
   return {
     async testConnection() {
-      return (
-        opts.testConnectionResult ??
-        ok({ name: "Test User" })
-      );
+      return opts.testConnectionResult ?? ok({ name: "Test User" });
     },
     async detectPlugin() {
-      return (
-        opts.detectPluginResult ??
-        ok("WpRecipeMaker" as const)
-      );
+      return opts.detectPluginResult ?? ok("WpRecipeMaker" as const);
     },
     async fetchRecipes() {
       return opts.fetchRecipesResult ?? ok([]);
@@ -295,9 +263,7 @@ function createMockWordPress(
   };
 }
 
-function makeExtract(
-  overrides: Partial<RecipeExtract> = {},
-): RecipeExtract {
+function makeExtract(overrides: Partial<RecipeExtract> = {}): RecipeExtract {
   return {
     title: "Test Recipe",
     description: "A test recipe description",
@@ -462,16 +428,12 @@ describe("Import Pipeline", () => {
     });
 
     it("removes script blocks", () => {
-      const result = extractVisibleText(
-        "<p>Hello</p><script>alert('hi')</script><p>World</p>",
-      );
+      const result = extractVisibleText("<p>Hello</p><script>alert('hi')</script><p>World</p>");
       expect(result).toBe("Hello World");
     });
 
     it("removes style blocks", () => {
-      const result = extractVisibleText(
-        "<p>Hello</p><style>body{color:red}</style><p>World</p>",
-      );
+      const result = extractVisibleText("<p>Hello</p><style>body{color:red}</style><p>World</p>");
       expect(result).toBe("Hello World");
     });
 
@@ -495,15 +457,11 @@ describe("Import Pipeline", () => {
     it("creates a pending job and enqueues it", async () => {
       const db = getDb();
       const queue = createMockQueue();
-      const service = createImportService(
-        createTestDeps(db, { queue }),
-      );
+      const service = createImportService(createTestDeps(db, { queue }));
 
-      const result = await service.createImportJob(
-        CREATOR_ID,
-        "FromUrl",
-        { url: "https://example.com/recipe" },
-      );
+      const result = await service.createImportJob(CREATOR_ID, "FromUrl", {
+        url: "https://example.com/recipe",
+      });
 
       expect(result.ok).toBe(true);
       if (result.ok) {
@@ -547,23 +505,17 @@ describe("Import Pipeline", () => {
           ],
         ]),
       );
-      const service = createImportService(
-        createTestDeps(db, { fetcher }),
-      );
+      const service = createImportService(createTestDeps(db, { fetcher }));
 
       // Create job
-      const createResult = await service.createImportJob(
-        CREATOR_ID,
-        "FromUrl",
-        { url: "https://example.com/recipe" },
-      );
+      const createResult = await service.createImportJob(CREATOR_ID, "FromUrl", {
+        url: "https://example.com/recipe",
+      });
       expect(createResult.ok).toBe(true);
       if (!createResult.ok) return;
 
       // Process job
-      const processResult = await service.processImportJob(
-        createResult.value.id,
-      );
+      const processResult = await service.processImportJob(createResult.value.id);
       expect(processResult.ok).toBe(true);
 
       // Verify job is now NeedsReview
@@ -593,26 +545,19 @@ describe("Import Pipeline", () => {
           ],
         ]),
       );
-      const service = createImportService(
-        createTestDeps(db, { fetcher }),
-      );
+      const service = createImportService(createTestDeps(db, { fetcher }));
 
       // Create and process
-      const createResult = await service.createImportJob(
-        CREATOR_ID,
-        "FromUrl",
-        { url: "https://example.com/recipe" },
-      );
+      const createResult = await service.createImportJob(CREATOR_ID, "FromUrl", {
+        url: "https://example.com/recipe",
+      });
       expect(createResult.ok).toBe(true);
       if (!createResult.ok) return;
 
       await service.processImportJob(createResult.value.id);
 
       // Confirm
-      const confirmResult = await service.confirmImport(
-        createResult.value.id,
-        CREATOR_ID,
-      );
+      const confirmResult = await service.confirmImport(createResult.value.id, CREATOR_ID);
       expect(confirmResult.ok).toBe(true);
       if (confirmResult.ok) {
         expect(confirmResult.value.recipeId).toBeTruthy();
@@ -733,10 +678,7 @@ describe("Import Pipeline", () => {
       const result = await service.rejectImport(jobId, CREATOR_ID);
       expect(result.ok).toBe(true);
 
-      const jobs = await db
-        .select()
-        .from(schema.importJobs)
-        .where(eq(schema.importJobs.id, jobId));
+      const jobs = await db.select().from(schema.importJobs).where(eq(schema.importJobs.id, jobId));
       const job = jobs[0];
       expect(job).toBeDefined();
       if (job) {
@@ -805,15 +747,11 @@ describe("Import Pipeline", () => {
           ],
         ]),
       );
-      const service = createImportService(
-        createTestDeps(db, { fetcher }),
-      );
+      const service = createImportService(createTestDeps(db, { fetcher }));
 
-      const createResult = await service.createImportJob(
-        CREATOR_ID,
-        "FromUrl",
-        { url: "https://example.com/recipe" },
-      );
+      const createResult = await service.createImportJob(CREATOR_ID, "FromUrl", {
+        url: "https://example.com/recipe",
+      });
       expect(createResult.ok).toBe(true);
       if (!createResult.ok) return;
 
@@ -827,15 +765,9 @@ describe("Import Pipeline", () => {
       expect(job).toBeDefined();
       if (job) {
         expect(job.status).toBe("NeedsReview");
-        const extractData = job.extract_data as Record<
-          string,
-          unknown
-        >;
+        const extractData = job.extract_data as Record<string, unknown>;
         expect(extractData["title"]).toBe("Classic Lemon Pasta");
-        const confidence = extractData["confidence"] as Record<
-          string,
-          unknown
-        >;
+        const confidence = extractData["confidence"] as Record<string, unknown>;
         expect(confidence["overall"]).toBe(0.95);
       }
     });
@@ -864,15 +796,11 @@ describe("Import Pipeline", () => {
           ],
         ]),
       );
-      const service = createImportService(
-        createTestDeps(db, { fetcher, extractor }),
-      );
+      const service = createImportService(createTestDeps(db, { fetcher, extractor }));
 
-      const createResult = await service.createImportJob(
-        CREATOR_ID,
-        "FromUrl",
-        { url: "https://example.com/cookies" },
-      );
+      const createResult = await service.createImportJob(CREATOR_ID, "FromUrl", {
+        url: "https://example.com/cookies",
+      });
       expect(createResult.ok).toBe(true);
       if (!createResult.ok) return;
 
@@ -886,13 +814,8 @@ describe("Import Pipeline", () => {
       expect(job).toBeDefined();
       if (job) {
         expect(job.status).toBe("NeedsReview");
-        const extractData = job.extract_data as Record<
-          string,
-          unknown
-        >;
-        expect(extractData["title"]).toBe(
-          "Grandma's Chocolate Chip Cookies",
-        );
+        const extractData = job.extract_data as Record<string, unknown>;
+        expect(extractData["title"]).toBe("Grandma's Chocolate Chip Cookies");
       }
     });
 
@@ -914,15 +837,11 @@ describe("Import Pipeline", () => {
           ],
         ]),
       );
-      const service = createImportService(
-        createTestDeps(db, { fetcher, extractor }),
-      );
+      const service = createImportService(createTestDeps(db, { fetcher, extractor }));
 
-      const createResult = await service.createImportJob(
-        CREATOR_ID,
-        "FromUrl",
-        { url: "https://example.com/not-recipe" },
-      );
+      const createResult = await service.createImportJob(CREATOR_ID, "FromUrl", {
+        url: "https://example.com/not-recipe",
+      });
       expect(createResult.ok).toBe(true);
       if (!createResult.ok) return;
 
@@ -959,15 +878,11 @@ describe("Import Pipeline", () => {
           ],
         ]),
       );
-      const service = createImportService(
-        createTestDeps(db, { fetcher, extractor }),
-      );
+      const service = createImportService(createTestDeps(db, { fetcher, extractor }));
 
-      const createResult = await service.createImportJob(
-        CREATOR_ID,
-        "FromUrl",
-        { url: "https://example.com/bad-recipe" },
-      );
+      const createResult = await service.createImportJob(CREATOR_ID, "FromUrl", {
+        url: "https://example.com/bad-recipe",
+      });
       expect(createResult.ok).toBe(true);
       if (!createResult.ok) return;
 
@@ -1003,15 +918,11 @@ describe("Import Pipeline", () => {
           });
         },
       };
-      const service = createImportService(
-        createTestDeps(db, { fetcher }),
-      );
+      const service = createImportService(createTestDeps(db, { fetcher }));
 
-      const createResult = await service.createImportJob(
-        CREATOR_ID,
-        "FromUrl",
-        { url: "https://example.com/slow" },
-      );
+      const createResult = await service.createImportJob(CREATOR_ID, "FromUrl", {
+        url: "https://example.com/slow",
+      });
       expect(createResult.ok).toBe(true);
       if (!createResult.ok) return;
 
@@ -1052,23 +963,16 @@ describe("Import Pipeline", () => {
           ],
         ]),
       );
-      const service = createImportService(
-        createTestDeps(db, { fetcher }),
-      );
+      const service = createImportService(createTestDeps(db, { fetcher }));
 
-      const createResult = await service.createImportJob(
-        CREATOR_ID,
-        "FromUrl",
-        { url: "https://example.com/recipe" },
-      );
+      const createResult = await service.createImportJob(CREATOR_ID, "FromUrl", {
+        url: "https://example.com/recipe",
+      });
       expect(createResult.ok).toBe(true);
       if (!createResult.ok) return;
 
       await service.processImportJob(createResult.value.id);
-      const confirmResult = await service.confirmImport(
-        createResult.value.id,
-        CREATOR_ID,
-      );
+      const confirmResult = await service.confirmImport(createResult.value.id, CREATOR_ID);
 
       expect(confirmResult.ok).toBe(true);
       if (!confirmResult.ok) return;
@@ -1100,24 +1004,14 @@ describe("Import Pipeline", () => {
       const ingredientGroups = await db
         .select()
         .from(schema.ingredientGroups)
-        .where(
-          eq(
-            schema.ingredientGroups.recipe_id,
-            confirmResult.value.recipeId,
-          ),
-        );
+        .where(eq(schema.ingredientGroups.recipe_id, confirmResult.value.recipeId));
       expect(ingredientGroups.length).toBeGreaterThan(0);
 
       // Verify instructions were created
       const instructionGroups = await db
         .select()
         .from(schema.instructionGroups)
-        .where(
-          eq(
-            schema.instructionGroups.recipe_id,
-            confirmResult.value.recipeId,
-          ),
-        );
+        .where(eq(schema.instructionGroups.recipe_id, confirmResult.value.recipeId));
       expect(instructionGroups.length).toBeGreaterThan(0);
     });
 
@@ -1167,11 +1061,9 @@ describe("Import Pipeline", () => {
         const db = getDb();
         const service = createImportService(createTestDeps(db));
 
-        const createResult = await service.createImportJob(
-          CREATOR_ID,
-          source,
-          { url: "https://example.com/content" },
-        );
+        const createResult = await service.createImportJob(CREATOR_ID, source, {
+          url: "https://example.com/content",
+        });
         expect(createResult.ok).toBe(true);
         if (!createResult.ok) return;
 
@@ -1204,14 +1096,9 @@ describe("Import Pipeline", () => {
         testConnectionResult: ok({ name: "Test User" }),
         detectPluginResult: ok("WpRecipeMaker" as const),
       });
-      const service = createImportService(
-        createTestDeps(db, { wordpress }),
-      );
+      const service = createImportService(createTestDeps(db, { wordpress }));
 
-      const result = await service.testWordPressConnection(
-        "https://myblog.com",
-        "app-password",
-      );
+      const result = await service.testWordPressConnection("https://myblog.com", "app-password");
       expect(result.ok).toBe(true);
       if (result.ok) {
         expect(result.value.name).toBe("Test User");
@@ -1224,14 +1111,9 @@ describe("Import Pipeline", () => {
       const wordpress = createMockWordPress({
         testConnectionResult: err({ type: "WordPressAuthFailed" }),
       });
-      const service = createImportService(
-        createTestDeps(db, { wordpress }),
-      );
+      const service = createImportService(createTestDeps(db, { wordpress }));
 
-      const result = await service.testWordPressConnection(
-        "https://myblog.com",
-        "bad-password",
-      );
+      const result = await service.testWordPressConnection("https://myblog.com", "bad-password");
       expect(result.ok).toBe(false);
     });
 
@@ -1255,9 +1137,7 @@ describe("Import Pipeline", () => {
       const wordpress = createMockWordPress({
         fetchRecipesResult: ok(wpRecipes),
       });
-      const service = createImportService(
-        createTestDeps(db, { wordpress }),
-      );
+      const service = createImportService(createTestDeps(db, { wordpress }));
 
       const result = await service.syncWordPress(
         CREATOR_ID,
@@ -1338,9 +1218,7 @@ describe("Import Pipeline", () => {
       const wordpress = createMockWordPress({
         fetchRecipesResult: ok(wpRecipes),
       });
-      const service = createImportService(
-        createTestDeps(db, { wordpress }),
-      );
+      const service = createImportService(createTestDeps(db, { wordpress }));
 
       const result = await service.syncWordPress(
         CREATOR_ID,
@@ -1406,9 +1284,7 @@ describe("Import Pipeline", () => {
       const wordpress = createMockWordPress({
         fetchRecipesResult: ok([]),
       });
-      const service = createImportService(
-        createTestDeps(db, { wordpress }),
-      );
+      const service = createImportService(createTestDeps(db, { wordpress }));
 
       const result = await service.syncWordPress(
         CREATOR_ID,
@@ -1465,7 +1341,7 @@ describe("Import Pipeline", () => {
         retry,
       };
 
-      const fetcher = createMockFetcher(
+      const _fetcher = createMockFetcher(
         new Map([
           [
             "https://example.com/recipe",
@@ -1478,7 +1354,7 @@ describe("Import Pipeline", () => {
         ]),
       );
 
-      const wordpress = createMockWordPress();
+      const _wordpress = createMockWordPress();
       const extractor = createSuccessExtractor(makeExtract());
 
       await handleImportQueue(
@@ -1550,10 +1426,7 @@ describe("Import Pipeline", () => {
     it("returns NotFound for non-existent job", async () => {
       const db = getDb();
       const service = createImportService(createTestDeps(db));
-      const result = await service.getImportJob(
-        createImportJobId("non-existent"),
-        CREATOR_ID,
-      );
+      const result = await service.getImportJob(createImportJobId("non-existent"), CREATOR_ID);
       expect(result.ok).toBe(false);
       if (!result.ok) {
         expect(result.error.type).toBe("NotFound");
@@ -1562,9 +1435,9 @@ describe("Import Pipeline", () => {
 
     it("returns NotFound when accessing another creator's job", async () => {
       const db = getDb();
-      await db.insert(schema.creators).values(
-        makeCreator({ id: "creator-2", email: "other@example.com" }),
-      );
+      await db
+        .insert(schema.creators)
+        .values(makeCreator({ id: "creator-2", email: "other@example.com" }));
       const jobId = createImportJobId("other-job");
       await db.insert(schema.importJobs).values({
         id: jobId,
@@ -1588,9 +1461,9 @@ describe("Import Pipeline", () => {
   describe("listImportJobs", () => {
     it("returns only jobs for the specified creator", async () => {
       const db = getDb();
-      await db.insert(schema.creators).values(
-        makeCreator({ id: "creator-2", email: "other@example.com" }),
-      );
+      await db
+        .insert(schema.creators)
+        .values(makeCreator({ id: "creator-2", email: "other@example.com" }));
 
       // Creator 1's job
       await db.insert(schema.importJobs).values({
@@ -1645,15 +1518,11 @@ describe("Import Pipeline", () => {
           });
         },
       };
-      const service = createImportService(
-        createTestDeps(db, { fetcher }),
-      );
+      const service = createImportService(createTestDeps(db, { fetcher }));
 
-      const createResult = await service.createImportJob(
-        CREATOR_ID,
-        "FromUrl",
-        { url: "https://slow-site.com" },
-      );
+      const createResult = await service.createImportJob(CREATOR_ID, "FromUrl", {
+        url: "https://slow-site.com",
+      });
       expect(createResult.ok).toBe(true);
       if (!createResult.ok) return;
 
@@ -1671,9 +1540,7 @@ describe("Import Pipeline", () => {
         expect(job.status).toBe("Failed");
         expect(job.error_type).toBe("FetchFailed");
         const errorData = job.error_data as Record<string, unknown>;
-        expect(errorData["reason"]).toContain(
-          "Could not reach this URL",
-        );
+        expect(errorData["reason"]).toContain("Could not reach this URL");
       }
     }, 15000);
 
@@ -1696,15 +1563,11 @@ describe("Import Pipeline", () => {
           ],
         ]),
       );
-      const service = createImportService(
-        createTestDeps(db, { fetcher, extractor }),
-      );
+      const service = createImportService(createTestDeps(db, { fetcher, extractor }));
 
-      const createResult = await service.createImportJob(
-        CREATOR_ID,
-        "FromUrl",
-        { url: "https://example.com/empty" },
-      );
+      const createResult = await service.createImportJob(CREATOR_ID, "FromUrl", {
+        url: "https://example.com/empty",
+      });
       expect(createResult.ok).toBe(true);
       if (!createResult.ok) return;
 
@@ -1720,9 +1583,7 @@ describe("Import Pipeline", () => {
         expect(job.status).toBe("Failed");
         expect(job.error_type).toBe("ExtractionFailed");
         const errorData = job.error_data as Record<string, unknown>;
-        expect(errorData["reason"]).toContain(
-          "couldn't extract a recipe",
-        );
+        expect(errorData["reason"]).toContain("couldn't extract a recipe");
       }
     });
   });

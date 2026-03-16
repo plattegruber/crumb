@@ -120,9 +120,7 @@ describe("exchangeCode", () => {
   });
 
   it("returns error on failed exchange", async () => {
-    const fetchFn = mockFetch(async () =>
-      jsonResponse({ errors: ["Invalid code"] }, 422),
-    );
+    const fetchFn = mockFetch(async () => jsonResponse({ errors: ["Invalid code"] }, 422));
 
     const result = await exchangeCode(
       "bad-code",
@@ -177,12 +175,7 @@ describe("refreshToken", () => {
       return jsonResponse(tokenResponse);
     });
 
-    const result = await refreshToken(
-      "old-refresh-token",
-      "client123",
-      "secret456",
-      fetchFn,
-    );
+    const result = await refreshToken("old-refresh-token", "client123", "secret456", fetchFn);
 
     expect(result.ok).toBe(true);
     if (result.ok) {
@@ -196,12 +189,7 @@ describe("refreshToken", () => {
       jsonResponse({ errors: ["The access token is invalid"] }, 401),
     );
 
-    const result = await refreshToken(
-      "invalid-refresh-token",
-      "client123",
-      "secret456",
-      fetchFn,
-    );
+    const result = await refreshToken("invalid-refresh-token", "client123", "secret456", fetchFn);
 
     expect(result.ok).toBe(false);
     if (!result.ok) {

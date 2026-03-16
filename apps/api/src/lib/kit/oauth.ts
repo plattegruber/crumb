@@ -158,9 +158,7 @@ async function tokenRequest(
       const errorBody = (await response.json()) as {
         errors?: readonly string[];
       };
-      messages = Array.isArray(errorBody.errors)
-        ? errorBody.errors
-        : [`HTTP ${response.status}`];
+      messages = Array.isArray(errorBody.errors) ? errorBody.errors : [`HTTP ${response.status}`];
     } catch {
       messages = [`HTTP ${response.status}`];
     }
@@ -172,10 +170,7 @@ async function tokenRequest(
 
     return err({
       status: response.status,
-      code:
-        response.status === 401
-          ? KIT_API_ERROR_CODE.Unauthorized
-          : KIT_API_ERROR_CODE.Unknown,
+      code: response.status === 401 ? KIT_API_ERROR_CODE.Unauthorized : KIT_API_ERROR_CODE.Unknown,
       messages,
     });
   }
@@ -221,13 +216,7 @@ export async function deriveEncryptionKey(
   masterSecret: BufferSource,
   salt: BufferSource,
 ): Promise<CryptoKey> {
-  const baseKey = await crypto.subtle.importKey(
-    "raw",
-    masterSecret,
-    "HKDF",
-    false,
-    ["deriveKey"],
-  );
+  const baseKey = await crypto.subtle.importKey("raw", masterSecret, "HKDF", false, ["deriveKey"]);
 
   return crypto.subtle.deriveKey(
     {
@@ -248,18 +237,11 @@ export async function deriveEncryptionKey(
  *
  * Returns the IV prepended to the ciphertext, base64-encoded.
  */
-export async function encryptToken(
-  plaintext: string,
-  key: CryptoKey,
-): Promise<string> {
+export async function encryptToken(plaintext: string, key: CryptoKey): Promise<string> {
   const iv = crypto.getRandomValues(new Uint8Array(IV_LENGTH));
   const encoded = new TextEncoder().encode(plaintext);
 
-  const ciphertext = await crypto.subtle.encrypt(
-    { name: "AES-GCM", iv },
-    key,
-    encoded,
-  );
+  const ciphertext = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, encoded);
 
   // Prepend IV to ciphertext
   const combined = new Uint8Array(iv.length + ciphertext.byteLength);
@@ -291,11 +273,7 @@ export async function decryptToken(
   const ciphertext = combined.slice(IV_LENGTH);
 
   try {
-    const decrypted = await crypto.subtle.decrypt(
-      { name: "AES-GCM", iv },
-      key,
-      ciphertext,
-    );
+    const decrypted = await crypto.subtle.decrypt({ name: "AES-GCM", iv }, key, ciphertext);
     return ok(new TextDecoder().decode(decrypted));
   } catch {
     return err("Decryption failed");

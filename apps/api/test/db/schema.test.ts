@@ -147,9 +147,7 @@ describe("Database schema", () => {
         "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE '_cf_%' AND name NOT LIKE 'd1_%' ORDER BY name",
       ).all();
 
-      const tableNames = result.results.map(
-        (r: Record<string, unknown>) => r["name"] as string,
-      );
+      const tableNames = result.results.map((r: Record<string, unknown>) => r["name"] as string);
 
       expect(tableNames).toContain("creators");
       expect(tableNames).toContain("brand_kits");
@@ -256,10 +254,7 @@ describe("Database schema", () => {
       });
 
       await db.insert(schema.recipes).values(recipe);
-      const rows = await db
-        .select()
-        .from(schema.recipes)
-        .where(eq(schema.recipes.id, "recipe-1"));
+      const rows = await db.select().from(schema.recipes).where(eq(schema.recipes.id, "recipe-1"));
 
       expect(rows).toHaveLength(1);
       const row = rows[0];
@@ -289,16 +284,16 @@ describe("Database schema", () => {
 
       // Second recipe with same creator_id + slug should fail
       await expect(
-        db.insert(schema.recipes).values(
-          makeRecipe({ id: "recipe-2" }),
-        ),
+        db.insert(schema.recipes).values(makeRecipe({ id: "recipe-2" })),
       ).rejects.toThrow();
     });
 
     it("allows same slug for different creators", async () => {
       const db = getDb();
       await db.insert(schema.creators).values(makeCreator());
-      await db.insert(schema.creators).values(makeCreator({ id: "creator-2", email: "other@example.com" }));
+      await db
+        .insert(schema.creators)
+        .values(makeCreator({ id: "creator-2", email: "other@example.com" }));
       await db.insert(schema.recipes).values(makeRecipe());
       await db
         .insert(schema.recipes)
@@ -388,9 +383,7 @@ describe("Database schema", () => {
       const inst = instructions[0];
       expect(inst).toBeDefined();
       if (inst) {
-        expect(inst.body).toBe(
-          "Bring a large pot of salted water to a boil.",
-        );
+        expect(inst.body).toBe("Bring a large pot of salted water to a boil.");
       }
     });
   });
@@ -404,9 +397,7 @@ describe("Database schema", () => {
       const db = getDb();
       await db.insert(schema.creators).values(makeCreator());
       await db.insert(schema.recipes).values(makeRecipe());
-      await db
-        .insert(schema.recipes)
-        .values(makeRecipe({ id: "recipe-2", slug: "garlic-bread" }));
+      await db.insert(schema.recipes).values(makeRecipe({ id: "recipe-2", slug: "garlic-bread" }));
 
       await db.insert(schema.collections).values({
         id: "col-1",
@@ -671,9 +662,7 @@ describe("Database schema", () => {
 
       // Enable FK enforcement for cascade and delete
       // Foreign keys are enabled by default in D1
-      await db
-        .delete(schema.productBase)
-        .where(eq(schema.productBase.id, "product-del"));
+      await db.delete(schema.productBase).where(eq(schema.productBase.id, "product-del"));
 
       packs = await db
         .select()
@@ -695,9 +684,7 @@ describe("Database schema", () => {
 
       // Enable FK enforcement for cascade
       // Foreign keys are enabled by default in D1
-      await db
-        .delete(schema.creators)
-        .where(eq(schema.creators.id, "creator-1"));
+      await db.delete(schema.creators).where(eq(schema.creators.id, "creator-1"));
 
       const recipes = await db.select().from(schema.recipes);
       expect(recipes).toHaveLength(0);
@@ -718,9 +705,7 @@ describe("Database schema", () => {
       });
 
       // Foreign keys are enabled by default in D1
-      await db
-        .delete(schema.recipes)
-        .where(eq(schema.recipes.id, "recipe-1"));
+      await db.delete(schema.recipes).where(eq(schema.recipes.id, "recipe-1"));
 
       const photos = await db.select().from(schema.photos);
       expect(photos).toHaveLength(0);
@@ -747,9 +732,7 @@ describe("Database schema", () => {
       });
 
       // Foreign keys are enabled by default in D1
-      await db
-        .delete(schema.recipes)
-        .where(eq(schema.recipes.id, "recipe-1"));
+      await db.delete(schema.recipes).where(eq(schema.recipes.id, "recipe-1"));
 
       const groups = await db.select().from(schema.ingredientGroups);
       const ings = await db.select().from(schema.ingredients);
@@ -794,9 +777,7 @@ describe("Database schema", () => {
 
       expect(events).toHaveLength(2);
 
-      const purchaseEvent = events.find(
-        (e) => e.event_type === "PurchaseAttribution",
-      );
+      const purchaseEvent = events.find((e) => e.event_type === "PurchaseAttribution");
       expect(purchaseEvent).toBeDefined();
       if (purchaseEvent) {
         expect(purchaseEvent.event_data).toEqual({

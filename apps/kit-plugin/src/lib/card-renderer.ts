@@ -13,12 +13,7 @@
  */
 
 import type { DietaryTag, HexColor } from "@crumb/shared";
-import type {
-  BrandKit,
-  CardRenderOptions,
-  DisplayMode,
-  PluginRecipe,
-} from "@/lib/types";
+import type { BrandKit, CardRenderOptions, DisplayMode, PluginRecipe } from "@/lib/types";
 import { DISPLAY_MODE } from "@/lib/types";
 import { renderDietaryBadges } from "@/lib/dietary-icons";
 import { renderSaveButton } from "@/lib/cta-generator";
@@ -52,10 +47,7 @@ function formatQuantity(q: {
 // Font helpers
 // ---------------------------------------------------------------------------
 
-function buildFontStack(
-  family: string,
-  fallbacks: readonly string[],
-): string {
+function buildFontStack(family: string, fallbacks: readonly string[]): string {
   const all = [family, ...fallbacks];
   return all.map((f) => (f.includes(" ") ? `'${f}'` : f)).join(", ");
 }
@@ -66,9 +58,7 @@ function getHeadingFontStack(brand: BrandKit | null): string {
   }
   return buildFontStack(
     brand.heading_font.family,
-    brand.heading_font.fallback.length > 0
-      ? brand.heading_font.fallback
-      : ["Georgia", "serif"],
+    brand.heading_font.fallback.length > 0 ? brand.heading_font.fallback : ["Georgia", "serif"],
   );
 }
 
@@ -78,9 +68,7 @@ function getBodyFontStack(brand: BrandKit | null): string {
   }
   return buildFontStack(
     brand.body_font.family,
-    brand.body_font.fallback.length > 0
-      ? brand.body_font.fallback
-      : ["Arial", "sans-serif"],
+    brand.body_font.fallback.length > 0 ? brand.body_font.fallback : ["Arial", "sans-serif"],
   );
 }
 
@@ -95,10 +83,7 @@ function getPrimaryColor(brand: BrandKit | null): HexColor {
 // Section renderers
 // ---------------------------------------------------------------------------
 
-function renderPhoto(
-  recipe: PluginRecipe,
-  maxHeight: number,
-): string {
+function renderPhoto(recipe: PluginRecipe, maxHeight: number): string {
   const photo = recipe.photos.length > 0 ? recipe.photos[0] : null;
   if (photo === null || photo === undefined) {
     return "";
@@ -137,11 +122,7 @@ function renderTitle(
   ].join("");
 }
 
-function renderDescription(
-  recipe: PluginRecipe,
-  bodyFont: string,
-  truncate: boolean,
-): string {
+function renderDescription(recipe: PluginRecipe, bodyFont: string, truncate: boolean): string {
   if (recipe.description === null) {
     return "";
   }
@@ -166,11 +147,7 @@ function renderDescription(
   ].join("");
 }
 
-function renderBadges(
-  recipe: PluginRecipe,
-  bodyFont: string,
-  displayMode: DisplayMode,
-): string {
+function renderBadges(recipe: PluginRecipe, bodyFont: string, displayMode: DisplayMode): string {
   const parts: string[] = [];
 
   // Cook time badge
@@ -201,13 +178,9 @@ function renderBadges(
     return "";
   }
 
-  return [
-    `<tr>`,
-    `<td style="padding:4px 20px 8px 20px;">`,
-    parts.join(""),
-    `</td>`,
-    `</tr>`,
-  ].join("");
+  return [`<tr>`, `<td style="padding:4px 20px 8px 20px;">`, parts.join(""), `</td>`, `</tr>`].join(
+    "",
+  );
 }
 
 function renderIngredientsList(
@@ -241,9 +214,7 @@ function renderIngredientsList(
   }
 
   const displayCount =
-    maxItems !== null
-      ? Math.min(maxItems, allIngredients.length)
-      : allIngredients.length;
+    maxItems !== null ? Math.min(maxItems, allIngredients.length) : allIngredients.length;
   const remaining = allIngredients.length - displayCount;
   const displayed = allIngredients.slice(0, displayCount);
 
@@ -275,10 +246,7 @@ function renderIngredientsList(
   ].join("");
 }
 
-function renderInstructions(
-  recipe: PluginRecipe,
-  bodyFont: string,
-): string {
+function renderInstructions(recipe: PluginRecipe, bodyFont: string): string {
   const allInstructions: Array<{ readonly body: string }> = [];
 
   for (const group of recipe.instructions) {
@@ -309,10 +277,7 @@ function renderInstructions(
   ].join("");
 }
 
-function renderNutritionSummary(
-  recipe: PluginRecipe,
-  bodyFont: string,
-): string {
+function renderNutritionSummary(recipe: PluginRecipe, bodyFont: string): string {
   if (recipe.nutrition === null) {
     return "";
   }
@@ -321,16 +286,24 @@ function renderNutritionSummary(
   const items: string[] = [];
 
   if (n.calories !== null) {
-    items.push(`<td style="padding:4px 8px;text-align:center;font-family:${bodyFont};font-size:13px;color:#374151;"><strong>${n.calories}</strong><br/>Calories</td>`);
+    items.push(
+      `<td style="padding:4px 8px;text-align:center;font-family:${bodyFont};font-size:13px;color:#374151;"><strong>${n.calories}</strong><br/>Calories</td>`,
+    );
   }
   if (n.protein_g !== null) {
-    items.push(`<td style="padding:4px 8px;text-align:center;font-family:${bodyFont};font-size:13px;color:#374151;"><strong>${n.protein_g}g</strong><br/>Protein</td>`);
+    items.push(
+      `<td style="padding:4px 8px;text-align:center;font-family:${bodyFont};font-size:13px;color:#374151;"><strong>${n.protein_g}g</strong><br/>Protein</td>`,
+    );
   }
   if (n.total_carbs_g !== null) {
-    items.push(`<td style="padding:4px 8px;text-align:center;font-family:${bodyFont};font-size:13px;color:#374151;"><strong>${n.total_carbs_g}g</strong><br/>Carbs</td>`);
+    items.push(
+      `<td style="padding:4px 8px;text-align:center;font-family:${bodyFont};font-size:13px;color:#374151;"><strong>${n.total_carbs_g}g</strong><br/>Carbs</td>`,
+    );
   }
   if (n.total_fat_g !== null) {
-    items.push(`<td style="padding:4px 8px;text-align:center;font-family:${bodyFont};font-size:13px;color:#374151;"><strong>${n.total_fat_g}g</strong><br/>Fat</td>`);
+    items.push(
+      `<td style="padding:4px 8px;text-align:center;font-family:${bodyFont};font-size:13px;color:#374151;"><strong>${n.total_fat_g}g</strong><br/>Fat</td>`,
+    );
   }
 
   if (items.length === 0) {

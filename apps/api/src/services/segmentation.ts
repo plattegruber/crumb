@@ -14,19 +14,13 @@ import type {
   DietaryTagState,
   RecipeId,
   CreatorId,
-  SegmentStat,
 } from "@crumb/shared";
 import { DIETARY_TAG } from "@crumb/shared";
 import { createLogger, type Logger } from "../lib/logger.js";
 
 import type { KitClientConfig } from "../lib/kit/client.js";
-import {
-  listTags,
-  getOrCreateTag,
-  tagSubscriber,
-  listForms,
-} from "../lib/kit/client.js";
-import type { KitApiError, KitTag } from "../lib/kit/types.js";
+import { listTags, getOrCreateTag, tagSubscriber, listForms } from "../lib/kit/client.js";
+import type { KitTag } from "../lib/kit/types.js";
 import { dietaryTagName } from "../lib/kit/tag-conventions.js";
 import type { DrizzleD1Database } from "drizzle-orm/d1";
 import { eq } from "drizzle-orm";
@@ -46,10 +40,7 @@ export interface SegmentationError {
   readonly message: string;
 }
 
-function segError(
-  code: SegmentationError["code"],
-  message: string,
-): SegmentationError {
+function segError(code: SegmentationError["code"], message: string): SegmentationError {
   return { code, message };
 }
 
@@ -538,14 +529,9 @@ const PROCESSED_OIL_KEYWORDS: readonly string[] = [
  * Matching is case-insensitive and uses word-boundary-aware matching for
  * multi-word keywords and substring matching for single words.
  */
-function ingredientContainsAny(
-  ingredient: Ingredient,
-  keywords: readonly string[],
-): boolean {
+function ingredientContainsAny(ingredient: Ingredient, keywords: readonly string[]): boolean {
   const itemLower = ingredient.item.toLowerCase();
-  const notesLower = ingredient.notes !== null
-    ? ingredient.notes.toLowerCase()
-    : "";
+  const notesLower = ingredient.notes !== null ? ingredient.notes.toLowerCase() : "";
 
   for (const keyword of keywords) {
     if (textContainsKeyword(itemLower, keyword) || textContainsKeyword(notesLower, keyword)) {
@@ -569,10 +555,7 @@ function textContainsKeyword(text: string, keyword: string): boolean {
   // a non-word character (or start of string), and the character after
   // should also be a non-word character (or end of string).
   const charBefore = idx > 0 ? text[idx - 1] : " ";
-  const charAfter =
-    idx + keyword.length < text.length
-      ? text[idx + keyword.length]
-      : " ";
+  const charAfter = idx + keyword.length < text.length ? text[idx + keyword.length] : " ";
 
   const boundaryBefore = charBefore === undefined || !isWordChar(charBefore);
   const boundaryAfter = charAfter === undefined || !isWordChar(charAfter);
@@ -660,7 +643,10 @@ export function inferDietaryTags(
     if (hasOats(ingredients)) {
       // Oats are ambiguous — add tag but flag it
       tags.add(DIETARY_TAG.GlutenFree);
-      ambiguous.set(DIETARY_TAG.GlutenFree, "Contains oats which may or may not be gluten-free depending on processing");
+      ambiguous.set(
+        DIETARY_TAG.GlutenFree,
+        "Contains oats which may or may not be gluten-free depending on processing",
+      );
     } else {
       tags.add(DIETARY_TAG.GlutenFree);
     }
@@ -790,12 +776,7 @@ export async function inferAndStoreDietaryTags(
   recipeId: RecipeId,
   creatorId: CreatorId,
   logger: Logger = defaultLogger,
-): Promise<
-  Result<
-    DietaryTagInferenceResult,
-    SegmentationError
-  >
-> {
+): Promise<Result<DietaryTagInferenceResult, SegmentationError>> {
   // We need to import ingredient-related tables here to avoid circular deps
   const { ingredientGroups, ingredients: ingredientsTable } = await import("../db/schema.js");
 
@@ -830,7 +811,7 @@ export async function inferAndStoreDietaryTags(
 
   const groupIds = groups.map((g) => g.id);
 
-  let ingredientRows: Array<{
+  const ingredientRows: Array<{
     id: string;
     group_id: number;
     quantity_type: string | null;
@@ -946,9 +927,7 @@ export async function computeSegmentProfile(
 
   for (const dietTag of dietaryTagValues) {
     const kitTagName = dietaryTagName(dietTag);
-    const matchingTag = allKitTags.find(
-      (t: KitTag) => t.name === kitTagName,
-    );
+    const matchingTag = allKitTags.find((t: KitTag) => t.name === kitTagName);
 
     // If no Kit tag exists for this dietary tag, report zero subscribers
     const subscriberCount = matchingTag ? 1 : 0;
@@ -975,9 +954,7 @@ export async function computeSegmentProfile(
 
   // 3. Upsert into segmentProfiles table (replace previous profile)
   // First try to delete any existing profile
-  await db
-    .delete(segmentProfiles)
-    .where(eq(segmentProfiles.creator_id, creatorId));
+  await db.delete(segmentProfiles).where(eq(segmentProfiles.creator_id, creatorId));
 
   // Then insert the new profile
   await db.insert(segmentProfiles).values({

@@ -9,7 +9,6 @@ import {
   instructionGroup,
   classification,
   hexColor,
-  photo,
 } from "./helpers";
 import { DIETARY_TAG } from "@crumb/shared";
 
@@ -149,16 +148,7 @@ describe("renderCard — Standard mode", () => {
   it("shows exactly 8 ingredients when recipe has exactly 8", () => {
     const recipe = pluginRecipe({
       ingredients: [
-        ingredientGroup([
-          "item1",
-          "item2",
-          "item3",
-          "item4",
-          "item5",
-          "item6",
-          "item7",
-          "item8",
-        ]),
+        ingredientGroup(["item1", "item2", "item3", "item4", "item5", "item6", "item7", "item8"]),
       ],
     });
 
@@ -178,10 +168,7 @@ describe("renderCard — Standard mode", () => {
 
   it("renders dietary icons", () => {
     const recipe = pluginRecipe({
-      classification: classification([
-        DIETARY_TAG.Vegetarian,
-        DIETARY_TAG.GlutenFree,
-      ]),
+      classification: classification([DIETARY_TAG.Vegetarian, DIETARY_TAG.GlutenFree]),
     });
 
     const html = renderCard(recipe, standardOptions(), null);
@@ -256,13 +243,7 @@ describe("renderCard — Full mode", () => {
 
   it("renders complete numbered instructions", () => {
     const recipe = pluginRecipe({
-      instructions: [
-        instructionGroup([
-          "Step one.",
-          "Step two.",
-          "Step three.",
-        ]),
-      ],
+      instructions: [instructionGroup(["Step one.", "Step two.", "Step three."])],
     });
 
     const html = renderCard(recipe, fullOptions(), null);

@@ -7,12 +7,7 @@
 
 import type { RecipeId } from "@crumb/shared";
 import type { ApiClient } from "@/lib/api-client";
-import type {
-  BrandKit,
-  CardRenderOptions,
-  DisplayMode,
-  PluginRecipe,
-} from "@/lib/types";
+import type { BrandKit, CardRenderOptions, DisplayMode, PluginRecipe } from "@/lib/types";
 import { DISPLAY_MODE } from "@/lib/types";
 import { renderCard } from "@/lib/card-renderer";
 

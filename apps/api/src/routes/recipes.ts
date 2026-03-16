@@ -78,9 +78,10 @@ recipeRoutes.get("/", async (c) => {
     cuisine: query["cuisine"] ?? undefined,
     mealType: (query["meal_type"] as MealType) ?? undefined,
     season: (query["season"] as Season) ?? undefined,
-    maxCookTimeMinutes: query["max_cook_time_minutes"] !== undefined
-      ? parseInt(query["max_cook_time_minutes"], 10)
-      : undefined,
+    maxCookTimeMinutes:
+      query["max_cook_time_minutes"] !== undefined
+        ? parseInt(query["max_cook_time_minutes"], 10)
+        : undefined,
     collectionId: query["collection_id"] ?? undefined,
     dietaryTags: query["dietary_tags"]
       ? (query["dietary_tags"].split(",") as DietaryTag[])

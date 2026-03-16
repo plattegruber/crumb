@@ -24,10 +24,7 @@ export function generateSlug(title: string): string {
  * If the base slug is not taken, returns it as-is.
  * Otherwise appends -2, -3, etc. until a unique one is found.
  */
-export function resolveSlugConflict(
-  baseSlug: string,
-  existingSlugs: ReadonlySet<string>,
-): string {
+export function resolveSlugConflict(baseSlug: string, existingSlugs: ReadonlySet<string>): string {
   if (!existingSlugs.has(baseSlug)) {
     return baseSlug;
   }

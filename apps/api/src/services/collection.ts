@@ -176,9 +176,7 @@ export async function deleteCollection(
   }
 
   // Delete collection recipes
-  await db
-    .delete(collectionRecipes)
-    .where(eq(collectionRecipes.collection_id, collectionId));
+  await db.delete(collectionRecipes).where(eq(collectionRecipes.collection_id, collectionId));
 
   // Delete collection
   await db

@@ -5,7 +5,6 @@
 // ---------------------------------------------------------------------------
 
 import type { Database } from "../db/index.js";
-import type { ImportJobId } from "@crumb/shared";
 import { createImportJobId } from "@crumb/shared";
 import { createLogger } from "../lib/logger.js";
 import {
@@ -41,10 +40,7 @@ export interface QueueBatch {
  * 2. Call processImportJob on the import service
  * 3. Ack on success, retry on error
  */
-export async function handleImportQueue(
-  batch: QueueBatch,
-  deps: QueueHandlerDeps,
-): Promise<void> {
+export async function handleImportQueue(batch: QueueBatch, deps: QueueHandlerDeps): Promise<void> {
   const logger = createLogger("queue-handler");
   const fetcher = createDefaultFetcher();
   const wordpress = createDefaultWordPressClient(fetcher);
@@ -61,11 +57,7 @@ export async function handleImportQueue(
   for (const message of batch.messages) {
     try {
       const body = message.body;
-      if (
-        body === null ||
-        typeof body !== "object" ||
-        !("importJobId" in body)
-      ) {
+      if (body === null || typeof body !== "object" || !("importJobId" in body)) {
         // Invalid message format — ack to avoid infinite retries
         message.ack();
         continue;

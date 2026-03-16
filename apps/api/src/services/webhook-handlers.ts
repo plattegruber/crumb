@@ -199,12 +199,7 @@ async function handlePurchaseCompleted(
   // Use the transaction_id as a proxy for the product ID for attribution
   const productId = purchase.transaction_id;
 
-  const result = await computeRevenueAttribution(
-    db,
-    creatorId,
-    String(subscriberId),
-    productId,
-  );
+  const result = await computeRevenueAttribution(db, creatorId, String(subscriberId), productId);
 
   if (!result.ok) {
     return err({

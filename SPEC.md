@@ -33,6 +33,7 @@
 The system is a vertical layer on top of Kit's infrastructure. It does not deliver emails, manage sequences, or process payments. Kit owns those primitives. [PRODUCT] owns the recipe intelligence that makes Kit useful for food creators.
 
 The system consists of:
+
 - A **web application** (the main creator dashboard)
 - A **Kit App Store plugin** (injected into Kit's email editor)
 - An **import pipeline** (AI-powered recipe extraction from URLs, social media, video, and images)
@@ -741,6 +742,7 @@ The following invariants must be enforced at the application layer. They are nor
 8. `SegmentProfile` records are replaced entirely on each computation — previous profiles for the same `creator_id` are superseded, not merged.
 9. `Quantity.Fraction` and `Quantity.Mixed` must have `denominator ≠ 0` and must be in lowest terms (GCD of numerator and denominator is 1).
 10. `SubscriptionTier.Free` creators are limited to 25 active `Recipe` records, 1 `Published` product, and 3 recipe card email sends per calendar month. These limits are enforced by the application layer, not the schema.
+
 ## 3. System Components
 
 ### 3.1 Component Overview
@@ -812,6 +814,7 @@ Kit App Store Plugin (runs inside Kit's email editor — separate JS bundle):
 Kit uses standard OAuth 2.0 authorization code flow for App Store apps.
 
 **Scopes required:**
+
 - `subscribers:read`
 - `subscribers:write`
 - `broadcasts:read`
@@ -877,6 +880,7 @@ deleteWebhook(id: string): void
 ```
 
 **BroadcastDraftParams:**
+
 ```
 {
   subject:        string
@@ -892,13 +896,13 @@ deleteWebhook(id: string): void
 
 On creator account creation, [PRODUCT] registers webhooks for the following Kit events via Kit's webhook API:
 
-| Kit Event | Handler |
-|-----------|---------|
-| `subscriber.activated` | Segmentation Engine: apply dietary preference from custom fields |
-| `subscriber.tag_added` | Analytics Engine: record tag as engagement event |
-| `subscriber.unsubscribed` | Segmentation Engine: remove from segment counts |
-| `purchase.completed` | Analytics Engine: record purchase attribution event |
-| `link.clicked` | Analytics Engine: if link is a Save This Recipe CTA, record save event |
+| Kit Event                 | Handler                                                                |
+| ------------------------- | ---------------------------------------------------------------------- |
+| `subscriber.activated`    | Segmentation Engine: apply dietary preference from custom fields       |
+| `subscriber.tag_added`    | Analytics Engine: record tag as engagement event                       |
+| `subscriber.unsubscribed` | Segmentation Engine: remove from segment counts                        |
+| `purchase.completed`      | Analytics Engine: record purchase attribution event                    |
+| `link.clicked`            | Analytics Engine: if link is a Save This Recipe CTA, record save event |
 
 Webhook payloads are verified using HMAC-SHA256 with the Kit webhook secret. Unverified payloads are rejected with `403`. Verified payloads are acknowledged with `200` immediately and processed asynchronously via a job queue.
 
@@ -935,6 +939,7 @@ The Recipe Card Plugin is a Kit App Store plugin — a JavaScript bundle that Ki
 ### 5.1 Plugin Registration
 
 The plugin is registered in the Kit App Store with:
+
 - Block name: "Recipe Card"
 - Block icon: fork-and-knife SVG
 - Callback URL: `https://app.[product-domain].com/plugin/kit/recipe-card`
@@ -957,6 +962,7 @@ Block is in the email. Creator can click to reopen and swap the recipe or change
 ### 5.3 Card Rendering
 
 The plugin renders recipe cards as HTML/CSS compatible with email clients. Constraints:
+
 - No external CSS frameworks
 - All styles inline (`style` attributes)
 - No JavaScript in rendered output (email clients do not execute JS)
@@ -966,7 +972,8 @@ The plugin renders recipe cards as HTML/CSS compatible with email clients. Const
 
 **Card structure by display mode:**
 
-*Compact:*
+_Compact:_
+
 ```
 [Primary photo — full width, max-height 200px]
 [Recipe title — heading font, 22px]
@@ -974,7 +981,8 @@ The plugin renders recipe cards as HTML/CSS compatible with email clients. Const
 [Save This Recipe button]
 ```
 
-*Standard:*
+_Standard:_
+
 ```
 [Primary photo — full width, max-height 280px]
 [Recipe title — heading font, 22px]
@@ -984,7 +992,8 @@ The plugin renders recipe cards as HTML/CSS compatible with email clients. Const
 [Save This Recipe button]
 ```
 
-*Full:*
+_Full:_
+
 ```
 [Primary photo — full width, max-height 320px]
 [Recipe title — heading font, 24px]
@@ -1009,6 +1018,7 @@ https://app.[product-domain].com/save/{creator_id}/{recipe_slug}?ck={kit_subscri
 Kit replaces `{kit_subscriber_id_placeholder}` with the subscriber's Kit ID at send time using Kit's subscriber variable syntax.
 
 When a subscriber clicks the URL:
+
 1. [PRODUCT] resolves the recipe and subscriber.
 2. Calls `tagSubscriber` with `recipe:saved:{recipe_slug}` and all of the recipe's confirmed dietary tags (e.g. `dietary:gluten-free`).
 3. Updates the subscriber's `last_recipe_saved` and `last_recipe_saved_at` custom fields.
@@ -1025,6 +1035,7 @@ Response time for steps 1–5 must complete within 500ms to avoid a noticeable r
 ### 6.1 CRUD Operations
 
 **Create Recipe**
+
 - `slug` is generated from `title` (URL-safe, lowercase, hyphens). If slug conflicts with an existing recipe for the creator, append a numeric suffix (`lemon-pasta-2`).
 - `dietary_tags_confirmed` defaults to `false`.
 - If `status` is not provided, defaults to `draft`.
@@ -1032,17 +1043,20 @@ Response time for steps 1–5 must complete within 500ms to avoid a noticeable r
 - Triggers nutrition calculation asynchronously after creation if ingredients are present.
 
 **Update Recipe**
+
 - Updating `ingredients` re-triggers nutrition calculation.
 - Updating `ingredients` re-triggers dietary auto-tagging and sets `dietary_tags_confirmed` to `false`.
 - Updating `title` regenerates `slug` only if slug has not been manually set.
 - Setting `email_ready: true` enqueues a broadcast draft creation job (Automation Engine).
 
 **Delete Recipe**
+
 - Soft delete: sets `status: archived`.
 - Does not remove from existing Products. Products referencing archived recipes continue to render correctly.
 - Does not remove Kit tags already applied to subscribers.
 
 **Recipe Scaling**
+
 - Scaling is a read-only view operation — it does not mutate the Recipe record.
 - `GET /recipes/{id}?servings={n}` returns a scaled view where ingredient quantities are multiplied by `n / original_servings`.
 - Fractional quantities are reduced to the nearest common fraction (1/4, 1/3, 1/2, 2/3, 3/4) when within 5% of that fraction. Otherwise rendered as decimals rounded to 2 places.
@@ -1057,6 +1071,7 @@ Response time for steps 1–5 must complete within 500ms to avoid a noticeable r
 ### 6.3 Search and Filter
 
 The library search endpoint supports:
+
 ```
 GET /recipes?q={text}&dietary_tags={tag,tag}&cuisine={string}&meal_type={type}
   &max_cook_time_minutes={n}&season={season}&collection_id={id}
@@ -1077,14 +1092,14 @@ On import completion (before creator review), [PRODUCT] compares the extracted t
 
 ### 7.1 Supported Sources
 
-| Source Type | Input | Method |
-|-------------|-------|--------|
-| URL | Recipe page URL | HTML parsing + schema.org extraction + AI fallback |
-| Instagram Post | Post URL or caption text | Caption text → AI extraction |
-| TikTok / Reel | Video URL | Audio transcription + OCR of video frames → AI extraction |
-| YouTube | Video URL | Audio transcription + description text → AI extraction |
-| Screenshot / Photo | Uploaded image file | OCR → AI extraction |
-| WordPress Sync | WordPress site URL + API key | WP REST API + WP Recipe Maker/Tasty Recipes JSON |
+| Source Type        | Input                        | Method                                                    |
+| ------------------ | ---------------------------- | --------------------------------------------------------- |
+| URL                | Recipe page URL              | HTML parsing + schema.org extraction + AI fallback        |
+| Instagram Post     | Post URL or caption text     | Caption text → AI extraction                              |
+| TikTok / Reel      | Video URL                    | Audio transcription + OCR of video frames → AI extraction |
+| YouTube            | Video URL                    | Audio transcription + description text → AI extraction    |
+| Screenshot / Photo | Uploaded image file          | OCR → AI extraction                                       |
+| WordPress Sync     | WordPress site URL + API key | WP REST API + WP Recipe Maker/Tasty Recipes JSON          |
 
 ### 7.2 Import Job Lifecycle
 
@@ -1113,11 +1128,13 @@ pending → processing → needs_review → completed
 ### 7.4 Social / Video Import
 
 **Instagram Post:**
+
 - Accept post URL or raw caption text.
 - If URL provided: attempt to extract caption via public oEmbed API. If oEmbed fails (private account, rate limit), prompt creator to paste the caption text manually.
 - Pass caption text to AI extraction model.
 
 **TikTok / Reel:**
+
 - Download video audio track.
 - Transcribe audio using a speech-to-text model.
 - Extract keyframes at 2fps, run OCR on each frame, concatenate unique text segments.
@@ -1125,6 +1142,7 @@ pending → processing → needs_review → completed
 - Maximum video duration: 10 minutes. Videos exceeding this are rejected with an error.
 
 **YouTube:**
+
 - Fetch video description text via YouTube Data API v3.
 - Fetch auto-generated captions via YouTube captions API if available.
 - Combine description + captions, pass to AI extraction model.
@@ -1140,11 +1158,13 @@ pending → processing → needs_review → completed
 ### 7.6 WordPress Sync
 
 **Setup:**
+
 1. Creator provides their WordPress site URL and a WordPress Application Password.
 2. [PRODUCT] tests the connection by calling `GET /wp-json/wp/v2/users/me` and verifying a `200` response.
 3. [PRODUCT] detects which recipe plugin is active: attempts `GET /wp-json/wprm/v3/recipe` (WP Recipe Maker) and `GET /wp-json/tasty-recipes/v1/recipes` (Tasty Recipes). Uses whichever returns `200`.
 
 **Sync behavior:**
+
 - Sync runs on creator request or on a 24-hour schedule.
 - For each recipe in the WordPress plugin API response, [PRODUCT] checks if a Recipe record with matching `wordpress_recipe_id` exists.
   - If no match: create a new Recipe with `source_type: wordpress_sync`, `status: draft`, `dietary_tags_confirmed: false`.
@@ -1167,21 +1187,25 @@ pending → processing → needs_review → completed
 ### 8.1 Product Types
 
 **Ebook**
+
 - Assembled from an ordered list of recipes grouped into chapters.
 - Supports intro copy (ebook-level and chapter-level), author bio, and cover page.
 - Exports as PDF (8.5×11 or 6×9) and EPUB.
 
 **Meal Plan**
+
 - Assembled from a day-by-day meal assignment grid.
 - Includes a consolidated shopping list generated from all assigned recipes.
 - Exports as PDF only.
 
 **Recipe Card Pack**
+
 - A set of individually formatted recipe cards (4×6 or 5×7).
 - Each card contains: primary photo, title, cook time, ingredients, instructions.
 - Exports as multi-page PDF (one card per page).
 
 **Lead Magnet**
+
 - A subset of an existing ebook or recipe card pack (3–5 recipes).
 - Automatically generated from the parent product.
 - Always paired with a Kit opt-in form and delivery sequence.
@@ -1189,6 +1213,7 @@ pending → processing → needs_review → completed
 ### 8.2 Product Assembly
 
 **Ebook assembly steps:**
+
 1. Creator selects a Collection or manually selects recipes.
 2. AI chapter organization (see 8.3) is invoked and presented for review.
 3. Creator confirms or modifies chapter structure.
@@ -1200,6 +1225,7 @@ pending → processing → needs_review → completed
 9. When rendering completes, file URLs are stored on the Product record.
 
 **Meal plan assembly steps:**
+
 1. Creator selects number of days (5, 7, 14, or 28).
 2. Creator assigns recipes to meal slots from their library.
 3. [PRODUCT] generates consolidated shopping list from all assigned recipes, merging duplicate ingredients and organizing by grocery section (produce, dairy, meat, pantry, etc.).
@@ -1219,6 +1245,7 @@ Output: `{ ebook_intro: string, chapters: { title: string, intro: string }[], he
 All AI copy is stored with `ai_copy_reviewed: false` until the creator edits and saves it. Products cannot be published while `ai_copy_reviewed: false`.
 
 **Constraints on AI copy:**
+
 - Ebook intro: 100–300 words.
 - Chapter intro: 50–150 words.
 - Recipe headnote: 30–80 words.
@@ -1229,12 +1256,14 @@ All AI copy is stored with `ai_copy_reviewed: false` until the creator edits and
 PDF rendering uses a headless browser (Chromium) to render an HTML template to PDF.
 
 **Template system:**
+
 - Templates are HTML/CSS files stored in [PRODUCT]'s template library.
 - Templates use a mustache-compatible variable syntax: `{{recipe.title}}`, `{{recipe.ingredients}}`, etc.
 - Templates are rendered with the creator's BrandKit values injected as CSS custom properties.
 - Google Fonts are loaded for the creator's configured heading and body fonts.
 
 **Rendering constraints:**
+
 - Max rendering time: 120 seconds per product.
 - If rendering exceeds this, the job fails and the creator is notified.
 - Rendered PDFs are stored in object storage (S3-compatible) and served via CDN.
@@ -1243,6 +1272,7 @@ PDF rendering uses a headless browser (Chromium) to render an HTML template to P
 ### 8.5 Lead Magnet Generation
 
 When a creator requests a lead magnet from an existing product:
+
 1. Select the top 3–5 recipes from the product by `engagement_score` (highest first). If engagement scores are unavailable, select the first 5 recipes.
 2. Generate a condensed PDF using the same template as the parent product.
 3. Add a last page: "Get the full [Product Title]" with the Stan Store / Gumroad URL if the parent is published, or a placeholder URL if not yet published.
@@ -1290,6 +1320,7 @@ Selected preferences are written to the Kit subscriber's `preferred_dietary_tags
 When a Recipe is created or updated with new ingredients, [PRODUCT] runs dietary tag inference:
 
 **Rules (applied in order, all ingredients must satisfy the rule unless noted):**
+
 - `vegan`: no meat, poultry, seafood, dairy, eggs, honey.
 - `vegetarian`: no meat, poultry, seafood. Dairy and eggs are permitted.
 - `gluten-free`: no wheat, barley, rye, malt, triticale, or ingredients flagged as containing gluten. Oats are flagged as ambiguous.
@@ -1308,6 +1339,7 @@ Only recipes with `dietary_tags_confirmed: true` propagate their tags to Kit sub
 The Segmentation Engine computes a `SegmentProfile` for each creator on a 24-hour schedule and on demand.
 
 For each `DietaryTag`, the profile includes:
+
 - `subscriber_count`: Kit subscribers with `dietary:{tag_slug}` tag.
 - `engagement_rate`: fraction of tagged subscribers who have at least one `save_click` event in the last 30 days.
 - `growth_rate_30d`: percentage change in subscriber_count over the last 30 days.
@@ -1334,6 +1366,7 @@ For each `DietaryTag`, the profile includes:
 4. Call `addSubscriberToSequence(subscriber_id, sequence_id)`.
 
 **Default Save This Recipe sequence structure (created automatically on first sequence setup):**
+
 ```
 Day 0: Delivery email — "Here's your saved recipe: {recipe title}" — PDF card attached
 Day 3: Follow-up — 2 more recipes from the same Collection (if available)
@@ -1347,6 +1380,7 @@ Sequence emails are created as Kit sequence emails via Kit's sequence API. All e
 **Trigger:** A Recipe's `email_ready` field is set to `true`.
 
 **Behavior:**
+
 1. Check that the creator has at least one Kit broadcast template configured. If not, use [PRODUCT]'s default email template.
 2. Create a Kit broadcast draft via `createBroadcastDraft`:
    - `subject`: "[Recipe Title] — a new recipe for you"
@@ -1362,6 +1396,7 @@ The creator opens Kit, finds the draft pre-populated, writes their intro, and se
 Created automatically when a lead magnet Product is generated.
 
 **Sequence structure:**
+
 ```
 Day 0: Delivery — "Here's your free [Lead Magnet Title]!" — PDF attached
 Day 2: Value email — "3 tips for [lead magnet topic]" (AI-generated draft, creator edits)
@@ -1374,6 +1409,7 @@ Sequence is created in Kit via the sequences API. All emails are HTML drafts. Cr
 ### 10.4 Seasonal Recipe Drops
 
 Creator configures a seasonal drop:
+
 - Season label (e.g. "Holiday Baking")
 - Start date and end date (annual recurrence or specific year)
 - Collection to draw from
@@ -1390,6 +1426,7 @@ The Automation Engine does not auto-send. It creates drafts. All sends are initi
 ### 11.1 Event Ingestion
 
 RecipeEngagementEvents are recorded from:
+
 - Kit webhooks (`link.clicked` on Save This Recipe URLs → `save_click`)
 - Kit webhooks (`subscriber.tag_added` for `recipe:saved:*` tags → `save_click` secondary confirmation)
 - Kit webhooks (`purchase.completed`) → `purchase_attribution`
@@ -1421,6 +1458,7 @@ After each SegmentProfile computation, the engine checks for product opportuniti
 **Trigger condition:** A dietary segment has `subscriber_count ≥ 50` AND `engagement_rate ≥ 0.15` AND the creator has ≥ 5 recipes with that dietary tag AND `dietary_tags_confirmed: true`.
 
 **Output:** A recommendation notification in the creator's dashboard:
+
 ```
 "{segment_count} of your subscribers engage most with {dietary_tag} recipes.
 You have {recipe_count} {dietary_tag} recipes with an average engagement score of {avg_score}.
@@ -1435,6 +1473,7 @@ Recommendations are shown at most once per dietary tag per 30-day period.
 ### 11.4 Revenue Attribution
 
 When a `purchase.completed` Kit webhook fires:
+
 1. Identify the subscriber via Kit subscriber ID.
 2. Find all `save_click` events for that subscriber in the 30 days before the purchase.
 3. Find the Product purchased by matching the purchase description or external product ID.
@@ -1448,11 +1487,11 @@ Attribution window: 30 days. Last-touch model (the most recent save before purch
 
 ### 12.1 Supported Platforms
 
-| Platform | Integration Method | Auth |
-|----------|-------------------|------|
+| Platform   | Integration Method                                            | Auth             |
+| ---------- | ------------------------------------------------------------- | ---------------- |
 | Stan Store | Stan Store API (if available) or creator-provided credentials | OAuth or API key |
-| Gumroad | Gumroad API v2 | OAuth |
-| LTK | LTK Partner API | API key |
+| Gumroad    | Gumroad API v2                                                | OAuth            |
+| LTK        | LTK Partner API                                               | API key          |
 
 **Fallback:** If a platform's API is unavailable or the creator has not connected an account, [PRODUCT] packages the product files into a ZIP and provides a download link with manual upload instructions.
 
@@ -1471,11 +1510,13 @@ Attribution window: 30 days. Last-touch model (the most recent save before purch
 ### 12.3 Social Share Asset Generation
 
 When a Product is published, [PRODUCT] generates three share assets via a canvas/image generation service:
+
 - Square (1080×1080px) — for Instagram feed
 - Vertical (1080×1920px) — for TikTok/Reels cover
 - Story (1080×1920px with safe zones respected) — for Instagram/TikTok Stories
 
 Each asset contains:
+
 - Creator's primary brand color as background
 - Product cover image (if available) or primary photo of the first recipe
 - Product title in heading font
@@ -1491,6 +1532,7 @@ Assets are rendered as PNG and available for download in the creator's dashboard
 ### 13.1 Creator Authentication
 
 [PRODUCT] uses email + password authentication with:
+
 - Passwords hashed with bcrypt (cost factor 12).
 - Email verification required before Kit OAuth connection is permitted.
 - Session tokens: JWT, 7-day expiry, refreshed on each authenticated request.
@@ -1505,6 +1547,7 @@ All database queries are scoped by `creator_id`. There are no shared recipe, pro
 ### 13.3 Studio Tier: Team Members
 
 Studio tier creators can invite up to 3 team members. Team members share access to the creator's library, products, and analytics. Team members cannot:
+
 - Disconnect the Kit integration
 - Change billing or subscription tier
 - Delete the account
@@ -1521,39 +1564,39 @@ Studio tier creators can create multiple BrandKit records. Each Product is assoc
 
 ### 14.1 Import Failures
 
-| Condition | Behavior |
-|-----------|----------|
-| URL fetch timeout | Retry once after 5s. On second failure, mark ImportJob `failed` with message: "Could not reach this URL. Please try again or paste the recipe text manually." |
-| AI extraction produces no title or no ingredients | Mark `failed` with message: "We couldn't extract a recipe from this source. Try pasting the text directly." |
-| AI extraction confidence < 0.5 on all fields | Mark `needs_review` with a warning banner in the review UI: "This extraction has low confidence — please review carefully." |
-| Video longer than 10 minutes | Reject immediately with message: "Videos must be under 10 minutes. Try a shorter clip." |
-| Image > 20MB | Reject immediately with message: "Images must be under 20MB." |
-| WordPress API returns 401 | Mark sync failed. Prompt creator to regenerate their WordPress Application Password. |
+| Condition                                         | Behavior                                                                                                                                                      |
+| ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| URL fetch timeout                                 | Retry once after 5s. On second failure, mark ImportJob `failed` with message: "Could not reach this URL. Please try again or paste the recipe text manually." |
+| AI extraction produces no title or no ingredients | Mark `failed` with message: "We couldn't extract a recipe from this source. Try pasting the text directly."                                                   |
+| AI extraction confidence < 0.5 on all fields      | Mark `needs_review` with a warning banner in the review UI: "This extraction has low confidence — please review carefully."                                   |
+| Video longer than 10 minutes                      | Reject immediately with message: "Videos must be under 10 minutes. Try a shorter clip."                                                                       |
+| Image > 20MB                                      | Reject immediately with message: "Images must be under 20MB."                                                                                                 |
+| WordPress API returns 401                         | Mark sync failed. Prompt creator to regenerate their WordPress Application Password.                                                                          |
 
 ### 14.2 Kit API Failures
 
-| Condition | Behavior |
-|-----------|----------|
-| Rate limit hit (429) | Queue request. Retry with exponential backoff. Do not surface to creator unless delay exceeds 30 seconds. |
-| Token expired | Attempt refresh. If refresh succeeds, retry original request. |
-| Token refresh fails (401) | Mark Kit connection `disconnected`. All Kit-dependent features disabled. Creator notified on next dashboard load. |
-| Kit API returns 5xx | Retry up to 3 times with exponential backoff (1s, 4s, 16s). On third failure, log and surface an error notification to the creator. |
-| Webhook delivery fails | Acknowledged by returning `200` immediately (async processing). If async processing fails, the event is dead-lettered and logged. Do not retry webhook delivery — Kit handles that. |
+| Condition                 | Behavior                                                                                                                                                                            |
+| ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Rate limit hit (429)      | Queue request. Retry with exponential backoff. Do not surface to creator unless delay exceeds 30 seconds.                                                                           |
+| Token expired             | Attempt refresh. If refresh succeeds, retry original request.                                                                                                                       |
+| Token refresh fails (401) | Mark Kit connection `disconnected`. All Kit-dependent features disabled. Creator notified on next dashboard load.                                                                   |
+| Kit API returns 5xx       | Retry up to 3 times with exponential backoff (1s, 4s, 16s). On third failure, log and surface an error notification to the creator.                                                 |
+| Webhook delivery fails    | Acknowledged by returning `200` immediately (async processing). If async processing fails, the event is dead-lettered and logged. Do not retry webhook delivery — Kit handles that. |
 
 ### 14.3 PDF Rendering Failures
 
-| Condition | Behavior |
-|-----------|----------|
-| Rendering timeout (120s) | Mark product rendering `failed`. Notify creator. Offer retry. |
+| Condition                 | Behavior                                                                              |
+| ------------------------- | ------------------------------------------------------------------------------------- |
+| Rendering timeout (120s)  | Mark product rendering `failed`. Notify creator. Offer retry.                         |
 | Google Fonts load failure | Fall back to system fonts (Georgia / Arial). Log the failure. Do not block rendering. |
-| Missing recipe photo | Render a placeholder background using the creator's primary brand color. |
+| Missing recipe photo      | Render a placeholder background using the creator's primary brand color.              |
 
 ### 14.4 Publishing Failures
 
-| Condition | Behavior |
-|-----------|----------|
-| Platform API unavailable | Surface error to creator. Offer the manual download + instructions fallback. |
-| File upload rejected by platform | Surface platform error message to creator verbatim. |
+| Condition                                               | Behavior                                                                                 |
+| ------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| Platform API unavailable                                | Surface error to creator. Offer the manual download + instructions fallback.             |
+| File upload rejected by platform                        | Surface platform error message to creator verbatim.                                      |
 | Platform listing creation succeeds but URL not returned | Store `PublishedListing` with `listing_url: null`. Creator prompted to add URL manually. |
 
 ---
@@ -1585,4 +1628,4 @@ The following are explicitly out of scope and should not be built:
 
 ---
 
-*End of specification.*
+_End of specification._

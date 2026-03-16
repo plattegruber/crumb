@@ -178,10 +178,7 @@ describe("Recipe Service", () => {
       const scopedDb = withCreatorScope(db, TEST_CREATOR_ID);
 
       // Create first recipe
-      await createRecipe(
-        scopedDb,
-        makeRecipeInput({ id: "r1" as RecipeId, title: "Lemon Pasta" }),
-      );
+      await createRecipe(scopedDb, makeRecipeInput({ id: "r1" as RecipeId, title: "Lemon Pasta" }));
 
       // Create second with same title
       const result = await createRecipe(
@@ -247,9 +244,7 @@ describe("Recipe Service", () => {
       await createRecipe(scopedDb, makeRecipeInput());
 
       // First manually confirm dietary tags
-      await env.DB.exec(
-        `UPDATE recipes SET dietary_tags_confirmed = 1 WHERE id = 'recipe-1'`,
-      );
+      await env.DB.exec(`UPDATE recipes SET dietary_tags_confirmed = 1 WHERE id = 'recipe-1'`);
 
       // Then update ingredients
       const result = await updateRecipe(scopedDb, "recipe-1", {
@@ -591,10 +586,7 @@ describe("Recipe Service", () => {
   describe("checkDuplicates", () => {
     it("detects similar titles above threshold", async () => {
       const scopedDb = withCreatorScope(db, TEST_CREATOR_ID);
-      await createRecipe(
-        scopedDb,
-        makeRecipeInput({ id: "r1" as RecipeId, title: "Lemon Pasta" }),
-      );
+      await createRecipe(scopedDb, makeRecipeInput({ id: "r1" as RecipeId, title: "Lemon Pasta" }));
 
       const result = await checkDuplicates(scopedDb, "Lemon Pasta");
 
@@ -606,10 +598,7 @@ describe("Recipe Service", () => {
 
     it("detects near-duplicates with minor differences", async () => {
       const scopedDb = withCreatorScope(db, TEST_CREATOR_ID);
-      await createRecipe(
-        scopedDb,
-        makeRecipeInput({ id: "r1" as RecipeId, title: "Lemon Pasta" }),
-      );
+      await createRecipe(scopedDb, makeRecipeInput({ id: "r1" as RecipeId, title: "Lemon Pasta" }));
 
       const result = await checkDuplicates(scopedDb, "Lemon Pastas");
 
@@ -620,10 +609,7 @@ describe("Recipe Service", () => {
 
     it("does not flag clearly different titles", async () => {
       const scopedDb = withCreatorScope(db, TEST_CREATOR_ID);
-      await createRecipe(
-        scopedDb,
-        makeRecipeInput({ id: "r1" as RecipeId, title: "Lemon Pasta" }),
-      );
+      await createRecipe(scopedDb, makeRecipeInput({ id: "r1" as RecipeId, title: "Lemon Pasta" }));
 
       const result = await checkDuplicates(scopedDb, "Chocolate Cake");
 
@@ -634,10 +620,7 @@ describe("Recipe Service", () => {
 
     it("excludes specified recipe from comparison", async () => {
       const scopedDb = withCreatorScope(db, TEST_CREATOR_ID);
-      await createRecipe(
-        scopedDb,
-        makeRecipeInput({ id: "r1" as RecipeId, title: "Lemon Pasta" }),
-      );
+      await createRecipe(scopedDb, makeRecipeInput({ id: "r1" as RecipeId, title: "Lemon Pasta" }));
 
       const result = await checkDuplicates(scopedDb, "Lemon Pasta", "r1");
 

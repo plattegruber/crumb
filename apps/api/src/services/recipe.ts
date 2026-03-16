@@ -260,7 +260,7 @@ function serializeQuantity(q: Quantity): { type: string; data: Record<string, un
 /**
  * Deserialize quantity_type + quantity_data back into a JSON string representation.
  */
-function deserializeQuantityToJson(
+function _deserializeQuantityToJson(
   quantityType: string | null,
   quantityData: Record<string, unknown> | null,
 ): string | null {
@@ -368,11 +368,14 @@ export async function createRecipe(
       const group = input.ingredientGroups[gi];
       if (!group) continue;
 
-      const insertedGroup = await db.insert(ingredientGroups).values({
-        recipe_id: input.id,
-        label: group.label,
-        sort_order: gi,
-      }).returning();
+      const insertedGroup = await db
+        .insert(ingredientGroups)
+        .values({
+          recipe_id: input.id,
+          label: group.label,
+          sort_order: gi,
+        })
+        .returning();
 
       const groupId = insertedGroup[0]?.id;
       if (groupId === undefined) continue;
@@ -401,11 +404,14 @@ export async function createRecipe(
       const group = input.instructionGroups[gi];
       if (!group) continue;
 
-      const insertedGroup = await db.insert(instructionGroups).values({
-        recipe_id: input.id,
-        label: group.label,
-        sort_order: gi,
-      }).returning();
+      const insertedGroup = await db
+        .insert(instructionGroups)
+        .values({
+          recipe_id: input.id,
+          label: group.label,
+          sort_order: gi,
+        })
+        .returning();
 
       const groupId = insertedGroup[0]?.id;
       if (groupId === undefined) continue;
@@ -485,12 +491,7 @@ export async function updateRecipe(
         const existingSlugs = await db
           .select({ slug: recipes.slug })
           .from(recipes)
-          .where(
-            and(
-              eq(recipes.creator_id, creatorId),
-              like(recipes.slug, `${baseSlug}%`),
-            ),
-          );
+          .where(and(eq(recipes.creator_id, creatorId), like(recipes.slug, `${baseSlug}%`)));
         const slugSet = new Set(
           existingSlugs.filter((r) => r.slug !== existing[0]?.slug).map((r) => r.slug),
         );
@@ -553,11 +554,14 @@ export async function updateRecipe(
       const group = input.ingredientGroups[gi];
       if (!group) continue;
 
-      const insertedGroup = await db.insert(ingredientGroups).values({
-        recipe_id: recipeId,
-        label: group.label,
-        sort_order: gi,
-      }).returning();
+      const insertedGroup = await db
+        .insert(ingredientGroups)
+        .values({
+          recipe_id: recipeId,
+          label: group.label,
+          sort_order: gi,
+        })
+        .returning();
 
       const groupId = insertedGroup[0]?.id;
       if (groupId === undefined) continue;
@@ -597,11 +601,14 @@ export async function updateRecipe(
       const group = input.instructionGroups[gi];
       if (!group) continue;
 
-      const insertedGroup = await db.insert(instructionGroups).values({
-        recipe_id: recipeId,
-        label: group.label,
-        sort_order: gi,
-      }).returning();
+      const insertedGroup = await db
+        .insert(instructionGroups)
+        .values({
+          recipe_id: recipeId,
+          label: group.label,
+          sort_order: gi,
+        })
+        .returning();
 
       const groupId = insertedGroup[0]?.id;
       if (groupId === undefined) continue;
@@ -621,9 +628,7 @@ export async function updateRecipe(
 
   // Replace photos if provided
   if (input.photos !== undefined) {
-    await db
-      .delete(photos)
-      .where(eq(photos.recipe_id, recipeId));
+    await db.delete(photos).where(eq(photos.recipe_id, recipeId));
 
     for (let pi = 0; pi < input.photos.length; pi++) {
       const photo = input.photos[pi];
@@ -757,7 +762,12 @@ export async function getRecipe(
 
   // Calculate scale factor
   let scaleFactor: number | null = null;
-  if (servings !== undefined && servings > 0 && recipe.yield_quantity !== null && recipe.yield_quantity > 0) {
+  if (
+    servings !== undefined &&
+    servings > 0 &&
+    recipe.yield_quantity !== null &&
+    recipe.yield_quantity > 0
+  ) {
     scaleFactor = servings / recipe.yield_quantity;
   }
 
@@ -856,24 +866,18 @@ export async function listRecipes(
     for (const tag of params.dietaryTags) {
       // Stored as JSON array e.g. ["GlutenFree","Vegan"], so search for the quoted value
       const pattern = `%"${tag}"%`;
-      conditions.push(
-        sql`${recipes.dietary_tags} LIKE ${pattern}`,
-      );
+      conditions.push(sql`${recipes.dietary_tags} LIKE ${pattern}`);
     }
   }
 
   // Filter by meal type
   if (params.mealType !== undefined) {
-    conditions.push(
-      sql`${recipes.meal_types} LIKE ${"%" + params.mealType + "%"} COLLATE NOCASE`,
-    );
+    conditions.push(sql`${recipes.meal_types} LIKE ${"%" + params.mealType + "%"} COLLATE NOCASE`);
   }
 
   // Filter by season
   if (params.season !== undefined) {
-    conditions.push(
-      sql`${recipes.seasons} LIKE ${"%" + params.season + "%"} COLLATE NOCASE`,
-    );
+    conditions.push(sql`${recipes.seasons} LIKE ${"%" + params.season + "%"} COLLATE NOCASE`);
   }
 
   // Filter by collection
@@ -956,12 +960,7 @@ export async function checkDuplicates(
   const allRecipes = await db
     .select({ id: recipes.id, title: recipes.title })
     .from(recipes)
-    .where(
-      and(
-        eq(recipes.creator_id, creatorId),
-        sql`${recipes.status} != 'Archived'`,
-      ),
-    );
+    .where(and(eq(recipes.creator_id, creatorId), sql`${recipes.status} != 'Archived'`));
 
   const normalizedTitle = normalizeForComparison(title);
   const duplicates: { recipeId: string; title: string; similarity: number }[] = [];
@@ -1020,12 +1019,7 @@ async function checkFreeTierLimit(
   const countResult = await db
     .select({ count: sql<number>`count(*)` })
     .from(recipes)
-    .where(
-      and(
-        eq(recipes.creator_id, creatorId),
-        sql`${recipes.status} != 'Archived'`,
-      ),
-    );
+    .where(and(eq(recipes.creator_id, creatorId), sql`${recipes.status} != 'Archived'`));
 
   const count = countResult[0]?.count ?? 0;
 

@@ -128,8 +128,7 @@ export class ApiClient {
       const data = (await response.json()) as T;
       return ok(data);
     } catch (error: unknown) {
-      const message =
-        error instanceof Error ? error.message : "Unknown network error";
+      const message = error instanceof Error ? error.message : "Unknown network error";
       return err({ type: "NetworkError" as const, message });
     }
   }

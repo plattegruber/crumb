@@ -189,12 +189,7 @@ export async function handleSaveThisRecipe(
     [KIT_CUSTOM_FIELD_LABELS.LastRecipeSaved]: recipe.title,
     [KIT_CUSTOM_FIELD_LABELS.LastRecipeSavedAt]: now,
   };
-  const updateResult = await updateSubscriber(
-    kitConfig,
-    accessToken,
-    subscriberId,
-    fieldsUpdate,
-  );
+  const updateResult = await updateSubscriber(kitConfig, accessToken, subscriberId, fieldsUpdate);
   const customFieldsUpdated = updateResult.ok;
 
   // Check automation config for sequence
@@ -226,7 +221,7 @@ export async function handleSaveThisRecipe(
 
   if (collectionLinks.length > 0) {
     // Check each collection for a linked published product with a nurture sequence
-    for (const link of collectionLinks) {
+    for (const _link of collectionLinks) {
       // Find products whose recipe_ids include recipes from this collection
       // Products with kit_sequence_id set are considered to have nurture sequences
       const productRows = await db
@@ -479,10 +474,7 @@ export async function listSeasonalDrops(
   db: Database,
   creatorId: string,
 ): Promise<Result<readonly SeasonalDropRow[], AutomationError>> {
-  const rows = await db
-    .select()
-    .from(seasonalDrops)
-    .where(eq(seasonalDrops.creator_id, creatorId));
+  const rows = await db.select().from(seasonalDrops).where(eq(seasonalDrops.creator_id, creatorId));
 
   return ok(rows);
 }
@@ -507,9 +499,7 @@ export async function createSeasonalDrop(
   const collectionRows = await db
     .select({ id: collections.id })
     .from(collections)
-    .where(
-      and(eq(collections.id, input.collectionId), eq(collections.creator_id, creatorId)),
-    )
+    .where(and(eq(collections.id, input.collectionId), eq(collections.creator_id, creatorId)))
     .limit(1);
 
   if (collectionRows.length === 0) {
@@ -535,11 +525,7 @@ export async function createSeasonalDrop(
   });
 
   // Fetch and return the created drop
-  const rows = await db
-    .select()
-    .from(seasonalDrops)
-    .where(eq(seasonalDrops.id, input.id))
-    .limit(1);
+  const rows = await db.select().from(seasonalDrops).where(eq(seasonalDrops.id, input.id)).limit(1);
 
   if (rows.length === 0 || !rows[0]) {
     return err({ type: "database_error", message: "Failed to retrieve created seasonal drop" });
@@ -609,9 +595,7 @@ export async function processSeasonalDrops(
           recipe_id: recipeEngagementScores.recipe_id,
         })
         .from(recipeEngagementScores)
-        .where(
-          inArray(recipeEngagementScores.recipe_id, recipeIds),
-        )
+        .where(inArray(recipeEngagementScores.recipe_id, recipeIds))
         .orderBy(desc(recipeEngagementScores.score))
         .limit(1);
 
@@ -751,10 +735,7 @@ async function checkFreeTierSendLimit(
 /**
  * Increment the monthly sends counter for a creator.
  */
-async function incrementSendsCounter(
-  db: Database,
-  creatorId: string,
-): Promise<void> {
+async function incrementSendsCounter(db: Database, creatorId: string): Promise<void> {
   const now = new Date();
   const currentMonth = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, "0")}`;
 
@@ -796,7 +777,7 @@ async function incrementSendsCounter(
 function buildRecipeCardPlaceholder(title: string, description: string): string {
   return [
     "<!-- [PRODUCT] Recipe Card Block (Standard Mode) -->",
-    "<div style=\"max-width:600px;margin:0 auto;padding:20px;\">",
+    '<div style="max-width:600px;margin:0 auto;padding:20px;">',
     "  <p>[Write your intro here]</p>",
     "  <hr>",
     `  <h2>${escapeHtml(title)}</h2>`,
@@ -810,7 +791,7 @@ function buildRecipeCardPlaceholder(title: string, description: string): string 
 
 function buildDeliveryEmailPlaceholder(productTitle: string): string {
   return [
-    "<div style=\"max-width:600px;margin:0 auto;padding:20px;\">",
+    '<div style="max-width:600px;margin:0 auto;padding:20px;">',
     `  <h1>Here's your free ${escapeHtml(productTitle)}!</h1>`,
     "  <p>Thanks for signing up! Your download is attached below.</p>",
     "  <p><em>[PDF attachment placeholder]</em></p>",
@@ -820,7 +801,7 @@ function buildDeliveryEmailPlaceholder(productTitle: string): string {
 
 function buildValueEmailPlaceholder(): string {
   return [
-    "<div style=\"max-width:600px;margin:0 auto;padding:20px;\">",
+    '<div style="max-width:600px;margin:0 auto;padding:20px;">',
     "  <h1>Tips and tricks</h1>",
     "  <p><em>[AI-generated content placeholder -- creator should edit before sending]</em></p>",
     "</div>",
@@ -829,7 +810,7 @@ function buildValueEmailPlaceholder(): string {
 
 function buildPitchEmailPlaceholder(productTitle: string): string {
   return [
-    "<div style=\"max-width:600px;margin:0 auto;padding:20px;\">",
+    '<div style="max-width:600px;margin:0 auto;padding:20px;">',
     `  <h1>Get the full ${escapeHtml(productTitle)}</h1>`,
     "  <p>If you enjoyed the free sample, you'll love the complete collection.</p>",
     "  <p><em>[Product listing link placeholder]</em></p>",

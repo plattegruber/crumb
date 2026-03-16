@@ -29,10 +29,7 @@ export interface AuthMiddlewareOptions {
    * The function receives the raw Bearer token and must return the Clerk
    * user ID (sub claim) on success, or null on failure.
    */
-  readonly verifyFn?: (
-    token: string,
-    env: Env,
-  ) => Promise<string | null>;
+  readonly verifyFn?: (token: string, env: Env) => Promise<string | null>;
 }
 
 /**
@@ -40,9 +37,7 @@ export interface AuthMiddlewareOptions {
  * Returns null if the header is missing or does not use the Bearer
  * scheme.
  */
-export function extractBearerToken(
-  headerValue: string | null | undefined,
-): string | null {
+export function extractBearerToken(headerValue: string | null | undefined): string | null {
   if (headerValue === null || headerValue === undefined) {
     return null;
   }
@@ -75,9 +70,10 @@ export function clerkAuth(options?: AuthMiddlewareOptions) {
       return c.json(
         {
           error: "Unauthorized",
-          reason: authHeader === undefined || authHeader === null
-            ? AuthErrorReason.MISSING_HEADER
-            : AuthErrorReason.MALFORMED_HEADER,
+          reason:
+            authHeader === undefined || authHeader === null
+              ? AuthErrorReason.MISSING_HEADER
+              : AuthErrorReason.MALFORMED_HEADER,
         },
         401,
       );
@@ -109,10 +105,7 @@ export function clerkAuth(options?: AuthMiddlewareOptions) {
  * Returns the `sub` claim (Clerk user ID) on success, null on
  * failure.
  */
-async function defaultVerify(
-  token: string,
-  env: Env,
-): Promise<string | null> {
+async function defaultVerify(token: string, env: Env): Promise<string | null> {
   try {
     const payload = await verifyToken(token, {
       secretKey: env.CLERK_SECRET_KEY,

@@ -20,12 +20,11 @@ import {
   ingredients,
   creators,
   recipeEngagementScores,
-  brandKits,
 } from "../db/schema.js";
 import type { CreatorScopedDb } from "../middleware/creator-scope.js";
 import type { Result } from "@crumb/shared";
 import { ok, err } from "@crumb/shared";
-import type { EbookFormat, ProductId, RecipeId, BrandKitId } from "@crumb/shared";
+import type { EbookFormat } from "@crumb/shared";
 import type { Env } from "../env.js";
 import { createLogger, type Logger } from "../lib/logger.js";
 
@@ -165,7 +164,13 @@ export interface ChapterGrouping {
 
 export interface ChapterOrganizer {
   organize(
-    recipes: readonly { title: string; dietary_tags: readonly string[]; meal_types: readonly string[]; cuisine: string | null; cook_minutes: number | null }[],
+    recipes: readonly {
+      title: string;
+      dietary_tags: readonly string[];
+      meal_types: readonly string[];
+      cuisine: string | null;
+      cook_minutes: number | null;
+    }[],
   ): Promise<Result<readonly ChapterGrouping[], ProductError>>;
 }
 
@@ -673,20 +678,21 @@ export async function createMealPlan(
       dinner: string | null;
       snacks: ReadonlyArray<string>;
     }>,
-    shopping_list: shoppingList !== null
-      ? {
-          sections: shoppingList.sections.map((s) => ({
-            label: s.label,
-            items: s.items.map((i) => ({
-              quantity: null,
-              unit: null,
-              item: i.item,
-              recipe_refs: i.recipe_refs,
+    shopping_list:
+      shoppingList !== null
+        ? {
+            sections: shoppingList.sections.map((s) => ({
+              label: s.label,
+              items: s.items.map((i) => ({
+                quantity: null,
+                unit: null,
+                item: i.item,
+                recipe_refs: i.recipe_refs,
+              })),
             })),
-          })),
-          generated_at: shoppingList.generated_at,
-        }
-      : null,
+            generated_at: shoppingList.generated_at,
+          }
+        : null,
   });
 
   return getProduct(scopedDb, input.id);
@@ -702,7 +708,10 @@ export async function createRecipeCardPack(
   const { db, creatorId } = scopedDb;
 
   if (input.recipe_ids.length === 0) {
-    return err({ type: "invalid_input", message: "Recipe card pack must have at least one recipe" });
+    return err({
+      type: "invalid_input",
+      message: "Recipe card pack must have at least one recipe",
+    });
   }
 
   const now = new Date().toISOString();
@@ -779,11 +788,7 @@ export async function createLeadMagnet(
   }
 
   // Select top 3-5 recipes by engagement score
-  const selectedRecipeIds = await selectLeadMagnetRecipes(
-    db,
-    creatorId,
-    parentRecipeIds,
-  );
+  const selectedRecipeIds = await selectLeadMagnetRecipes(db, creatorId, parentRecipeIds);
 
   const now = new Date().toISOString();
 

@@ -17,8 +17,6 @@ import type {
   RawIngredient,
   RawIngredientGroup,
   ExtractionConfidence,
-  Chapter,
-  EbookDetail,
   MealPlanDay,
   MealPlanDetail,
   ShoppingItem,
@@ -45,8 +43,8 @@ import {
   createSlug,
   createUrl,
 } from "../src/ids.js";
+import type { IngredientId, InstructionId } from "../src/ids.js";
 import { wholeNumber, fraction } from "../src/quantity.js";
-import type { RecipeTiming, RecipeYield } from "../src/value-types.js";
 
 // ---------------------------------------------------------------------------
 // Helpers — reusable fixtures
@@ -430,9 +428,7 @@ describe("RecipeExtract", () => {
       confidence,
     };
     expect(extract.title).toBe("Chocolate Cake");
-    expect(extract.ingredients[0]!.ingredients[0]!.raw_text).toBe(
-      "2 cups all-purpose flour"
-    );
+    expect(extract.ingredients[0]!.ingredients[0]!.raw_text).toBe("2 cups all-purpose flour");
     expect(extract.confidence.field_scores["title"]).toBe(0.99);
     expect(extract.instructions).toHaveLength(3);
     expect(extract.photo_urls).toHaveLength(1);
@@ -482,9 +478,7 @@ describe("Product", () => {
       base: makeProductBase(),
       detail: {
         recipe_ids: [recipeId],
-        chapters: [
-          { title: "Chapter 1", intro_copy: null, recipe_ids: [recipeId] },
-        ],
+        chapters: [{ title: "Chapter 1", intro_copy: null, recipe_ids: [recipeId] }],
         intro_copy: "Welcome",
         author_bio: null,
         format: "LetterSize",
@@ -587,9 +581,7 @@ describe("Product", () => {
       days: [],
       shopping_list: shoppingList,
     };
-    expect(detail.shopping_list!.sections[0]!.items[0]!.item).toBe(
-      "olive oil"
-    );
+    expect(detail.shopping_list!.sections[0]!.items[0]!.item).toBe("olive oil");
     expect(detail.shopping_list!.generated_at).toBe(5000);
   });
 });
@@ -814,7 +806,7 @@ describe("Recipe", () => {
           label: null,
           ingredients: [
             {
-              id: "ing-1" as import("../src/ids.js").IngredientId,
+              id: "ing-1" as IngredientId,
               quantity: wholeNumber(2),
               unit: "cups",
               item: "flour",
@@ -828,7 +820,7 @@ describe("Recipe", () => {
           label: null,
           instructions: [
             {
-              id: "ins-1" as import("../src/ids.js").InstructionId,
+              id: "ins-1" as InstructionId,
               body: "Mix ingredients",
             },
           ],

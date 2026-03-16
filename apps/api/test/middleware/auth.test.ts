@@ -42,10 +42,7 @@ const VALID_USER_ID = "user_2abc123def456" as CreatorId;
  * Verification function that succeeds for the token "valid-token"
  * and returns null for everything else.
  */
-async function fakeVerify(
-  token: string,
-  _env: Env,
-): Promise<string | null> {
+async function fakeVerify(token: string, _env: Env): Promise<string | null> {
   if (token === "valid-token") {
     return VALID_USER_ID;
   }
@@ -124,10 +121,7 @@ describe("clerkAuth middleware", () => {
   const app = createTestApp();
 
   it("returns 401 when Authorization header is missing", async () => {
-    const res = await app.fetch(
-      new Request("http://localhost/me"),
-      TEST_ENV,
-    );
+    const res = await app.fetch(new Request("http://localhost/me"), TEST_ENV);
 
     expect(res.status).toBe(401);
     const body = await res.json<{ error: string; reason: string }>();
@@ -188,10 +182,7 @@ describe("clerkAuth middleware", () => {
   });
 
   it("/health works without any Authorization header", async () => {
-    const res = await app.fetch(
-      new Request("http://localhost/health"),
-      TEST_ENV,
-    );
+    const res = await app.fetch(new Request("http://localhost/health"), TEST_ENV);
 
     expect(res.status).toBe(200);
     const body = await res.json<{ status: string }>();

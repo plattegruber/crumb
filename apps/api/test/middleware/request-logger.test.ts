@@ -66,10 +66,7 @@ describe("requestLogger middleware", () => {
   it("generates a unique requestId and attaches to context", async () => {
     const app = createTestApp();
 
-    const res = await app.fetch(
-      new Request("http://localhost/test"),
-      TEST_ENV,
-    );
+    const res = await app.fetch(new Request("http://localhost/test"), TEST_ENV);
 
     expect(res.status).toBe(200);
     const body = await res.json<{
@@ -89,25 +86,17 @@ describe("requestLogger middleware", () => {
   it("sets X-Request-Id response header", async () => {
     const app = createTestApp();
 
-    const res = await app.fetch(
-      new Request("http://localhost/test"),
-      TEST_ENV,
-    );
+    const res = await app.fetch(new Request("http://localhost/test"), TEST_ENV);
 
     const headerValue = res.headers.get("X-Request-Id");
     expect(headerValue).not.toBeNull();
-    expect(headerValue).toMatch(
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/,
-    );
+    expect(headerValue).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/);
   });
 
   it("X-Request-Id matches the requestId in context", async () => {
     const app = createTestApp();
 
-    const res = await app.fetch(
-      new Request("http://localhost/test"),
-      TEST_ENV,
-    );
+    const res = await app.fetch(new Request("http://localhost/test"), TEST_ENV);
 
     const headerValue = res.headers.get("X-Request-Id");
     const body = await res.json<{ requestId: string }>();
@@ -150,10 +139,7 @@ describe("requestLogger middleware", () => {
   it("tracks request duration", async () => {
     const app = createTestApp();
 
-    await app.fetch(
-      new Request("http://localhost/slow"),
-      TEST_ENV,
-    );
+    await app.fetch(new Request("http://localhost/slow"), TEST_ENV);
 
     const logLines = consoleLogSpy.mock.calls.map(
       (call) => JSON.parse(call[0] as string) as Record<string, unknown>,
@@ -169,14 +155,8 @@ describe("requestLogger middleware", () => {
   it("generates different requestIds for different requests", async () => {
     const app = createTestApp();
 
-    const res1 = await app.fetch(
-      new Request("http://localhost/test"),
-      TEST_ENV,
-    );
-    const res2 = await app.fetch(
-      new Request("http://localhost/test"),
-      TEST_ENV,
-    );
+    const res1 = await app.fetch(new Request("http://localhost/test"), TEST_ENV);
+    const res2 = await app.fetch(new Request("http://localhost/test"), TEST_ENV);
 
     const body1 = await res1.json<{ requestId: string }>();
     const body2 = await res2.json<{ requestId: string }>();

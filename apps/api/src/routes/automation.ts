@@ -17,10 +17,7 @@ import {
   createSeasonalDrop,
   processSeasonalDrops,
 } from "../services/automation.js";
-import type {
-  AutomationError,
-  CreateSeasonalDropInput,
-} from "../services/automation.js";
+import type { AutomationError, CreateSeasonalDropInput } from "../services/automation.js";
 import type { KitClientConfig } from "../lib/kit/client.js";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
 
@@ -47,9 +44,7 @@ function errorToStatus(error: AutomationError): ContentfulStatusCode {
   }
 }
 
-function errorToBody(
-  error: AutomationError,
-): Record<string, unknown> {
+function errorToBody(error: AutomationError): Record<string, unknown> {
   switch (error.type) {
     case "kit_error":
       return {
@@ -215,12 +210,7 @@ automationRoutes.post("/seasonal-drops/process", async (c) => {
 
   const body = await c.req.json<{ accessToken: string }>();
 
-  const result = await processSeasonalDrops(
-    db,
-    creatorId,
-    body.accessToken,
-    kitConfig,
-  );
+  const result = await processSeasonalDrops(db, creatorId, body.accessToken, kitConfig);
 
   if (!result.ok) {
     return c.json(errorToBody(result.error), errorToStatus(result.error));
@@ -260,9 +250,7 @@ export function createSaveRedirectRoutes(): Hono<AppEnv> {
         source_data: recipes.source_data,
       })
       .from(recipes)
-      .where(
-        sql`${recipes.creator_id} = ${creatorId} AND ${recipes.slug} = ${recipeSlug}`,
-      )
+      .where(sql`${recipes.creator_id} = ${creatorId} AND ${recipes.slug} = ${recipeSlug}`)
       .limit(1);
 
     // Determine redirect URL
@@ -289,14 +277,7 @@ export function createSaveRedirectRoutes(): Hono<AppEnv> {
       const accessToken = creatorRows[0]?.kit_access_token;
       if (accessToken) {
         // Run in background -- do not await to keep redirect fast
-        void handleSaveThisRecipe(
-          db,
-          creatorId,
-          recipeSlug,
-          subscriberId,
-          accessToken,
-          kitConfig,
-        );
+        void handleSaveThisRecipe(db, creatorId, recipeSlug, subscriberId, accessToken, kitConfig);
       }
     }
 

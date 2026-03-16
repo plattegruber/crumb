@@ -19,11 +19,15 @@ export function err<E>(error: E): Result<never, E> {
 }
 
 /** Type guard: narrows a Result to the success variant. */
-export function isOk<T, E>(result: Result<T, E>): result is { readonly ok: true; readonly value: T } {
+export function isOk<T, E>(
+  result: Result<T, E>,
+): result is { readonly ok: true; readonly value: T } {
   return result.ok;
 }
 
 /** Type guard: narrows a Result to the error variant. */
-export function isErr<T, E>(result: Result<T, E>): result is { readonly ok: false; readonly error: E } {
+export function isErr<T, E>(
+  result: Result<T, E>,
+): result is { readonly ok: false; readonly error: E } {
   return !result.ok;
 }

@@ -34,8 +34,7 @@ export const KIT_API_ERROR_CODE = {
   Unknown: "unknown",
 } as const;
 
-export type KitApiErrorCode =
-  (typeof KIT_API_ERROR_CODE)[keyof typeof KIT_API_ERROR_CODE];
+export type KitApiErrorCode = (typeof KIT_API_ERROR_CODE)[keyof typeof KIT_API_ERROR_CODE];
 
 // ---------------------------------------------------------------------------
 // Subscriber
@@ -248,8 +247,7 @@ export const KIT_WEBHOOK_EVENT = {
   SubscriberComplain: "subscriber_complain",
 } as const;
 
-export type KitWebhookEventName =
-  (typeof KIT_WEBHOOK_EVENT)[keyof typeof KIT_WEBHOOK_EVENT];
+export type KitWebhookEventName = (typeof KIT_WEBHOOK_EVENT)[keyof typeof KIT_WEBHOOK_EVENT];
 
 // ---------------------------------------------------------------------------
 // Pagination

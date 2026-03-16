@@ -45,8 +45,7 @@ export const AuthErrorReason = {
   VERIFICATION_FAILED: "verification_failed",
 } as const;
 
-export type AuthErrorReason =
-  (typeof AuthErrorReason)[keyof typeof AuthErrorReason];
+export type AuthErrorReason = (typeof AuthErrorReason)[keyof typeof AuthErrorReason];
 
 /**
  * Represents a team member's access grant to a creator's resources.
@@ -70,8 +69,7 @@ export const TeamMemberRole = {
   VIEWER: "viewer",
 } as const;
 
-export type TeamMemberRole =
-  (typeof TeamMemberRole)[keyof typeof TeamMemberRole];
+export type TeamMemberRole = (typeof TeamMemberRole)[keyof typeof TeamMemberRole];
 
 /**
  * Actions that team members are forbidden from performing regardless
@@ -83,5 +81,4 @@ export const TEAM_MEMBER_FORBIDDEN_ACTIONS = [
   "delete_account",
 ] as const;
 
-export type ForbiddenTeamAction =
-  (typeof TEAM_MEMBER_FORBIDDEN_ACTIONS)[number];
+export type ForbiddenTeamAction = (typeof TEAM_MEMBER_FORBIDDEN_ACTIONS)[number];

@@ -19,7 +19,6 @@ import {
   publishProduct,
   generateShoppingList,
   renderTemplate,
-  PRODUCT_TYPE,
 } from "../../src/services/product.js";
 import type {
   CreateEbookInput,
@@ -46,15 +45,11 @@ function insertBrandKit(creatorId: string, brandKitId: string = "bk-1"): string 
   return `INSERT INTO brand_kits (id, creator_id, name, primary_color, heading_font_family, heading_font_fallback, body_font_family, body_font_fallback, created_at, updated_at) VALUES ('${brandKitId}', '${creatorId}', 'Default', '#FF5733', 'Georgia', '["serif"]', 'Arial', '["sans-serif"]', '${NOW_ISO}', '${NOW_ISO}')`;
 }
 
-function insertRecipe(
-  creatorId: string,
-  recipeId: string,
-  title: string,
-): string {
+function insertRecipe(creatorId: string, recipeId: string, title: string): string {
   return `INSERT INTO recipes (id, creator_id, title, slug, source_type, status, created_at, updated_at) VALUES ('${recipeId}', '${creatorId}', '${title}', '${title.toLowerCase().replace(/\s+/g, "-")}', 'Manual', 'Active', '${NOW_ISO}', '${NOW_ISO}')`;
 }
 
-function insertIngredientGroup(
+function _insertIngredientGroup(
   recipeId: string,
   groupId: number,
   label: string | null = null,
@@ -62,19 +57,11 @@ function insertIngredientGroup(
   return `INSERT INTO ingredient_groups (id, recipe_id, label, sort_order) VALUES (${groupId}, '${recipeId}', ${label !== null ? `'${label}'` : "NULL"}, 0)`;
 }
 
-function insertIngredient(
-  ingredientId: string,
-  groupId: number,
-  item: string,
-): string {
+function _insertIngredient(ingredientId: string, groupId: number, item: string): string {
   return `INSERT INTO ingredients (id, group_id, item, sort_order) VALUES ('${ingredientId}', ${groupId}, '${item}', 0)`;
 }
 
-function insertEngagementScore(
-  creatorId: string,
-  recipeId: string,
-  score: number,
-): string {
+function insertEngagementScore(creatorId: string, recipeId: string, score: number): string {
   return `INSERT INTO recipe_engagement_scores (recipe_id, creator_id, score, computed_at, save_clicks_30d, sequence_triggers_30d, card_views_30d, purchase_attributions_all) VALUES ('${recipeId}', '${creatorId}', ${score}, '${NOW_ISO}', 10, 5, 20, 2)`;
 }
 
@@ -365,23 +352,17 @@ describe("Product Service", () => {
         {
           recipe_id: "r-1",
           recipe_title: "Recipe 1",
-          ingredients: [
-            { item: "garlic", quantity_type: null, quantity_data: null, unit: null },
-          ],
+          ingredients: [{ item: "garlic", quantity_type: null, quantity_data: null, unit: null }],
         },
         {
           recipe_id: "r-2",
           recipe_title: "Recipe 2",
-          ingredients: [
-            { item: "garlic", quantity_type: null, quantity_data: null, unit: null },
-          ],
+          ingredients: [{ item: "garlic", quantity_type: null, quantity_data: null, unit: null }],
         },
         {
           recipe_id: "r-3",
           recipe_title: "Recipe 3",
-          ingredients: [
-            { item: "garlic", quantity_type: null, quantity_data: null, unit: null },
-          ],
+          ingredients: [{ item: "garlic", quantity_type: null, quantity_data: null, unit: null }],
         },
       ];
 
@@ -462,7 +443,11 @@ describe("Product Service", () => {
         makeEbookInput({
           recipe_ids: ["r-1", "r-2", "r-3", "r-4", "r-5", "r-6", "r-7"],
           chapters: [
-            { title: "All", intro_copy: null, recipe_ids: ["r-1", "r-2", "r-3", "r-4", "r-5", "r-6", "r-7"] },
+            {
+              title: "All",
+              intro_copy: null,
+              recipe_ids: ["r-1", "r-2", "r-3", "r-4", "r-5", "r-6", "r-7"],
+            },
           ],
         }),
       );
@@ -498,7 +483,11 @@ describe("Product Service", () => {
         makeEbookInput({
           recipe_ids: ["r-1", "r-2", "r-3", "r-4", "r-5", "r-6"],
           chapters: [
-            { title: "All", intro_copy: null, recipe_ids: ["r-1", "r-2", "r-3", "r-4", "r-5", "r-6"] },
+            {
+              title: "All",
+              intro_copy: null,
+              recipe_ids: ["r-1", "r-2", "r-3", "r-4", "r-5", "r-6"],
+            },
           ],
         }),
       );

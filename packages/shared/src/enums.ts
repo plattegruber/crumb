@@ -57,8 +57,7 @@ export const SUBSCRIPTION_TIER = {
   Pro: "Pro",
   Studio: "Studio",
 } as const;
-export type SubscriptionTier =
-  (typeof SUBSCRIPTION_TIER)[keyof typeof SUBSCRIPTION_TIER];
+export type SubscriptionTier = (typeof SUBSCRIPTION_TIER)[keyof typeof SUBSCRIPTION_TIER];
 
 // §2.14 ProductStatus
 export const PRODUCT_STATUS = {
@@ -66,8 +65,7 @@ export const PRODUCT_STATUS = {
   Published: "Published",
   Archived: "Archived",
 } as const;
-export type ProductStatus =
-  (typeof PRODUCT_STATUS)[keyof typeof PRODUCT_STATUS];
+export type ProductStatus = (typeof PRODUCT_STATUS)[keyof typeof PRODUCT_STATUS];
 
 // §2.2 KitScope
 export const KIT_SCOPE = {
@@ -97,8 +95,7 @@ export const NUTRITION_SOURCE = {
   Calculated: "Calculated",
   ManuallyEntered: "ManuallyEntered",
 } as const;
-export type NutritionSource =
-  (typeof NUTRITION_SOURCE)[keyof typeof NUTRITION_SOURCE];
+export type NutritionSource = (typeof NUTRITION_SOURCE)[keyof typeof NUTRITION_SOURCE];
 
 // §2.18 KitSubscriberState
 export const KIT_SUBSCRIBER_STATE = {
@@ -108,23 +105,20 @@ export const KIT_SUBSCRIBER_STATE = {
   Bounced: "Bounced",
   Complained: "Complained",
 } as const;
-export type KitSubscriberState =
-  (typeof KIT_SUBSCRIBER_STATE)[keyof typeof KIT_SUBSCRIBER_STATE];
+export type KitSubscriberState = (typeof KIT_SUBSCRIBER_STATE)[keyof typeof KIT_SUBSCRIBER_STATE];
 
 // §2.19 TeamMemberRole
 export const TEAM_MEMBER_ROLE = {
   Member: "Member",
 } as const;
-export type TeamMemberRole =
-  (typeof TEAM_MEMBER_ROLE)[keyof typeof TEAM_MEMBER_ROLE];
+export type TeamMemberRole = (typeof TEAM_MEMBER_ROLE)[keyof typeof TEAM_MEMBER_ROLE];
 
 // §2.14 EbookFormat
 export const EBOOK_FORMAT = {
   LetterSize: "LetterSize",
   TradeSize: "TradeSize",
 } as const;
-export type EbookFormat =
-  (typeof EBOOK_FORMAT)[keyof typeof EBOOK_FORMAT];
+export type EbookFormat = (typeof EBOOK_FORMAT)[keyof typeof EBOOK_FORMAT];
 
 // §2.15 PublishPlatform
 export const PUBLISH_PLATFORM = {
@@ -132,8 +126,7 @@ export const PUBLISH_PLATFORM = {
   Gumroad: "Gumroad",
   LTK: "LTK",
 } as const;
-export type PublishPlatform =
-  (typeof PUBLISH_PLATFORM)[keyof typeof PUBLISH_PLATFORM];
+export type PublishPlatform = (typeof PUBLISH_PLATFORM)[keyof typeof PUBLISH_PLATFORM];
 
 // §2.16 EventSource
 export const EVENT_SOURCE = {
@@ -141,8 +134,7 @@ export const EVENT_SOURCE = {
   KitApiPoll: "KitApiPoll",
   Internal: "Internal",
 } as const;
-export type EventSource =
-  (typeof EVENT_SOURCE)[keyof typeof EVENT_SOURCE];
+export type EventSource = (typeof EVENT_SOURCE)[keyof typeof EVENT_SOURCE];
 
 // ---------------------------------------------------------------------------
 // Exhaustiveness helper

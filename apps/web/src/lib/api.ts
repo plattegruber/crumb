@@ -4,31 +4,31 @@
  * All methods return the parsed JSON response. Errors are thrown
  * as ApiError instances so callers can handle them uniformly.
  */
-import { getSessionToken } from './clerk.js';
+import { getSessionToken } from "./clerk.js";
 import type {
-	Recipe,
-	RecipeId,
-	Collection,
-	CollectionId,
-	ImportJob,
-	ImportJobId,
-	Product,
-	ProductId,
-	RecipeEngagementScore,
-	RecipeStatus,
-	DietaryTag,
-	MealType,
-	Season,
-} from '@crumb/shared';
+  Recipe,
+  RecipeId,
+  Collection,
+  CollectionId,
+  ImportJob,
+  ImportJobId,
+  Product,
+  ProductId,
+  RecipeEngagementScore,
+  RecipeStatus,
+  DietaryTag,
+  MealType,
+  Season,
+} from "@crumb/shared";
 
 // ---------------------------------------------------------------------------
 // Configuration
 // ---------------------------------------------------------------------------
 
-let apiBaseUrl = '';
+let apiBaseUrl = "";
 
 export function setApiBaseUrl(url: string): void {
-	apiBaseUrl = url.replace(/\/$/, '');
+  apiBaseUrl = url.replace(/\/$/, "");
 }
 
 // ---------------------------------------------------------------------------
@@ -36,50 +36,47 @@ export function setApiBaseUrl(url: string): void {
 // ---------------------------------------------------------------------------
 
 export class ApiError extends Error {
-	constructor(
-		public readonly status: number,
-		public readonly body: unknown,
-	) {
-		super(`API error ${status}`);
-		this.name = 'ApiError';
-	}
+  constructor(
+    public readonly status: number,
+    public readonly body: unknown,
+  ) {
+    super(`API error ${status}`);
+    this.name = "ApiError";
+  }
 }
 
 // ---------------------------------------------------------------------------
 // Internal fetch helper
 // ---------------------------------------------------------------------------
 
-async function apiFetch<T>(
-	path: string,
-	options: RequestInit = {},
-): Promise<T> {
-	const token = await getSessionToken();
+async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> {
+  const token = await getSessionToken();
 
-	const headers: Record<string, string> = {
-		'Content-Type': 'application/json',
-		...(options.headers as Record<string, string> | undefined),
-	};
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...(options.headers as Record<string, string> | undefined),
+  };
 
-	if (token) {
-		headers['Authorization'] = `Bearer ${token}`;
-	}
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
 
-	const res = await fetch(`${apiBaseUrl}${path}`, {
-		...options,
-		headers,
-	});
+  const res = await fetch(`${apiBaseUrl}${path}`, {
+    ...options,
+    headers,
+  });
 
-	if (!res.ok) {
-		let body: unknown;
-		try {
-			body = await res.json();
-		} catch {
-			body = await res.text();
-		}
-		throw new ApiError(res.status, body);
-	}
+  if (!res.ok) {
+    let body: unknown;
+    try {
+      body = await res.json();
+    } catch {
+      body = await res.text();
+    }
+    throw new ApiError(res.status, body);
+  }
 
-	return (await res.json()) as T;
+  return (await res.json()) as T;
 }
 
 // ---------------------------------------------------------------------------
@@ -87,26 +84,26 @@ async function apiFetch<T>(
 // ---------------------------------------------------------------------------
 
 export interface RecipeListResponse {
-	recipes: Recipe[];
-	total: number;
-	page: number;
-	per_page: number;
+  recipes: Recipe[];
+  total: number;
+  page: number;
+  per_page: number;
 }
 
 export interface ListRecipesParams {
-	q?: string;
-	status?: RecipeStatus;
-	email_ready?: boolean;
-	cuisine?: string;
-	meal_type?: MealType;
-	season?: Season;
-	max_cook_time_minutes?: number;
-	collection_id?: string;
-	dietary_tags?: DietaryTag[];
-	sort?: 'title' | 'created_at' | 'updated_at' | 'engagement_score';
-	order?: 'asc' | 'desc';
-	page?: number;
-	per_page?: number;
+  q?: string;
+  status?: RecipeStatus;
+  email_ready?: boolean;
+  cuisine?: string;
+  meal_type?: MealType;
+  season?: Season;
+  max_cook_time_minutes?: number;
+  collection_id?: string;
+  dietary_tags?: DietaryTag[];
+  sort?: "title" | "created_at" | "updated_at" | "engagement_score";
+  order?: "asc" | "desc";
+  page?: number;
+  per_page?: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -114,44 +111,44 @@ export interface ListRecipesParams {
 // ---------------------------------------------------------------------------
 
 export const recipes = {
-	async list(params: ListRecipesParams = {}): Promise<RecipeListResponse> {
-		const searchParams = new URLSearchParams();
+  async list(params: ListRecipesParams = {}): Promise<RecipeListResponse> {
+    const searchParams = new URLSearchParams();
 
-		for (const [key, value] of Object.entries(params)) {
-			if (value === undefined || value === null) continue;
-			if (key === 'dietary_tags' && Array.isArray(value)) {
-				searchParams.set('dietary_tags', value.join(','));
-			} else {
-				searchParams.set(key, String(value));
-			}
-		}
+    for (const [key, value] of Object.entries(params)) {
+      if (value === undefined || value === null) continue;
+      if (key === "dietary_tags" && Array.isArray(value)) {
+        searchParams.set("dietary_tags", value.join(","));
+      } else {
+        searchParams.set(key, String(value));
+      }
+    }
 
-		const qs = searchParams.toString();
-		const path = qs ? `/recipes?${qs}` : '/recipes';
-		return apiFetch<RecipeListResponse>(path);
-	},
+    const qs = searchParams.toString();
+    const path = qs ? `/recipes?${qs}` : "/recipes";
+    return apiFetch<RecipeListResponse>(path);
+  },
 
-	async get(id: RecipeId | string): Promise<Recipe> {
-		return apiFetch<Recipe>(`/recipes/${id}`);
-	},
+  async get(id: RecipeId | string): Promise<Recipe> {
+    return apiFetch<Recipe>(`/recipes/${id}`);
+  },
 
-	async create(input: Record<string, unknown>): Promise<Recipe> {
-		return apiFetch<Recipe>('/recipes', {
-			method: 'POST',
-			body: JSON.stringify(input),
-		});
-	},
+  async create(input: Record<string, unknown>): Promise<Recipe> {
+    return apiFetch<Recipe>("/recipes", {
+      method: "POST",
+      body: JSON.stringify(input),
+    });
+  },
 
-	async update(id: RecipeId | string, input: Record<string, unknown>): Promise<Recipe> {
-		return apiFetch<Recipe>(`/recipes/${id}`, {
-			method: 'PUT',
-			body: JSON.stringify(input),
-		});
-	},
+  async update(id: RecipeId | string, input: Record<string, unknown>): Promise<Recipe> {
+    return apiFetch<Recipe>(`/recipes/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(input),
+    });
+  },
 
-	async delete(id: RecipeId | string): Promise<void> {
-		await apiFetch<unknown>(`/recipes/${id}`, { method: 'DELETE' });
-	},
+  async delete(id: RecipeId | string): Promise<void> {
+    await apiFetch<unknown>(`/recipes/${id}`, { method: "DELETE" });
+  },
 };
 
 // ---------------------------------------------------------------------------
@@ -159,55 +156,55 @@ export const recipes = {
 // ---------------------------------------------------------------------------
 
 export interface CollectionListResponse {
-	collections: Collection[];
+  collections: Collection[];
 }
 
 export const collections = {
-	async list(): Promise<Collection[]> {
-		const res = await apiFetch<CollectionListResponse | Collection[]>('/collections');
-		return Array.isArray(res) ? res : res.collections;
-	},
+  async list(): Promise<Collection[]> {
+    const res = await apiFetch<CollectionListResponse | Collection[]>("/collections");
+    return Array.isArray(res) ? res : res.collections;
+  },
 
-	async get(id: CollectionId | string): Promise<Collection> {
-		return apiFetch<Collection>(`/collections/${id}`);
-	},
+  async get(id: CollectionId | string): Promise<Collection> {
+    return apiFetch<Collection>(`/collections/${id}`);
+  },
 
-	async create(input: { name: string; description?: string | null }): Promise<Collection> {
-		return apiFetch<Collection>('/collections', {
-			method: 'POST',
-			body: JSON.stringify(input),
-		});
-	},
+  async create(input: { name: string; description?: string | null }): Promise<Collection> {
+    return apiFetch<Collection>("/collections", {
+      method: "POST",
+      body: JSON.stringify(input),
+    });
+  },
 
-	async update(
-		id: CollectionId | string,
-		input: { name?: string; description?: string | null },
-	): Promise<Collection> {
-		return apiFetch<Collection>(`/collections/${id}`, {
-			method: 'PUT',
-			body: JSON.stringify(input),
-		});
-	},
+  async update(
+    id: CollectionId | string,
+    input: { name?: string; description?: string | null },
+  ): Promise<Collection> {
+    return apiFetch<Collection>(`/collections/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(input),
+    });
+  },
 
-	async delete(id: CollectionId | string): Promise<void> {
-		await apiFetch<unknown>(`/collections/${id}`, { method: 'DELETE' });
-	},
+  async delete(id: CollectionId | string): Promise<void> {
+    await apiFetch<unknown>(`/collections/${id}`, { method: "DELETE" });
+  },
 
-	async addRecipe(collectionId: CollectionId | string, recipeId: RecipeId | string): Promise<void> {
-		await apiFetch<unknown>(`/collections/${collectionId}/recipes`, {
-			method: 'POST',
-			body: JSON.stringify({ recipeId }),
-		});
-	},
+  async addRecipe(collectionId: CollectionId | string, recipeId: RecipeId | string): Promise<void> {
+    await apiFetch<unknown>(`/collections/${collectionId}/recipes`, {
+      method: "POST",
+      body: JSON.stringify({ recipeId }),
+    });
+  },
 
-	async removeRecipe(
-		collectionId: CollectionId | string,
-		recipeId: RecipeId | string,
-	): Promise<void> {
-		await apiFetch<unknown>(`/collections/${collectionId}/recipes/${recipeId}`, {
-			method: 'DELETE',
-		});
-	},
+  async removeRecipe(
+    collectionId: CollectionId | string,
+    recipeId: RecipeId | string,
+  ): Promise<void> {
+    await apiFetch<unknown>(`/collections/${collectionId}/recipes/${recipeId}`, {
+      method: "DELETE",
+    });
+  },
 };
 
 // ---------------------------------------------------------------------------
@@ -215,35 +212,33 @@ export const collections = {
 // ---------------------------------------------------------------------------
 
 export interface ImportListResponse {
-	jobs: ImportJob[];
+  jobs: ImportJob[];
 }
 
 export const imports = {
-	async list(limit = 50, offset = 0): Promise<ImportJob[]> {
-		const res = await apiFetch<ImportListResponse>(
-			`/imports?limit=${limit}&offset=${offset}`,
-		);
-		return res.jobs;
-	},
+  async list(limit = 50, offset = 0): Promise<ImportJob[]> {
+    const res = await apiFetch<ImportListResponse>(`/imports?limit=${limit}&offset=${offset}`);
+    return res.jobs;
+  },
 
-	async get(id: ImportJobId | string): Promise<ImportJob> {
-		return apiFetch<ImportJob>(`/imports/${id}`);
-	},
+  async get(id: ImportJobId | string): Promise<ImportJob> {
+    return apiFetch<ImportJob>(`/imports/${id}`);
+  },
 
-	async create(sourceType: string, sourceData: Record<string, unknown>): Promise<ImportJob> {
-		return apiFetch<ImportJob>('/imports', {
-			method: 'POST',
-			body: JSON.stringify({ source_type: sourceType, source_data: sourceData }),
-		});
-	},
+  async create(sourceType: string, sourceData: Record<string, unknown>): Promise<ImportJob> {
+    return apiFetch<ImportJob>("/imports", {
+      method: "POST",
+      body: JSON.stringify({ source_type: sourceType, source_data: sourceData }),
+    });
+  },
 
-	async confirm(id: ImportJobId | string): Promise<unknown> {
-		return apiFetch<unknown>(`/imports/${id}/confirm`, { method: 'POST' });
-	},
+  async confirm(id: ImportJobId | string): Promise<unknown> {
+    return apiFetch<unknown>(`/imports/${id}/confirm`, { method: "POST" });
+  },
 
-	async reject(id: ImportJobId | string): Promise<void> {
-		await apiFetch<unknown>(`/imports/${id}/reject`, { method: 'POST' });
-	},
+  async reject(id: ImportJobId | string): Promise<void> {
+    await apiFetch<unknown>(`/imports/${id}/reject`, { method: "POST" });
+  },
 };
 
 // ---------------------------------------------------------------------------
@@ -251,45 +246,44 @@ export const imports = {
 // ---------------------------------------------------------------------------
 
 export interface EngagementScoresResponse {
-	scores: RecipeEngagementScore[];
+  scores: RecipeEngagementScore[];
 }
 
 export interface RecommendationsResponse {
-	recommendations: unknown[];
+  recommendations: unknown[];
 }
 
 export const analytics = {
-	async getEngagementScores(): Promise<RecipeEngagementScore[]> {
-		const res = await apiFetch<EngagementScoresResponse>('/analytics/engagement-scores');
-		return res.scores;
-	},
+  async getEngagementScores(): Promise<RecipeEngagementScore[]> {
+    const res = await apiFetch<EngagementScoresResponse>("/analytics/engagement-scores");
+    return res.scores;
+  },
 
-	async getRecipeScore(recipeId: RecipeId | string): Promise<RecipeEngagementScore | null> {
-		try {
-			const res = await apiFetch<{ score: RecipeEngagementScore }>(
-				`/analytics/engagement-scores/${recipeId}`,
-			);
-			return res.score;
-		} catch (e) {
-			if (e instanceof ApiError && e.status === 404) {
-				return null;
-			}
-			throw e;
-		}
-	},
+  async getRecipeScore(recipeId: RecipeId | string): Promise<RecipeEngagementScore | null> {
+    try {
+      const res = await apiFetch<{ score: RecipeEngagementScore }>(
+        `/analytics/engagement-scores/${recipeId}`,
+      );
+      return res.score;
+    } catch (e) {
+      if (e instanceof ApiError && e.status === 404) {
+        return null;
+      }
+      throw e;
+    }
+  },
 
-	async computeScores(): Promise<RecipeEngagementScore[]> {
-		const res = await apiFetch<{ scores: RecipeEngagementScore[] }>(
-			'/analytics/compute-scores',
-			{ method: 'POST' },
-		);
-		return res.scores;
-	},
+  async computeScores(): Promise<RecipeEngagementScore[]> {
+    const res = await apiFetch<{ scores: RecipeEngagementScore[] }>("/analytics/compute-scores", {
+      method: "POST",
+    });
+    return res.scores;
+  },
 
-	async getRecommendations(): Promise<unknown[]> {
-		const res = await apiFetch<RecommendationsResponse>('/analytics/recommendations');
-		return res.recommendations;
-	},
+  async getRecommendations(): Promise<unknown[]> {
+    const res = await apiFetch<RecommendationsResponse>("/analytics/recommendations");
+    return res.recommendations;
+  },
 };
 
 // ---------------------------------------------------------------------------
@@ -297,34 +291,31 @@ export const analytics = {
 // ---------------------------------------------------------------------------
 
 export interface SegmentProfileResponse {
-	profile: unknown | null;
+  profile: unknown | null;
 }
 
 export const segmentation = {
-	async getProfile(): Promise<unknown | null> {
-		const res = await apiFetch<SegmentProfileResponse>('/segments');
-		return res.profile;
-	},
+  async getProfile(): Promise<unknown | null> {
+    const res = await apiFetch<SegmentProfileResponse>("/segments");
+    return res.profile;
+  },
 
-	async computeProfile(): Promise<unknown> {
-		return apiFetch<unknown>('/segments/compute', { method: 'POST' });
-	},
+  async computeProfile(): Promise<unknown> {
+    return apiFetch<unknown>("/segments/compute", { method: "POST" });
+  },
 
-	async inferDietaryTags(recipeId: RecipeId | string): Promise<unknown> {
-		return apiFetch<unknown>(`/recipes/${recipeId}/dietary-tags/infer`, {
-			method: 'POST',
-		});
-	},
+  async inferDietaryTags(recipeId: RecipeId | string): Promise<unknown> {
+    return apiFetch<unknown>(`/recipes/${recipeId}/dietary-tags/infer`, {
+      method: "POST",
+    });
+  },
 
-	async confirmDietaryTags(
-		recipeId: RecipeId | string,
-		tags: DietaryTag[],
-	): Promise<unknown> {
-		return apiFetch<unknown>(`/recipes/${recipeId}/dietary-tags/confirm`, {
-			method: 'PUT',
-			body: JSON.stringify({ tags }),
-		});
-	},
+  async confirmDietaryTags(recipeId: RecipeId | string, tags: DietaryTag[]): Promise<unknown> {
+    return apiFetch<unknown>(`/recipes/${recipeId}/dietary-tags/confirm`, {
+      method: "PUT",
+      body: JSON.stringify({ tags }),
+    });
+  },
 };
 
 // ---------------------------------------------------------------------------
@@ -332,24 +323,24 @@ export const segmentation = {
 // ---------------------------------------------------------------------------
 
 export const automation = {
-	async getSeasonalDrops(): Promise<unknown[]> {
-		const res = await apiFetch<{ drops: unknown[] }>('/automation/seasonal-drops');
-		return res.drops;
-	},
+  async getSeasonalDrops(): Promise<unknown[]> {
+    const res = await apiFetch<{ drops: unknown[] }>("/automation/seasonal-drops");
+    return res.drops;
+  },
 
-	async createSeasonalDrop(input: Record<string, unknown>): Promise<unknown> {
-		return apiFetch<unknown>('/automation/seasonal-drops', {
-			method: 'POST',
-			body: JSON.stringify(input),
-		});
-	},
+  async createSeasonalDrop(input: Record<string, unknown>): Promise<unknown> {
+    return apiFetch<unknown>("/automation/seasonal-drops", {
+      method: "POST",
+      body: JSON.stringify(input),
+    });
+  },
 
-	async createBroadcastDraft(recipeId: RecipeId | string): Promise<unknown> {
-		return apiFetch<unknown>(`/automation/broadcast-draft/${recipeId}`, {
-			method: 'POST',
-			body: JSON.stringify({}),
-		});
-	},
+  async createBroadcastDraft(recipeId: RecipeId | string): Promise<unknown> {
+    return apiFetch<unknown>(`/automation/broadcast-draft/${recipeId}`, {
+      method: "POST",
+      body: JSON.stringify({}),
+    });
+  },
 };
 
 // ---------------------------------------------------------------------------
@@ -357,20 +348,20 @@ export const automation = {
 // ---------------------------------------------------------------------------
 
 export const products = {
-	async list(): Promise<Product[]> {
-		try {
-			const res = await apiFetch<{ products: Product[] } | Product[]>('/products');
-			return Array.isArray(res) ? res : res.products;
-		} catch {
-			return [];
-		}
-	},
+  async list(): Promise<Product[]> {
+    try {
+      const res = await apiFetch<{ products: Product[] } | Product[]>("/products");
+      return Array.isArray(res) ? res : res.products;
+    } catch {
+      return [];
+    }
+  },
 
-	async get(id: ProductId | string): Promise<Product | null> {
-		try {
-			return await apiFetch<Product>(`/products/${id}`);
-		} catch {
-			return null;
-		}
-	},
+  async get(id: ProductId | string): Promise<Product | null> {
+    try {
+      return await apiFetch<Product>(`/products/${id}`);
+    } catch {
+      return null;
+    }
+  },
 };

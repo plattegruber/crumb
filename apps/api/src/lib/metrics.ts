@@ -18,25 +18,13 @@ import type { Logger } from "./logger.js";
 
 export interface MetricsCollector {
   /** Increment a counter metric. */
-  increment(
-    name: string,
-    labels: Record<string, string>,
-    value?: number,
-  ): void;
+  increment(name: string, labels: Record<string, string>, value?: number): void;
 
   /** Record a histogram observation (e.g. latency in ms). */
-  observe(
-    name: string,
-    labels: Record<string, string>,
-    value: number,
-  ): void;
+  observe(name: string, labels: Record<string, string>, value: number): void;
 
   /** Record a gauge value (point-in-time measurement). */
-  gauge(
-    name: string,
-    labels: Record<string, string>,
-    value: number,
-  ): void;
+  gauge(name: string, labels: Record<string, string>, value: number): void;
 }
 
 // ---------------------------------------------------------------------------
@@ -81,11 +69,7 @@ export const METRIC = {
  */
 export function createMetrics(logger: Logger): MetricsCollector {
   return {
-    increment(
-      name: string,
-      labels: Record<string, string>,
-      value?: number,
-    ): void {
+    increment(name: string, labels: Record<string, string>, value?: number): void {
       logger.info("metric", {
         metric: name,
         metricType: "counter",
@@ -94,11 +78,7 @@ export function createMetrics(logger: Logger): MetricsCollector {
       });
     },
 
-    observe(
-      name: string,
-      labels: Record<string, string>,
-      value: number,
-    ): void {
+    observe(name: string, labels: Record<string, string>, value: number): void {
       logger.info("metric", {
         metric: name,
         metricType: "histogram",
@@ -107,11 +87,7 @@ export function createMetrics(logger: Logger): MetricsCollector {
       });
     },
 
-    gauge(
-      name: string,
-      labels: Record<string, string>,
-      value: number,
-    ): void {
+    gauge(name: string, labels: Record<string, string>, value: number): void {
       logger.info("metric", {
         metric: name,
         metricType: "gauge",

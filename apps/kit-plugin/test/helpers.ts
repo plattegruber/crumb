@@ -14,7 +14,6 @@ import type {
   BrandKitId,
 } from "@crumb/shared";
 import type {
-  FontSpec,
   Ingredient,
   IngredientGroup,
   Instruction,
@@ -101,10 +100,7 @@ export function recipeYield(overrides?: Partial<RecipeYield>): RecipeYield {
   };
 }
 
-export function ingredient(
-  item: string,
-  overrides?: Partial<Ingredient>,
-): Ingredient {
+export function ingredient(item: string, overrides?: Partial<Ingredient>): Ingredient {
   return {
     id: ingredientId(`ing-${item}`),
     quantity: { type: "WholeNumber", value: 1 },
@@ -115,15 +111,10 @@ export function ingredient(
   };
 }
 
-export function ingredientGroup(
-  items: string[],
-  label: string | null = null,
-): IngredientGroup {
+export function ingredientGroup(items: string[], label: string | null = null): IngredientGroup {
   return {
     label,
-    ingredients: items.map((item, i) =>
-      ingredient(item, { id: ingredientId(`ing-${i}`) }),
-    ),
+    ingredients: items.map((item, i) => ingredient(item, { id: ingredientId(`ing-${i}`) })),
   };
 }
 
@@ -134,15 +125,10 @@ export function instruction(body: string, id?: string): Instruction {
   };
 }
 
-export function instructionGroup(
-  steps: string[],
-  label: string | null = null,
-): InstructionGroup {
+export function instructionGroup(steps: string[], label: string | null = null): InstructionGroup {
   return {
     label,
-    instructions: steps.map((step, i) =>
-      instruction(step, `inst-${i}`),
-    ),
+    instructions: steps.map((step, i) => instruction(step, `inst-${i}`)),
   };
 }
 
@@ -186,16 +172,13 @@ export function nutritionFacts(): NutritionFacts {
 // Complex type factories
 // ---------------------------------------------------------------------------
 
-export function pluginRecipe(
-  overrides?: Partial<PluginRecipe>,
-): PluginRecipe {
+export function pluginRecipe(overrides?: Partial<PluginRecipe>): PluginRecipe {
   return {
     id: recipeId(),
     creator_id: creatorId(),
     title: "Lemon Garlic Pasta",
     slug: slug("lemon-garlic-pasta"),
-    description:
-      "A bright and zesty pasta dish with fresh lemon, garlic, and parmesan cheese.",
+    description: "A bright and zesty pasta dish with fresh lemon, garlic, and parmesan cheese.",
     timing: timing(),
     yield: recipeYield(),
     ingredients: [

@@ -1,6 +1,4 @@
 import { Hono } from "hono";
-import type { Context } from "hono";
-import type { AppEnv } from "./middleware/auth.js";
 import { clerkAuth } from "./middleware/auth.js";
 import { requestLogger } from "./middleware/request-logger.js";
 import type { AppEnvWithLogger } from "./middleware/request-logger.js";
@@ -44,11 +42,7 @@ app.use("*", async (c, next) => {
       return;
     }
   }
-  // AppEnvWithLogger is a superset of AppEnv (same Bindings, extra Variables).
-  // The cast is safe because the auth middleware only reads Bindings and sets
-  // creatorId, which exists in both types.
-  const ctx = c as unknown as Context<AppEnv, string>;
-  return clerkAuth()(ctx, next);
+  return clerkAuth()(c, next);
 });
 
 // ---------------------------------------------------------------------------
@@ -99,10 +93,7 @@ app.route("/imports", imports);
 
 export default {
   fetch: app.fetch,
-  async queue(
-    batch: MessageBatch<Record<string, unknown>>,
-    env: Env,
-  ): Promise<void> {
+  async queue(batch: MessageBatch<Record<string, unknown>>, env: Env): Promise<void> {
     const logger = createLogger("queue-handler", undefined, env.LOG_LEVEL);
     logger.info("queue_batch_received", {
       queueName: "import-pipeline",

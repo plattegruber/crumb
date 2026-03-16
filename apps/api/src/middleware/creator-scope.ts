@@ -54,14 +54,10 @@ export interface CreatorScopedDb<TDb = unknown> {
  * );
  * ```
  */
-export function withCreatorScope<TDb>(
-  db: TDb,
-  creatorId: CreatorId,
-): CreatorScopedDb<TDb> {
+export function withCreatorScope<TDb>(db: TDb, creatorId: CreatorId): CreatorScopedDb<TDb> {
   return {
     db,
     creatorId,
-    query: <T>(fn: (db: TDb, creatorId: CreatorId) => T): T =>
-      fn(db, creatorId),
+    query: <T>(fn: (db: TDb, creatorId: CreatorId) => T): T => fn(db, creatorId),
   };
 }

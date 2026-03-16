@@ -2,15 +2,30 @@
   "name": "crumb",
   "version": "0.0.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "pnpm --filter api dev",
     "test": "pnpm -r test",
     "test:coverage": "pnpm -r test:coverage",
     "build": "pnpm -r build",
-    "typecheck": "pnpm -r typecheck"
+    "typecheck": "pnpm -r typecheck",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "engines": {
     "node": ">=20"
   },
-  "packageManager": "pnpm@9.15.5"
+  "packageManager": "pnpm@9.15.5",
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.0.3",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-svelte": "^3.15.2",
+    "globals": "^17.4.0",
+    "prettier": "^3.8.1",
+    "prettier-plugin-svelte": "^3.5.1",
+    "typescript-eslint": "^8.57.0"
+  }
 }
