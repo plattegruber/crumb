@@ -1,0 +1,43 @@
+---
+title: Meal plans
+description: Build day-by-day meal plans with auto-generated shopping lists from your recipe library.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+Meal plans let you assign recipes to specific meals across a multi-day plan, complete with a consolidated shopping list. They are popular as both paid products and lead magnets.
+
+## Creating a meal plan
+
+1. Go to **Products** > **New Product** > **Meal Plan**.
+2. Choose the number of days: **5**, **7**, **14**, or **28**.
+3. For each day, assign recipes to meal slots: **Breakfast**, **Lunch**, **Dinner**, and optionally **Snacks**.
+4. Browse your library to find and assign recipes. You can search and filter as you go.
+5. Once all days are filled, click **Generate Shopping List**.
+
+## Shopping list generation
+
+crumb automatically creates a consolidated shopping list from all recipes in the plan:
+
+- Duplicate ingredients across recipes are merged (for example, if three recipes need olive oil, it appears once with the combined quantity).
+- Ingredients are organized by grocery section: Produce, Dairy, Meat, Pantry, etc.
+- Each item shows which recipes need it, so your customers can adjust if they skip a meal.
+
+You can review and edit the shopping list before generating the final PDF.
+
+<Aside type="tip">
+  Meal plans with a clear theme (like "5-Day Gluten-Free Reset" or "7 Days of 30-Minute Dinners") sell better than generic weekly plans.
+</Aside>
+
+## PDF output
+
+The generated meal plan PDF includes:
+- A day-by-day overview grid showing all meal assignments.
+- Full recipe pages for each recipe in the plan.
+- The consolidated shopping list, organized by section.
+
+Meal plans export as PDF only (not EPUB).
+
+<Aside>
+  Like ebooks, meal plan PDFs are styled with your brand kit colors and fonts. Configure your brand kit before generating.
+</Aside>

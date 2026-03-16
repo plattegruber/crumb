@@ -1,0 +1,58 @@
+---
+title: Digital products overview
+description: Turn your recipes into ebooks, meal plans, recipe card packs, and lead magnets.
+---
+
+import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
+
+crumb's product builder lets you turn collections of recipes into polished digital products that you can sell or give away as lead magnets. Products are generated as PDF and EPUB files, styled with your brand kit, and can be published to sales platforms like Stan Store, Gumroad, and LTK.
+
+## Product types
+
+<CardGrid>
+  <Card title="Ebook" icon="document">
+    A full cookbook with chapters, intro copy, author bio, and cover page. Available in letter size (8.5 x 11) or trade size (6 x 9). Exports as PDF and EPUB.
+  </Card>
+  <Card title="Meal plan" icon="list-format">
+    A day-by-day meal assignment grid with a consolidated shopping list. Choose 5, 7, 14, or 28-day plans. Exports as PDF.
+  </Card>
+  <Card title="Recipe card pack" icon="puzzle">
+    Individually formatted recipe cards (4 x 6 or 5 x 7), one per page. Great for printable downloads.
+  </Card>
+  <Card title="Lead magnet" icon="rocket">
+    A free sample automatically generated from an existing product. Includes 3 to 5 top recipes, a Kit opt-in form, and a delivery sequence.
+  </Card>
+</CardGrid>
+
+## Product lifecycle
+
+| Status | Meaning |
+|--------|---------|
+| **Draft** | You are building and previewing the product. Files are not finalized. |
+| **Published** | The product is live on a sales platform. PDF URLs are permanent. |
+| **Archived** | Removed from sale. Existing links continue to work for past buyers. |
+
+## AI assistance
+
+crumb uses AI to help with two tasks during product creation:
+
+- **Chapter organization** — for ebooks, AI suggests how to group your recipes into chapters based on cuisine, meal type, season, or dietary theme.
+- **Intro and headnote copy** — AI drafts an ebook introduction, chapter intros, and individual recipe headnotes in a warm, personal voice.
+
+All AI-generated copy is marked as "unreviewed" until you edit and approve it. You cannot publish a product with unreviewed AI copy.
+
+<LinkCard
+  title="Creating ebooks"
+  description="Step-by-step guide to building an ebook from your recipe collection."
+  href="/products/ebooks/"
+/>
+<LinkCard
+  title="Creating meal plans"
+  description="Build day-by-day meal plans with auto-generated shopping lists."
+  href="/products/meal-plans/"
+/>
+<LinkCard
+  title="Publishing products"
+  description="Publish to Stan Store, Gumroad, or LTK."
+  href="/products/publishing/"
+/>

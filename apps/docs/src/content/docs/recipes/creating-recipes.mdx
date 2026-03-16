@@ -1,0 +1,97 @@
+---
+title: Creating recipes
+description: Add recipes to your library manually with full control over every field.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+While most creators import recipes from external sources, you can also create recipes directly inside crumb. This is useful for new recipes that do not exist anywhere else yet, or when you want full control over every field from the start.
+
+## Creating a new recipe
+
+1. Go to **Library** in the sidebar.
+2. Click **New Recipe**.
+3. Fill in the recipe fields (described below).
+4. Click **Save**.
+
+New recipes default to **Draft** status. Change the status to **Active** when you are ready to use the recipe in emails and products.
+
+## Recipe fields
+
+### Title and description
+
+- **Title** (required) — the name of your recipe. crumb generates a URL-friendly slug from the title automatically (for example, "Lemon Pasta" becomes `lemon-pasta`). If you already have a recipe with the same slug, crumb appends a number.
+- **Description** (optional) — a short summary of the recipe. This appears in Standard and Full recipe card display modes.
+
+### Timing and yield
+
+- **Prep time** — preparation time in minutes.
+- **Cook time** — active cooking time in minutes.
+- **Total time** — override for total time if it differs from prep + cook (for example, recipes with resting or marinating time).
+- **Yield** — a number and unit, like "4 servings" or "24 cookies."
+
+### Ingredients
+
+Ingredients are organized into **groups**. A recipe with one section has a single group with no label. A recipe with multiple components (like "For the sauce" and "For the pasta") has multiple labeled groups.
+
+Each ingredient has:
+- **Quantity** — a number, fraction, or mixed number (for example, `2`, `1/3`, `1 1/2`).
+- **Unit** — cup, tablespoon, gram, etc.
+- **Item** — the ingredient name (for example, "all-purpose flour").
+- **Notes** — preparation notes like "sifted" or "room temperature."
+
+<Aside type="tip">
+  crumb handles fractions natively. Enter `1/3` and it will display as a proper fraction, not as `0.33`. When subscribers view a scaled recipe, fractions stay precise.
+</Aside>
+
+### Instructions
+
+Like ingredients, instructions can be organized into **groups** with optional labels. Each instruction is a single step.
+
+Write each step as a complete, standalone direction. Keep steps focused on one action when possible.
+
+### Photos
+
+Upload one or more photos. The first photo is the **primary photo** — it appears in recipe cards, product covers, and ebook layouts.
+
+Supported formats: JPEG, PNG, WebP, and HEIC. Maximum file size: 20 MB per image.
+
+<Aside>
+  For the best results in email recipe cards, use landscape-oriented photos with a minimum width of 600 pixels.
+</Aside>
+
+### Classification
+
+- **Dietary tags** — select all that apply: Gluten-Free, Dairy-Free, Vegan, Vegetarian, Keto, Paleo, Nut-Free, Egg-Free, Soy-Free. When you create a recipe manually, you set these yourself and they are immediately confirmed.
+- **Cuisine** — free text, like "Italian," "Mexican," or "Thai."
+- **Meal type** — one or more of: Breakfast, Lunch, Dinner, Snack, Dessert, Drink, Condiment, Side.
+- **Season** — one or more of: Spring, Summer, Autumn, Winter, Holiday.
+
+### Nutrition facts
+
+You can enter nutrition facts manually, or let crumb calculate them from your ingredient list. Calculated values are estimates based on USDA ingredient data.
+
+Nutrition fields include calories, total fat, saturated fat, cholesterol, sodium, total carbs, dietary fiber, total sugars, protein, vitamin D, calcium, iron, and potassium. All values are per serving.
+
+## Auto-tagging
+
+After you save a recipe, crumb analyzes the ingredients and suggests dietary tags automatically. For manually created recipes where you already set the tags yourself, auto-tagging will confirm your choices or flag any discrepancies.
+
+For imported recipes, auto-suggested tags start as **unconfirmed**. You must review and confirm them before they are used for subscriber segmentation. See [Dietary tags](/growth/dietary-tags/) for details on how auto-tagging works.
+
+## Setting a recipe as email-ready
+
+When you are happy with a recipe and want to use it in Kit emails:
+
+1. Open the recipe and set its status to **Active**.
+2. Toggle the **Email ready** switch to on.
+
+When you mark a recipe as email-ready, crumb automatically creates a Kit broadcast draft with the recipe card pre-inserted. You can find the draft in Kit and customize it before sending. See [Broadcast drafts](/email/broadcast-drafts/) for more.
+
+<Aside type="caution">
+  On the Free tier, you can send recipe card emails for up to 3 recipes per calendar month. Upgrade to Creator, Pro, or Studio for unlimited sends.
+</Aside>
+
+## Recipe scaling
+
+crumb supports recipe scaling as a read-only view. When you or a subscriber views a recipe with a different serving size, ingredient quantities are multiplied proportionally using precise fraction arithmetic. Scaling does not change the stored recipe — it only affects the displayed view.

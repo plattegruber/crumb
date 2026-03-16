@@ -1,0 +1,49 @@
+---
+title: Automations
+description: Seasonal recipe drops, Save This Recipe sequences, and other automated workflows.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+crumb's automation engine creates Kit sequences and broadcast drafts on your behalf, but it never sends anything without your approval. Every automation produces a draft that you review, edit, and schedule yourself.
+
+## Save This Recipe sequences
+
+When a subscriber clicks Save This Recipe, crumb can enroll them in a follow-up sequence. See [Save This Recipe](/email/save-this-recipe/) for full details.
+
+## New recipe broadcast drafts
+
+When you mark a recipe as email-ready, crumb creates a broadcast draft in Kit. See [Broadcast drafts](/email/broadcast-drafts/) for full details.
+
+## Lead magnet delivery sequences
+
+When you create a lead magnet, crumb generates a 4-email Kit sequence. See [Lead magnets](/products/lead-magnets/) for full details.
+
+## Seasonal recipe drops
+
+Seasonal drops let you schedule recipe broadcasts around a theme and timeframe.
+
+### Setting up a seasonal drop
+
+1. Go to **Settings** > **Automations** > **Seasonal Drops**.
+2. Click **New Seasonal Drop**.
+3. Configure:
+   - **Season label** — for example, "Holiday Baking" or "Summer Grilling."
+   - **Start date and end date** — specific dates or annual recurrence.
+   - **Collection** — which collection to draw recipes from.
+   - **Target segment** — all subscribers, or a specific dietary tag filter.
+4. Save.
+
+### How seasonal drops work
+
+On the start date, crumb selects a recipe from the specified collection (choosing the highest engagement score among recipes that have not yet been used in this season's drops). It creates a Kit broadcast draft with the recipe card and notifies you in the dashboard.
+
+You open Kit, review the draft, write your intro, and send.
+
+<Aside>
+  Seasonal drops create **one draft at a time**, not an entire series up front. This gives you the flexibility to skip a drop or substitute a different recipe if you want.
+</Aside>
+
+<Aside type="tip">
+  Seasonal drops work best with collections of at least 8-10 recipes. This gives crumb enough material to rotate through without repeating.
+</Aside>

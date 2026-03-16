@@ -1,0 +1,33 @@
+---
+title: Kit forms
+description: Auto-generated Kit forms for dietary preference capture and lead magnet delivery.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+crumb can generate Kit forms for two purposes: capturing dietary preferences from new subscribers, and delivering lead magnets with opt-in forms.
+
+## Preference capture form
+
+A standalone form for collecting dietary preferences from subscribers who sign up through your website, blog, or social media.
+
+The form includes:
+- Email field
+- First name field
+- Multi-select for dietary preferences: Gluten-Free, Dairy-Free, Vegan, Vegetarian, Keto, Paleo, Nut-Free
+
+When a subscriber fills out this form, their dietary preferences are written to the `preferred_dietary_tags` custom field in Kit and corresponding dietary tags are applied.
+
+## Lead magnet opt-in form
+
+Created automatically when you generate a lead magnet. Includes the same dietary preference field plus a tag for tracking which lead magnet the subscriber opted into.
+
+See [Lead magnets](/products/lead-magnets/) for details on the full lead magnet flow.
+
+## Embedding forms
+
+Both form types provide an embed code that you can copy from your crumb dashboard. Embed the code on your blog, Substack, landing page, or anywhere you want to collect subscribers.
+
+<Aside type="tip">
+  Adding the dietary preference form to your main email signup gives you segmentation data from day one, before a subscriber has even received their first email from you.
+</Aside>

@@ -1,0 +1,35 @@
+---
+title: Collections
+description: Organize your recipes into ordered collections for easy browsing and product creation.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+Collections are ordered groups of recipes. They help you organize your library and serve as the foundation for building digital products like ebooks, meal plans, and recipe card packs.
+
+## Creating a collection
+
+1. Go to **Library** > **Collections**.
+2. Click **New Collection**.
+3. Give it a name (for example, "Weeknight Dinners" or "Holiday Baking") and an optional description.
+4. Add recipes by searching your library and selecting them.
+5. Drag recipes to reorder them. The order here determines the order in products.
+6. Click **Save**.
+
+## How collections work
+
+- A recipe can belong to **zero or more** collections. Adding a recipe to one collection does not remove it from another.
+- The order of recipes within a collection is meaningful. When you build an ebook or recipe card pack from a collection, recipes appear in the collection's order.
+- When you archive a recipe, it is automatically removed from all collections.
+
+<Aside type="caution">
+  You cannot delete a collection that is referenced by a published product. Archive or unpublish the product first.
+</Aside>
+
+## Using collections for products
+
+When you create a product in the product builder, you can select a collection as the source. All recipes in that collection, in order, become the product's content. You can also hand-pick individual recipes if you do not want to use a full collection.
+
+<Aside type="tip">
+  Create a collection before you start building a product. It is much easier to organize recipe order in the collection view than in the product builder.
+</Aside>

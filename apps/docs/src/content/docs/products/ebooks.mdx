@@ -1,0 +1,106 @@
+---
+title: Creating ebooks
+description: Build professional recipe ebooks from your library with AI-assisted chapter organization and copy.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+Ebooks are the flagship product type in crumb. You select a collection of recipes, crumb helps you organize them into chapters with intro copy, and the result is a professionally formatted PDF and EPUB cookbook styled with your brand.
+
+## Before you start
+
+You need:
+- At least **5 recipes** in your library with Active status (more is better).
+- A **collection** with the recipes you want to include, in the order you want them. You can also pick recipes individually during the process.
+- Your **brand kit** configured with colors, fonts, and optionally a logo.
+
+## Step-by-step: building an ebook
+
+### 1. Start the ebook builder
+
+Go to **Products** > **New Product** > **Ebook**.
+
+### 2. Select your recipes
+
+Choose a collection or hand-pick individual recipes from your library. The order of recipes matters — it determines the default order in the ebook.
+
+### 3. AI chapter organization
+
+crumb analyzes your selected recipes and suggests chapter groupings based on:
+- Cuisine (for example, grouping all Italian recipes together)
+- Meal type (breakfast, dinner, desserts, etc.)
+- Dietary theme (a chapter of vegan recipes, a chapter of keto recipes)
+- Season (summer grilling, holiday baking)
+
+The suggestion appears as a list of chapter titles with recipes assigned to each. You can:
+- Drag recipes between chapters.
+- Rename chapters.
+- Add or remove chapters.
+- Ignore the AI suggestion entirely and organize manually.
+
+<Aside type="tip">
+  You do not have to use the AI suggestion. If you already know how you want to organize your ebook, skip it and create your own chapter structure.
+</Aside>
+
+### 4. AI intro and headnote copy
+
+Once chapters are set, crumb generates:
+- **Ebook introduction** (100-300 words) — a warm, personal intro to the cookbook.
+- **Chapter introductions** (50-150 words each) — a short intro for each chapter.
+- **Recipe headnotes** (30-80 words each) — a brief lead-in for each recipe.
+
+All generated copy uses a warm, first-person voice without marketing superlatives (no "amazing" or "incredible"). Think of it as a first draft that sounds like you wrote it.
+
+<Aside type="caution">
+  You must review and approve all AI-generated copy before publishing. crumb marks it as "unreviewed" and blocks publishing until you confirm each section.
+</Aside>
+
+### 5. Configure details
+
+- **Title** — the name of your ebook.
+- **Author bio** (optional) — a short bio that appears in the ebook.
+- **Format** — Letter size (8.5 x 11) for a classic cookbook feel, or Trade size (6 x 9) for a more book-like format.
+- **Template** — choose from crumb's template library. Templates use your brand kit colors and fonts automatically.
+
+### 6. Preview
+
+Click **Preview** to see a rendered preview of your ebook. Check:
+- Are recipes in the right order?
+- Do photos look good at the template's layout size?
+- Is the intro copy accurate and in your voice?
+- Are nutrition facts displaying correctly (if included)?
+
+### 7. Generate the final files
+
+Click **Generate**. crumb renders the ebook as both PDF and EPUB. This process takes up to 2 minutes depending on the number of recipes.
+
+When rendering completes, the files are stored on your product record and available for download, preview, and publishing.
+
+<Aside>
+  If rendering fails (for example, due to a font loading issue), crumb falls back to system fonts and notifies you. You can retry at any time.
+</Aside>
+
+## Ebook contents
+
+A generated ebook includes:
+
+1. **Cover page** — your product title, primary recipe photo (or a custom cover image), and your logo.
+2. **Table of contents** — auto-generated from your chapter structure.
+3. **Ebook introduction** — your reviewed intro copy.
+4. **Chapters** — each with a chapter intro, followed by recipe pages.
+5. **Recipe pages** — each recipe includes its photo, title, headnote, timing, yield, ingredients, instructions, and optionally nutrition facts.
+6. **Author bio page** — if you provided a bio.
+
+## Generating a lead magnet from an ebook
+
+Once your ebook is ready, you can generate a free lead magnet from it. crumb selects the top 3-5 recipes by engagement score, creates a condensed PDF, and sets up a Kit opt-in form and delivery sequence automatically.
+
+See [Lead magnets](/products/lead-magnets/) for details.
+
+## Tips for great ebooks
+
+- **Use high-quality landscape photos.** They display better in both letter and trade formats.
+- **Write your own intros.** AI copy is a good starting point, but your personal voice and stories make the ebook special.
+- **Confirm dietary tags** on all included recipes. Tags appear as icons on recipe pages and help readers find what they need.
+- **Include nutrition facts** if your audience cares about them. They add perceived value.
+- **Choose recipes that go together.** A focused theme (like "30-Minute Weeknight Dinners" or "Plant-Based Holiday") performs better than a random assortment.

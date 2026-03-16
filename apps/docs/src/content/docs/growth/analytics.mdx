@@ -1,0 +1,82 @@
+---
+title: Analytics and engagement scores
+description: Understand which recipes drive subscriber engagement and revenue with crumb's analytics engine.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+crumb's analytics engine tracks how your subscribers interact with your recipe content and distills that into a single, easy-to-understand engagement score for each recipe. These scores help you decide what to email, what to include in products, and where to focus your energy.
+
+## Engagement score
+
+Every recipe in your library has an engagement score on a **0 to 10 scale**. The score is computed daily from four signals:
+
+| Signal | Weight | What it measures |
+|--------|--------|------------------|
+| **Save clicks (30 days)** | 3x | How many subscribers clicked "Save This Recipe" in the last 30 days. This is the strongest engagement signal. |
+| **Sequence triggers (30 days)** | 2x | How many subscribers entered a Kit sequence because of this recipe. |
+| **Card views (30 days)** | 1x | How many times this recipe card appeared in a sent broadcast. |
+| **Purchase attributions (all time)** | 4x | How many product purchases can be traced back to this recipe. |
+
+### How the score is calculated
+
+The raw weighted sum is divided by a normalization factor based on your top-performing recipe. This means:
+
+- Scores are **relative to your own performance**, not absolute. A score of 8 means this recipe performs at 80% of your best recipe's level.
+- Your highest-performing recipe anchors the scale at or near 10.
+- Recipes with **no engagement data** have no score — they are not scored at 0.
+
+<Aside>
+  A recipe with no score is different from a recipe with a score of 0. No score means the recipe has not been included in any emails yet. A score of 0 would mean it was sent but received zero engagement (which is extremely rare).
+</Aside>
+
+## What you can do with engagement scores
+
+### Find your best content
+
+Sort your recipe library by engagement score to see which recipes your audience loves most. These are your top performers — use them in products, feature them in broadcasts, and create more content like them.
+
+### Build better products
+
+When creating an ebook or recipe card pack, choose recipes with high engagement scores. Your audience has already voted on what they like.
+
+### Spot trends
+
+Compare engagement scores across dietary tags, cuisines, or seasons to see what resonates. If your vegan recipes consistently outperform others, that is a signal to create more vegan content and potentially a vegan-focused product.
+
+### Evaluate email performance
+
+After sending a broadcast with a recipe card, check back in a few days to see how the engagement score changed. A bump in save clicks confirms the recipe resonated.
+
+## Revenue attribution
+
+crumb tracks a 30-day attribution window for product purchases:
+
+1. When a subscriber purchases a product (detected via Kit webhook), crumb looks at all "Save This Recipe" clicks from that subscriber in the previous 30 days.
+2. If any of the saved recipes are included in the purchased product, crumb records a purchase attribution event for each matching recipe.
+3. These attributions feed into the engagement score (weighted at 4x) and appear in your analytics dashboard.
+
+This helps you understand which recipes actually drive revenue — not just engagement.
+
+<Aside type="tip">
+  Revenue attribution only works for products sold through platforms that report purchases back to Kit (via Kit Commerce or purchase webhooks). If you sell through a platform without Kit integration, attribution will not be tracked.
+</Aside>
+
+## Event sources
+
+Engagement events come from:
+
+- **Kit webhooks** — link clicks on Save This Recipe URLs, tag additions, and purchase completions.
+- **Kit API polling** — secondary confirmation of tag events.
+- **Internal events** — recipe card insertion into broadcasts (tracked as card views when the broadcast is sent).
+
+All events are recorded with timestamps and stored permanently. They are never deleted, ensuring your historical analytics remain accurate.
+
+## Analytics dashboard
+
+Your analytics dashboard shows:
+
+- **Top recipes** — ranked by engagement score.
+- **Segment profiles** — subscriber counts and engagement rates by dietary tag.
+- **Product recommendations** — suggestions for products based on your segment data (see [Recommendations](/growth/recommendations/)).
+- **Recent events** — a timeline of save clicks, sequence triggers, and purchase attributions.

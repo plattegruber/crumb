@@ -1,0 +1,51 @@
+---
+title: API authentication
+description: How to authenticate with the crumb API.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+The crumb API uses JWT-based authentication. All API requests must include a valid token in the `Authorization` header.
+
+## Obtaining a token
+
+Authenticate with your crumb credentials to receive a JWT:
+
+```
+POST /api/auth/login
+Content-Type: application/json
+
+{
+  "email": "you@example.com",
+  "password": "your-password"
+}
+```
+
+The response includes a JWT valid for 7 days:
+
+```json
+{
+  "token": "eyJhbGciOiJIUzI1NiIs...",
+  "expires_at": "2025-03-22T14:30:00Z"
+}
+```
+
+## Using the token
+
+Include the token in the `Authorization` header of every request:
+
+```
+Authorization: Bearer eyJhbGciOiJIUzI1NiIs...
+```
+
+## Token refresh
+
+Tokens are refreshed automatically on each authenticated request. The refreshed token is returned in the response headers.
+
+## Rate limiting
+
+The API enforces rate limits per authenticated user. If you exceed the limit, you will receive a `429 Too Many Requests` response with a `Retry-After` header.
+
+<Aside>
+  The API is intended for advanced users and developers building integrations on top of crumb. Most creators will never need to use it directly.
+</Aside>

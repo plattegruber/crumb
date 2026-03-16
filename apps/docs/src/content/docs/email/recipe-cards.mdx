@@ -1,0 +1,74 @@
+---
+title: Recipe cards in Kit emails
+description: Insert beautiful, brand-matched recipe cards into your Kit emails using the crumb editor plugin.
+---
+
+import { Aside, Tabs, TabItem } from '@astrojs/starlight/components';
+
+Recipe cards are the core of how crumb connects your recipes to your Kit emails. The crumb editor plugin adds a "Recipe Card" block type to Kit's email editor, letting you insert a beautifully formatted recipe directly into any broadcast or sequence email.
+
+## How recipe cards work
+
+When you install the crumb plugin from the Kit App Store, a new **Recipe Card** block becomes available in Kit's email editor. This block renders your recipe — including photo, title, ingredients, instructions, and a "Save This Recipe" button — as email-compatible HTML styled with your brand colors and fonts.
+
+Recipe cards are not images or attachments. They are inline HTML content that renders natively in every major email client, including Gmail, Apple Mail, Outlook, and iOS Mail.
+
+## Inserting a recipe card
+
+1. Open a broadcast or sequence email in Kit's email editor.
+2. Click the **+** button to add a new content block.
+3. Select **Recipe Card** from the block list.
+4. **Search your library** — type a recipe name to search. You will see each recipe's title, primary photo thumbnail, and cook time.
+5. **Select a recipe** to see a full preview of the card.
+6. **Choose a display mode** — Compact, Standard, or Full. See [Display modes](/email/display-modes/) for details on each.
+7. Click **Insert** to add the card to your email.
+
+After insertion, you can click the card block to reopen it and swap the recipe or change the display mode.
+
+<Aside type="tip">
+  Write your personal intro or story *above* the recipe card. The card itself is the structured content — your voice comes from the text around it.
+</Aside>
+
+## What is in a recipe card
+
+Every recipe card includes:
+
+- **Primary photo** — the first photo in your recipe, displayed at full width.
+- **Recipe title** — in your brand's heading font and primary color.
+- **Cook time and servings** — displayed as badges.
+- **Save This Recipe button** — a tracked call-to-action that tags subscribers and records engagement. See [Save This Recipe](/email/save-this-recipe/).
+
+Standard and Full modes include additional content. See [Display modes](/email/display-modes/) for the complete breakdown.
+
+## Brand styling
+
+Recipe cards automatically use your **brand kit** settings:
+
+- **Primary color** — used for the "Save This Recipe" button background and heading text.
+- **Heading font** — used for the recipe title. Loaded via Google Fonts when supported by the email client, with Georgia as the fallback.
+- **Body font** — used for ingredients, instructions, and other body text. Falls back to Arial.
+
+<Aside>
+  If you have not configured a brand kit yet, recipe cards will use crumb's default styling. Go to [Brand Kit settings](/settings/brand-kit/) to set your colors and fonts.
+</Aside>
+
+## Email client compatibility
+
+Recipe cards are tested and optimized for:
+
+- iOS Mail
+- Gmail (web and app)
+- Outlook (2019 and newer, including web)
+- Apple Mail
+
+All styling is inline (no external CSS) and no JavaScript is used, ensuring maximum compatibility across email clients.
+
+## Empty library state
+
+If you do not have any recipes in your library yet, the Recipe Card block shows a prompt: "Add your first recipe to crumb to insert recipe cards." with a link to your crumb library.
+
+## Requirements
+
+- Your Kit account must be [connected to crumb](/kit/connecting/).
+- You need at least one recipe in your library with **Active** status.
+- The crumb plugin must be installed from the Kit App Store.
