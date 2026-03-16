@@ -3,6 +3,7 @@ import type { AppEnv } from "./middleware/auth.js";
 import { clerkAuth } from "./middleware/auth.js";
 import { recipeRoutes } from "./routes/recipes.js";
 import { collectionRoutes } from "./routes/collections.js";
+import { segmentationRoutes } from "./routes/segmentation.js";
 
 export type { AppEnv } from "./middleware/auth.js";
 export type { AuthContext, CreatorId } from "./types/auth.js";
@@ -35,5 +36,11 @@ app.get("/health", (c) => {
 
 app.route("/recipes", recipeRoutes);
 app.route("/collections", collectionRoutes);
+
+// ---------------------------------------------------------------------------
+// Segmentation Engine routes (SPEC 9)
+// ---------------------------------------------------------------------------
+
+app.route("/", segmentationRoutes);
 
 export default app;
