@@ -1,0 +1,51 @@
+[
+  {
+    "id": "wp-recipe-1",
+    "title": "Roasted Tomato Soup",
+    "description": "A rich, warming tomato soup made with roasted tomatoes.",
+    "ingredients": [
+      { "raw_text": "2 pounds roma tomatoes, halved" },
+      { "raw_text": "4 cloves garlic, peeled" },
+      { "raw_text": "2 tablespoons olive oil" },
+      { "raw_text": "1 cup vegetable broth" },
+      { "raw_text": "1/4 cup fresh basil leaves" },
+      { "raw_text": "Salt and pepper to taste" }
+    ],
+    "instructions": [
+      "Preheat oven to 400 degrees F.",
+      "Place tomatoes and garlic on a baking sheet. Drizzle with olive oil.",
+      "Roast for 25-30 minutes until tomatoes are soft and slightly charred.",
+      "Transfer to a blender with vegetable broth and basil. Blend until smooth.",
+      "Season with salt and pepper. Serve hot."
+    ],
+    "prep_minutes": 10,
+    "cook_minutes": 30,
+    "total_minutes": 40,
+    "yield_quantity": 4,
+    "yield_unit": "servings",
+    "modified": "2026-03-15T12:00:00Z"
+  },
+  {
+    "id": "wp-recipe-2",
+    "title": "Garlic Bread",
+    "description": "Simple and delicious garlic bread.",
+    "ingredients": [
+      { "raw_text": "1 baguette, halved lengthwise" },
+      { "raw_text": "4 tablespoons butter, softened" },
+      { "raw_text": "3 cloves garlic, minced" },
+      { "raw_text": "2 tablespoons fresh parsley, chopped" }
+    ],
+    "instructions": [
+      "Preheat oven to 375 degrees F.",
+      "Mix butter, garlic, and parsley.",
+      "Spread on baguette halves.",
+      "Bake for 10-12 minutes until golden."
+    ],
+    "prep_minutes": 5,
+    "cook_minutes": 12,
+    "total_minutes": 17,
+    "yield_quantity": 6,
+    "yield_unit": "slices",
+    "modified": "2026-03-14T10:00:00Z"
+  }
+]
