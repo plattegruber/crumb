@@ -43,8 +43,12 @@
         };
       }
 
-      const recipe = await recipes.create(input);
-      await goto(`/library/${recipe.id}`);
+      const result = await recipes.create(input);
+      // API returns { recipe: { id, ... }, ingredientGroups, ... }
+      const recipeId =
+        (result as Record<string, unknown>).id ??
+        ((result as Record<string, unknown>).recipe as Record<string, unknown>)?.id;
+      await goto(`/library/${recipeId}`);
     } catch (e) {
       error = "Failed to create recipe. Please try again.";
       console.error(e);
