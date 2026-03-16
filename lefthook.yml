@@ -1,0 +1,9 @@
+pre-commit:
+  parallel: true
+  commands:
+    lint:
+      glob: "*.{ts,tsx,js,jsx,svelte}"
+      run: pnpm exec eslint --fix {staged_files} && git add {staged_files}
+    format:
+      glob: "*.{ts,tsx,js,jsx,svelte,json,css,html,md}"
+      run: pnpm exec prettier --write {staged_files} && git add {staged_files}
