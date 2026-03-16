@@ -3,13 +3,14 @@ title: Connecting your Kit account
 description: Connect crumb to Kit via OAuth and understand the required permissions.
 ---
 
-import { Aside } from '@astrojs/starlight/components';
+import { Aside } from "@astrojs/starlight/components";
 
 crumb requires a connection to your Kit (formerly ConvertKit) account to work. The connection uses OAuth 2.0, Kit's standard authorization flow for App Store apps. Your credentials are never stored by crumb — only encrypted access tokens.
 
 ## Before you connect
 
 You need:
+
 - A **Kit account** with an active plan (free or paid).
 - A **verified crumb account** — you must verify your email before connecting Kit.
 
@@ -27,21 +28,22 @@ The entire process takes about 30 seconds.
 
 crumb requests the following Kit OAuth scopes:
 
-| Scope | Why crumb needs it |
-|-------|-------------------|
-| `subscribers:read` | Read subscriber data for segmentation and analytics. |
-| `subscribers:write` | Write dietary preference tags and custom fields to subscribers. |
-| `broadcasts:read` | Check existing broadcasts to avoid duplicates. |
-| `broadcasts:write` | Create broadcast drafts with recipe cards. |
-| `tags:read` | Read existing tags to avoid naming conflicts. |
-| `tags:write` | Create dietary and recipe tags on subscribers. |
-| `sequences:read` | Check if a subscriber is already in a sequence before enrolling them. |
-| `forms:read` | List existing forms. |
-| `purchases:write` | Record purchase events for revenue attribution. |
-| `webhooks:write` | Register webhooks for subscriber events, link clicks, and purchases. |
+| Scope               | Why crumb needs it                                                    |
+| ------------------- | --------------------------------------------------------------------- |
+| `subscribers:read`  | Read subscriber data for segmentation and analytics.                  |
+| `subscribers:write` | Write dietary preference tags and custom fields to subscribers.       |
+| `broadcasts:read`   | Check existing broadcasts to avoid duplicates.                        |
+| `broadcasts:write`  | Create broadcast drafts with recipe cards.                            |
+| `tags:read`         | Read existing tags to avoid naming conflicts.                         |
+| `tags:write`        | Create dietary and recipe tags on subscribers.                        |
+| `sequences:read`    | Check if a subscriber is already in a sequence before enrolling them. |
+| `forms:read`        | List existing forms.                                                  |
+| `purchases:write`   | Record purchase events for revenue attribution.                       |
+| `webhooks:write`    | Register webhooks for subscriber events, link clicks, and purchases.  |
 
 <Aside>
-  All permissions are required. If you decline any scope, crumb will not be able to function correctly and will prompt you to re-authorize with all scopes.
+  All permissions are required. If you decline any scope, crumb will not be able to function
+  correctly and will prompt you to re-authorize with all scopes.
 </Aside>
 
 ## What happens after connecting
@@ -71,12 +73,14 @@ If you need to disconnect your Kit account:
 3. crumb removes the stored tokens and deregisters all webhooks.
 
 After disconnecting:
+
 - Recipe cards in already-sent emails continue to work (they are static HTML).
 - The "Save This Recipe" button in already-sent emails will continue to redirect but will not tag subscribers or record engagement.
 - You cannot insert new recipe cards, create broadcast drafts, or use any Kit-dependent features until you reconnect.
 
 <Aside type="caution">
-  Disconnecting does not remove tags or custom fields that crumb already created in your Kit account. Those remain in Kit and can be managed directly in Kit's interface.
+  Disconnecting does not remove tags or custom fields that crumb already created in your Kit
+  account. Those remain in Kit and can be managed directly in Kit's interface.
 </Aside>
 
 ## Handling connection issues
@@ -88,6 +92,7 @@ If Kit reports an error or your token cannot be refreshed:
 - To reconnect, go to **Settings** > **Kit Connection** and click **Reconnect**. You will go through the OAuth flow again.
 
 Common reasons for disconnection:
+
 - You changed your Kit password.
 - You revoked crumb's access in Kit's App Store settings.
 - Kit experienced a temporary outage that caused the token refresh to fail.

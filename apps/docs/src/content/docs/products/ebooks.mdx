@@ -3,13 +3,14 @@ title: Creating ebooks
 description: Build professional recipe ebooks from your library with AI-assisted chapter organization and copy.
 ---
 
-import { Aside } from '@astrojs/starlight/components';
+import { Aside } from "@astrojs/starlight/components";
 
 Ebooks are the flagship product type in crumb. You select a collection of recipes, crumb helps you organize them into chapters with intro copy, and the result is a professionally formatted PDF and EPUB cookbook styled with your brand.
 
 ## Before you start
 
 You need:
+
 - At least **5 recipes** in your library with Active status (more is better).
 - A **collection** with the recipes you want to include, in the order you want them. You can also pick recipes individually during the process.
 - Your **brand kit** configured with colors, fonts, and optionally a logo.
@@ -27,24 +28,28 @@ Choose a collection or hand-pick individual recipes from your library. The order
 ### 3. AI chapter organization
 
 crumb analyzes your selected recipes and suggests chapter groupings based on:
+
 - Cuisine (for example, grouping all Italian recipes together)
 - Meal type (breakfast, dinner, desserts, etc.)
 - Dietary theme (a chapter of vegan recipes, a chapter of keto recipes)
 - Season (summer grilling, holiday baking)
 
 The suggestion appears as a list of chapter titles with recipes assigned to each. You can:
+
 - Drag recipes between chapters.
 - Rename chapters.
 - Add or remove chapters.
 - Ignore the AI suggestion entirely and organize manually.
 
 <Aside type="tip">
-  You do not have to use the AI suggestion. If you already know how you want to organize your ebook, skip it and create your own chapter structure.
+  You do not have to use the AI suggestion. If you already know how you want to organize your ebook,
+  skip it and create your own chapter structure.
 </Aside>
 
 ### 4. AI intro and headnote copy
 
 Once chapters are set, crumb generates:
+
 - **Ebook introduction** (100-300 words) — a warm, personal intro to the cookbook.
 - **Chapter introductions** (50-150 words each) — a short intro for each chapter.
 - **Recipe headnotes** (30-80 words each) — a brief lead-in for each recipe.
@@ -52,7 +57,8 @@ Once chapters are set, crumb generates:
 All generated copy uses a warm, first-person voice without marketing superlatives (no "amazing" or "incredible"). Think of it as a first draft that sounds like you wrote it.
 
 <Aside type="caution">
-  You must review and approve all AI-generated copy before publishing. crumb marks it as "unreviewed" and blocks publishing until you confirm each section.
+  You must review and approve all AI-generated copy before publishing. crumb marks it as
+  "unreviewed" and blocks publishing until you confirm each section.
 </Aside>
 
 ### 5. Configure details
@@ -65,6 +71,7 @@ All generated copy uses a warm, first-person voice without marketing superlative
 ### 6. Preview
 
 Click **Preview** to see a rendered preview of your ebook. Check:
+
 - Are recipes in the right order?
 - Do photos look good at the template's layout size?
 - Is the intro copy accurate and in your voice?
@@ -77,7 +84,8 @@ Click **Generate**. crumb renders the ebook as both PDF and EPUB. This process t
 When rendering completes, the files are stored on your product record and available for download, preview, and publishing.
 
 <Aside>
-  If rendering fails (for example, due to a font loading issue), crumb falls back to system fonts and notifies you. You can retry at any time.
+  If rendering fails (for example, due to a font loading issue), crumb falls back to system fonts
+  and notifies you. You can retry at any time.
 </Aside>
 
 ## Ebook contents

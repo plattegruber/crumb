@@ -3,7 +3,7 @@ title: Tags and custom fields
 description: How crumb uses Kit tags and custom fields to track dietary preferences and recipe engagement.
 ---
 
-import { Aside } from '@astrojs/starlight/components';
+import { Aside } from "@astrojs/starlight/components";
 
 crumb creates and manages specific Kit tags and custom fields to power segmentation, engagement tracking, and automation. All crumb-managed tags use a namespaced format to avoid conflicts with tags you create yourself in Kit.
 
@@ -11,28 +11,30 @@ crumb creates and manages specific Kit tags and custom fields to power segmentat
 
 crumb uses three tag namespaces:
 
-| Pattern | Example | Purpose |
-|---------|---------|---------|
-| `dietary:{tag}` | `dietary:gluten-free` | Applied when a subscriber saves a recipe with confirmed dietary tags. Used for audience segmentation. |
-| `recipe:saved:{slug}` | `recipe:saved:lemon-pasta` | Applied when a subscriber clicks Save This Recipe. Tracks which specific recipes a subscriber has saved. |
-| `product:purchased:{id}` | `product:purchased:a1b2c3` | Applied when a purchase is detected via Kit webhook. Tracks product buyers. |
+| Pattern                  | Example                    | Purpose                                                                                                  |
+| ------------------------ | -------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `dietary:{tag}`          | `dietary:gluten-free`      | Applied when a subscriber saves a recipe with confirmed dietary tags. Used for audience segmentation.    |
+| `recipe:saved:{slug}`    | `recipe:saved:lemon-pasta` | Applied when a subscriber clicks Save This Recipe. Tracks which specific recipes a subscriber has saved. |
+| `product:purchased:{id}` | `product:purchased:a1b2c3` | Applied when a purchase is detected via Kit webhook. Tracks product buyers.                              |
 
 Tags are created lazily — crumb only creates a tag in Kit the first time it is needed. If the tag already exists (for example, if you manually created a `dietary:vegan` tag), crumb uses the existing one.
 
 <Aside>
-  crumb never modifies or deletes tags you created yourself. It only manages tags within its own namespaces.
+  crumb never modifies or deletes tags you created yourself. It only manages tags within its own
+  namespaces.
 </Aside>
 
 ## Custom fields crumb creates
 
-| Field | Example value | Purpose |
-|-------|---------------|---------|
-| `preferred_dietary_tags` | `gluten-free,vegan` | Comma-separated dietary preferences from preference capture forms. |
-| `last_recipe_saved` | `lemon-pasta` | The slug of the most recently saved recipe. |
-| `last_recipe_saved_at` | `2025-03-15T14:30:00Z` | ISO timestamp of the most recent save click. |
+| Field                    | Example value          | Purpose                                                            |
+| ------------------------ | ---------------------- | ------------------------------------------------------------------ |
+| `preferred_dietary_tags` | `gluten-free,vegan`    | Comma-separated dietary preferences from preference capture forms. |
+| `last_recipe_saved`      | `lemon-pasta`          | The slug of the most recently saved recipe.                        |
+| `last_recipe_saved_at`   | `2025-03-15T14:30:00Z` | ISO timestamp of the most recent save click.                       |
 
 Custom fields are also created lazily on first use.
 
 <Aside type="tip">
-  You can use these custom fields in Kit's own automation rules. For example, you could create a Kit automation that triggers when `last_recipe_saved_at` is within the last 24 hours.
+  You can use these custom fields in Kit's own automation rules. For example, you could create a Kit
+  automation that triggers when `last_recipe_saved_at` is within the last 24 hours.
 </Aside>

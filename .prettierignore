@@ -2,6 +2,7 @@ node_modules
 dist
 .svelte-kit
 .wrangler
+.astro
 .claude
 coverage
 pnpm-lock.yaml

@@ -3,7 +3,7 @@ title: Webhook event reference
 description: Reference for webhook events that crumb sends and receives.
 ---
 
-import { Aside } from '@astrojs/starlight/components';
+import { Aside } from "@astrojs/starlight/components";
 
 This page documents the webhook events in the crumb ecosystem — both the Kit webhooks that crumb listens to, and the internal events that drive crumb's automation.
 
@@ -11,26 +11,27 @@ This page documents the webhook events in the crumb ecosystem — both the Kit w
 
 These webhooks are registered automatically when you connect your Kit account.
 
-| Event | Payload key | crumb action |
-|-------|------------|--------------|
-| `subscriber.activated` | `subscriber.id` | Apply dietary preferences from custom fields. |
-| `subscriber.tag_added` | `subscriber.id`, `tag.name` | Record as engagement event. |
-| `subscriber.unsubscribed` | `subscriber.id` | Remove from segment counts. |
-| `purchase.completed` | `subscriber.id`, `purchase` | Record purchase attribution. |
-| `link.clicked` | `subscriber.id`, `url` | If Save This Recipe URL, record save click. |
+| Event                     | Payload key                 | crumb action                                  |
+| ------------------------- | --------------------------- | --------------------------------------------- |
+| `subscriber.activated`    | `subscriber.id`             | Apply dietary preferences from custom fields. |
+| `subscriber.tag_added`    | `subscriber.id`, `tag.name` | Record as engagement event.                   |
+| `subscriber.unsubscribed` | `subscriber.id`             | Remove from segment counts.                   |
+| `purchase.completed`      | `subscriber.id`, `purchase` | Record purchase attribution.                  |
+| `link.clicked`            | `subscriber.id`, `url`      | If Save This Recipe URL, record save click.   |
 
 ## Internal events
 
 These events are generated within crumb and drive automated workflows.
 
-| Event | Trigger | Action |
-|-------|---------|--------|
-| `recipe.email_ready` | Creator marks recipe as email-ready. | Create Kit broadcast draft. |
-| `recipe.saved` | Subscriber clicks Save This Recipe. | Tag subscriber, update custom fields, record engagement, trigger sequence. |
-| `product.published` | Creator publishes a product. | Generate social share assets. Update lead magnet pitch emails. |
-| `lead_magnet.created` | Creator generates a lead magnet. | Create Kit form and delivery sequence. |
-| `segment.computed` | Daily segment profile computation. | Check for product recommendations. |
+| Event                 | Trigger                              | Action                                                                     |
+| --------------------- | ------------------------------------ | -------------------------------------------------------------------------- |
+| `recipe.email_ready`  | Creator marks recipe as email-ready. | Create Kit broadcast draft.                                                |
+| `recipe.saved`        | Subscriber clicks Save This Recipe.  | Tag subscriber, update custom fields, record engagement, trigger sequence. |
+| `product.published`   | Creator publishes a product.         | Generate social share assets. Update lead magnet pitch emails.             |
+| `lead_magnet.created` | Creator generates a lead magnet.     | Create Kit form and delivery sequence.                                     |
+| `segment.computed`    | Daily segment profile computation.   | Check for product recommendations.                                         |
 
 <Aside>
-  All webhook payloads from Kit are verified using HMAC-SHA256. Unverified payloads are rejected with a 403 response.
+  All webhook payloads from Kit are verified using HMAC-SHA256. Unverified payloads are rejected
+  with a 403 response.
 </Aside>
