@@ -28,8 +28,12 @@ jobs:
       - name: Typecheck
         run: pnpm typecheck
 
+      - name: Run tests
+        run: pnpm test
+
       - name: Run tests with coverage
         run: pnpm test:coverage
+        continue-on-error: true
 
       - name: Upload API coverage
         if: always()
