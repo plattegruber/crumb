@@ -22,9 +22,21 @@
   // Determine the current path for active nav highlighting
   const currentPath = $derived($page.url.pathname);
 
+  // All nav hrefs, used to find the best (longest) match
+  const allNavHrefs = $derived(navSections.flatMap((s) => s.items.map((i) => i.href)));
+
   function isActive(href: string): boolean {
     if (href === "/") return currentPath === "/";
-    return currentPath.startsWith(href);
+    const matches = currentPath === href || currentPath.startsWith(href + "/");
+    if (!matches) return false;
+    // Only highlight if no OTHER nav item is a longer match
+    // e.g. on "/library/collections", "/library/collections" wins over "/library"
+    return !allNavHrefs.some(
+      (other) =>
+        other !== href &&
+        other.length > href.length &&
+        (currentPath === other || currentPath.startsWith(other + "/")),
+    );
   }
 
   onMount(async () => {
