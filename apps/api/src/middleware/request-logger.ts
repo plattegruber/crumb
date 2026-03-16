@@ -52,9 +52,7 @@ export function requestLogger() {
     const startTime = Date.now();
 
     // Determine log level from env var
-    const logLevel =
-      "LOG_LEVEL" in c.env ? (c.env as Record<string, unknown>)["LOG_LEVEL"] : undefined;
-    const logLevelStr = typeof logLevel === "string" ? logLevel : undefined;
+    const logLevelStr: string | undefined = c.env.LOG_LEVEL ?? undefined;
 
     // Create logger scoped to this request
     const logger = createLogger("api", requestId, logLevelStr);
