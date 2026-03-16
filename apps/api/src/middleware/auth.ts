@@ -1,0 +1,136 @@
+/**
+ * Clerk JWT verification middleware for Hono.
+ *
+ * Verifies the `Authorization: Bearer <token>` header using
+ * `@clerk/backend`'s `verifyToken`, which fetches JWKS from
+ * Clerk's API and validates the RS256 signature, expiry, and nbf
+ * claims.
+ *
+ * On success the Clerk `sub` claim (user ID) is stored in the
+ * Hono context as `creatorId`.
+ */
+import { createMiddleware } from "hono/factory";
+import { verifyToken } from "@clerk/backend";
+import type { Env } from "../env.js";
+import type { AuthContext, CreatorId } from "../types/auth.js";
+import { AuthErrorReason } from "../types/auth.js";
+
+/**
+ * Hono generic that includes both the Worker bindings and the
+ * variables our middleware writes into context.
+ */
+export type AppEnv = {
+  Bindings: Env;
+  Variables: AuthContext;
+};
+
+/**
+ * Options for configuring the auth middleware. Mainly useful for
+ * testing, where we may want to swap the token verifier.
+ */
+export interface AuthMiddlewareOptions {
+  /**
+   * Custom token verification function.
+   * When provided, replaces the default `@clerk/backend` verifyToken call.
+   * The function receives the raw Bearer token and must return the Clerk
+   * user ID (sub claim) on success, or null on failure.
+   */
+  readonly verifyFn?: (
+    token: string,
+    env: Env,
+  ) => Promise<string | null>;
+}
+
+/**
+ * Extract the Bearer token from an Authorization header value.
+ * Returns null if the header is missing or does not use the Bearer
+ * scheme.
+ */
+export function extractBearerToken(
+  headerValue: string | null | undefined,
+): string | null {
+  if (headerValue === null || headerValue === undefined) {
+    return null;
+  }
+  const trimmed = headerValue.trim();
+  if (!trimmed.toLowerCase().startsWith("bearer ")) {
+    return null;
+  }
+  const token = trimmed.slice(7).trim();
+  if (token.length === 0) {
+    return null;
+  }
+  return token;
+}
+
+/**
+ * Creates the Clerk auth middleware for Hono.
+ *
+ * Usage:
+ * ```ts
+ * const app = new Hono<AppEnv>();
+ * app.use("*", clerkAuth());
+ * ```
+ */
+export function clerkAuth(options?: AuthMiddlewareOptions) {
+  return createMiddleware<AppEnv>(async (c, next) => {
+    const authHeader = c.req.header("Authorization");
+    const token = extractBearerToken(authHeader);
+
+    if (token === null) {
+      return c.json(
+        {
+          error: "Unauthorized",
+          reason: authHeader === undefined || authHeader === null
+            ? AuthErrorReason.MISSING_HEADER
+            : AuthErrorReason.MALFORMED_HEADER,
+        },
+        401,
+      );
+    }
+
+    const verifyFn = options?.verifyFn ?? defaultVerify;
+
+    const userId = await verifyFn(token, c.env);
+
+    if (userId === null) {
+      return c.json(
+        {
+          error: "Unauthorized",
+          reason: AuthErrorReason.VERIFICATION_FAILED,
+        },
+        401,
+      );
+    }
+
+    c.set("creatorId", userId as CreatorId);
+
+    await next();
+  });
+}
+
+/**
+ * Default verification using @clerk/backend.
+ *
+ * Returns the `sub` claim (Clerk user ID) on success, null on
+ * failure.
+ */
+async function defaultVerify(
+  token: string,
+  env: Env,
+): Promise<string | null> {
+  try {
+    const payload = await verifyToken(token, {
+      secretKey: env.CLERK_SECRET_KEY,
+    });
+
+    const sub: unknown = payload.sub;
+    if (typeof sub !== "string" || sub.length === 0) {
+      return null;
+    }
+
+    return sub;
+  } catch {
+    return null;
+  }
+}
