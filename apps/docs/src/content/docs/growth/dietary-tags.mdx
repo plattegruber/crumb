@@ -1,15 +1,15 @@
 ---
 title: How dietary auto-tagging works
-description: How crumb analyzes ingredients to suggest dietary tags for your recipes.
+description: How dough analyzes ingredients to suggest dietary tags for your recipes.
 ---
 
 import { Aside } from "@astrojs/starlight/components";
 
-When you create or import a recipe, crumb analyzes the ingredient list and suggests dietary tags automatically. This saves you from manually classifying every recipe, especially if you have a large library.
+When you create or import a recipe, dough analyzes the ingredient list and suggests dietary tags automatically. This saves you from manually classifying every recipe, especially if you have a large library.
 
 ## Supported tags
 
-crumb supports these dietary tags:
+dough supports these dietary tags:
 
 - **Gluten-Free** — no wheat, barley, rye, malt, triticale, or gluten-containing ingredients. Oats are flagged as ambiguous.
 - **Dairy-Free** — no milk, cream, butter, cheese, yogurt, whey, casein, lactose, or ghee.
@@ -28,7 +28,7 @@ Auto-suggested tags start as **unconfirmed**. This is a safety mechanism.
 - **Unconfirmed tags** are visible to you in the recipe editor. They are suggestions that you should review.
 - **Confirmed tags** are tags you have reviewed and approved. Only confirmed tags are synced to Kit subscribers and used for audience segmentation.
 
-When you update a recipe's ingredients, crumb re-runs auto-tagging and resets any previously confirmed tags to unconfirmed. This ensures tags stay accurate as recipes change.
+When you update a recipe's ingredients, dough re-runs auto-tagging and resets any previously confirmed tags to unconfirmed. This ensures tags stay accurate as recipes change.
 
 <Aside type="caution">
   If you change a recipe's ingredients, any confirmed dietary tags will be reset to unconfirmed. You

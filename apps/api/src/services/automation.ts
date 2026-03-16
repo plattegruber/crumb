@@ -37,9 +37,9 @@ import {
   KIT_CUSTOM_FIELD_LABELS,
 } from "../lib/kit/tag-conventions.js";
 import type { KitApiError, BroadcastDraftParams } from "../lib/kit/types.js";
-import type { Result } from "@crumb/shared";
-import { ok, err } from "@crumb/shared";
-import type { DietaryTag, Slug } from "@crumb/shared";
+import type { Result } from "@dough/shared";
+import { ok, err } from "@dough/shared";
+import type { DietaryTag, Slug } from "@dough/shared";
 import { createLogger, type Logger } from "../lib/logger.js";
 
 // ---------------------------------------------------------------------------

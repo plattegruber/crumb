@@ -1,4 +1,4 @@
-# crumb
+# dough
 
 Recipe intelligence platform for food creators, built on Kit (formerly ConvertKit). Structured recipe library, AI-powered import, email recipe cards, dietary segmentation, digital product generation, and engagement analytics -- all wired into Kit's email infrastructure.
 
@@ -65,7 +65,7 @@ Recipe intelligence platform for food creators, built on Kit (formerly ConvertKi
 ## Project Structure
 
 ```
-crumb/
+dough/
 ├── SPEC.md                          # Authoritative product specification
 ├── CLAUDE.md                        # Project intelligence / coding standards
 ├── package.json                     # Root workspace scripts
@@ -140,7 +140,7 @@ crumb/
 │   │
 │   └── kit-plugin/                  # Kit App Store editor plugin
 │       ├── src/
-│       │   ├── index.ts             # CrumbPlugin global (init, renderCard, searchRecipes)
+│       │   ├── index.ts             # DoughPlugin global (init, renderCard, searchRecipes)
 │       │   ├── components/
 │       │   │   ├── search.ts        # Recipe search UI
 │       │   │   └── preview.ts       # Card preview in editor
@@ -180,7 +180,7 @@ crumb/
 
 ```bash
 git clone https://github.com/plattegruber/crumb.git
-cd crumb
+cd dough
 pnpm install
 ```
 
@@ -218,13 +218,13 @@ D1 databases are created and managed via Wrangler:
 ```bash
 # Create local D1 database (for development)
 cd apps/api
-npx wrangler d1 execute crumb-db --local --file=src/db/migrations/0001_initial_schema.sql
+npx wrangler d1 execute dough-db --local --file=src/db/migrations/0001_initial_schema.sql
 ```
 
 To apply new migrations:
 
 ```bash
-npx wrangler d1 migrations apply crumb-db --local
+npx wrangler d1 migrations apply dough-db --local
 ```
 
 ### Local Development
@@ -261,7 +261,7 @@ All commands can be run from the project root unless noted.
 | `cd packages/shared && pnpm test`                                  | Run shared package tests               |
 | `cd apps/api && npx vitest run`                                    | Run API tests                          |
 | `cd apps/api && npx vitest run --coverage`                         | Run API tests with coverage            |
-| `cd apps/api && npx wrangler d1 migrations apply crumb-db --local` | Apply D1 migrations locally            |
+| `cd apps/api && npx wrangler d1 migrations apply dough-db --local` | Apply D1 migrations locally            |
 
 ---
 
@@ -308,7 +308,7 @@ A **SvelteKit** app deployed to **Cloudflare Pages** via `@sveltejs/adapter-clou
 
 ### Kit Plugin (`apps/kit-plugin`)
 
-A standalone JavaScript bundle (IIFE format via Vite library mode) loaded inside Kit's email editor. Exposes a global `CrumbPlugin` object with three methods:
+A standalone JavaScript bundle (IIFE format via Vite library mode) loaded inside Kit's email editor. Exposes a global `DoughPlugin` object with three methods:
 
 - `init(config)` -- configure API URL, auth token, creator ID
 - `renderCard(recipeId, options)` -- render email-safe HTML recipe card

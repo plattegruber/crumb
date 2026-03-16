@@ -5,7 +5,7 @@ description: Add recipes to your library manually with full control over every f
 
 import { Aside } from "@astrojs/starlight/components";
 
-While most creators import recipes from external sources, you can also create recipes directly inside crumb. This is useful for new recipes that do not exist anywhere else yet, or when you want full control over every field from the start.
+While most creators import recipes from external sources, you can also create recipes directly inside dough. This is useful for new recipes that do not exist anywhere else yet, or when you want full control over every field from the start.
 
 ## Creating a new recipe
 
@@ -20,7 +20,7 @@ New recipes default to **Draft** status. Change the status to **Active** when yo
 
 ### Title and description
 
-- **Title** (required) — the name of your recipe. crumb generates a URL-friendly slug from the title automatically (for example, "Lemon Pasta" becomes `lemon-pasta`). If you already have a recipe with the same slug, crumb appends a number.
+- **Title** (required) — the name of your recipe. dough generates a URL-friendly slug from the title automatically (for example, "Lemon Pasta" becomes `lemon-pasta`). If you already have a recipe with the same slug, dough appends a number.
 - **Description** (optional) — a short summary of the recipe. This appears in Standard and Full recipe card display modes.
 
 ### Timing and yield
@@ -42,7 +42,7 @@ Each ingredient has:
 - **Notes** — preparation notes like "sifted" or "room temperature."
 
 <Aside type="tip">
-  crumb handles fractions natively. Enter `1/3` and it will display as a proper fraction, not as
+  dough handles fractions natively. Enter `1/3` and it will display as a proper fraction, not as
   `0.33`. When subscribers view a scaled recipe, fractions stay precise.
 </Aside>
 
@@ -72,13 +72,13 @@ Supported formats: JPEG, PNG, WebP, and HEIC. Maximum file size: 20 MB per image
 
 ### Nutrition facts
 
-You can enter nutrition facts manually, or let crumb calculate them from your ingredient list. Calculated values are estimates based on USDA ingredient data.
+You can enter nutrition facts manually, or let dough calculate them from your ingredient list. Calculated values are estimates based on USDA ingredient data.
 
 Nutrition fields include calories, total fat, saturated fat, cholesterol, sodium, total carbs, dietary fiber, total sugars, protein, vitamin D, calcium, iron, and potassium. All values are per serving.
 
 ## Auto-tagging
 
-After you save a recipe, crumb analyzes the ingredients and suggests dietary tags automatically. For manually created recipes where you already set the tags yourself, auto-tagging will confirm your choices or flag any discrepancies.
+After you save a recipe, dough analyzes the ingredients and suggests dietary tags automatically. For manually created recipes where you already set the tags yourself, auto-tagging will confirm your choices or flag any discrepancies.
 
 For imported recipes, auto-suggested tags start as **unconfirmed**. You must review and confirm them before they are used for subscriber segmentation. See [Dietary tags](/growth/dietary-tags/) for details on how auto-tagging works.
 
@@ -89,7 +89,7 @@ When you are happy with a recipe and want to use it in Kit emails:
 1. Open the recipe and set its status to **Active**.
 2. Toggle the **Email ready** switch to on.
 
-When you mark a recipe as email-ready, crumb automatically creates a Kit broadcast draft with the recipe card pre-inserted. You can find the draft in Kit and customize it before sending. See [Broadcast drafts](/email/broadcast-drafts/) for more.
+When you mark a recipe as email-ready, dough automatically creates a Kit broadcast draft with the recipe card pre-inserted. You can find the draft in Kit and customize it before sending. See [Broadcast drafts](/email/broadcast-drafts/) for more.
 
 <Aside type="caution">
   On the Free tier, you can send recipe card emails for up to 3 recipes per calendar month. Upgrade
@@ -98,4 +98,4 @@ When you mark a recipe as email-ready, crumb automatically creates a Kit broadca
 
 ## Recipe scaling
 
-crumb supports recipe scaling as a read-only view. When you or a subscriber views a recipe with a different serving size, ingredient quantities are multiplied proportionally using precise fraction arithmetic. Scaling does not change the stored recipe — it only affects the displayed view.
+dough supports recipe scaling as a read-only view. When you or a subscriber views a recipe with a different serving size, ingredient quantities are multiplied proportionally using precise fraction arithmetic. Scaling does not change the stored recipe — it only affects the displayed view.

@@ -5,7 +5,7 @@
  * This is plain TypeScript — no framework dependency.
  */
 
-import type { RecipeId } from "@crumb/shared";
+import type { RecipeId } from "@dough/shared";
 import type { ApiClient } from "@/lib/api-client";
 import type { BrandKit, CardRenderOptions, DisplayMode, PluginRecipe } from "@/lib/types";
 import { DISPLAY_MODE } from "@/lib/types";

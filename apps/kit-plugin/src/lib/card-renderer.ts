@@ -12,7 +12,7 @@
  * - Table-based layout for email client compatibility
  */
 
-import type { DietaryTag, HexColor } from "@crumb/shared";
+import type { DietaryTag, HexColor } from "@dough/shared";
 import type { BrandKit, CardRenderOptions, DisplayMode, PluginRecipe } from "@/lib/types";
 import { DISPLAY_MODE } from "@/lib/types";
 import { renderDietaryBadges } from "@/lib/dietary-icons";

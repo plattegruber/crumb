@@ -1,5 +1,5 @@
 /**
- * Typed API client for the crumb backend.
+ * Typed API client for the dough backend.
  *
  * All methods return the parsed JSON response. Errors are thrown
  * as ApiError instances so callers can handle them uniformly.
@@ -19,7 +19,7 @@ import type {
   DietaryTag,
   MealType,
   Season,
-} from "@crumb/shared";
+} from "@dough/shared";
 
 // ---------------------------------------------------------------------------
 // Configuration

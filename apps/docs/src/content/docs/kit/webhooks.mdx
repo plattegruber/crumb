@@ -1,15 +1,15 @@
 ---
 title: Webhooks
-description: What Kit webhooks crumb registers and how they are used.
+description: What Kit webhooks dough registers and how they are used.
 ---
 
 import { Aside } from "@astrojs/starlight/components";
 
-When you connect your Kit account, crumb registers several webhooks to receive real-time notifications about subscriber activity. These webhooks power segmentation, engagement tracking, and automation.
+When you connect your Kit account, dough registers several webhooks to receive real-time notifications about subscriber activity. These webhooks power segmentation, engagement tracking, and automation.
 
 ## Registered webhooks
 
-| Kit event                 | What crumb does with it                                                               |
+| Kit event                 | What dough does with it                                                               |
 | ------------------------- | ------------------------------------------------------------------------------------- |
 | `subscriber.activated`    | Applies dietary preferences from the subscriber's custom fields to their tags.        |
 | `subscriber.tag_added`    | Records tag additions as engagement events for analytics.                             |
@@ -19,13 +19,13 @@ When you connect your Kit account, crumb registers several webhooks to receive r
 
 ## Security
 
-All webhook payloads are verified using HMAC-SHA256 with your Kit webhook secret. Unverified payloads are rejected. crumb acknowledges valid webhooks immediately with a 200 response and processes them asynchronously.
+All webhook payloads are verified using HMAC-SHA256 with your Kit webhook secret. Unverified payloads are rejected. dough acknowledges valid webhooks immediately with a 200 response and processes them asynchronously.
 
 ## Duplicate handling
 
-Kit may deliver the same webhook event more than once (for example, if crumb's initial acknowledgment was delayed). crumb handles this by checking for existing processed records before acting on any webhook. Duplicate deliveries are safely ignored.
+Kit may deliver the same webhook event more than once (for example, if dough's initial acknowledgment was delayed). dough handles this by checking for existing processed records before acting on any webhook. Duplicate deliveries are safely ignored.
 
 <Aside>
-  If crumb is temporarily unavailable, Kit retries webhook delivery with exponential backoff. No
+  If dough is temporarily unavailable, Kit retries webhook delivery with exponential backoff. No
   events are lost.
 </Aside>

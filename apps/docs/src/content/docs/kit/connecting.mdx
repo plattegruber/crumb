@@ -1,34 +1,34 @@
 ---
 title: Connecting your Kit account
-description: Connect crumb to Kit via OAuth and understand the required permissions.
+description: Connect dough to Kit via OAuth and understand the required permissions.
 ---
 
 import { Aside } from "@astrojs/starlight/components";
 
-crumb requires a connection to your Kit (formerly ConvertKit) account to work. The connection uses OAuth 2.0, Kit's standard authorization flow for App Store apps. Your credentials are never stored by crumb — only encrypted access tokens.
+dough requires a connection to your Kit (formerly ConvertKit) account to work. The connection uses OAuth 2.0, Kit's standard authorization flow for App Store apps. Your credentials are never stored by dough — only encrypted access tokens.
 
 ## Before you connect
 
 You need:
 
 - A **Kit account** with an active plan (free or paid).
-- A **verified crumb account** — you must verify your email before connecting Kit.
+- A **verified dough account** — you must verify your email before connecting Kit.
 
 ## Connecting Kit
 
-1. Log in to crumb and go to **Settings** > **Kit Connection**.
+1. Log in to dough and go to **Settings** > **Kit Connection**.
 2. Click **Connect Kit**.
-3. You are redirected to Kit's authorization page. Review the permissions crumb is requesting.
+3. You are redirected to Kit's authorization page. Review the permissions dough is requesting.
 4. Click **Authorize** to grant access.
-5. Kit redirects you back to crumb. You should see a green "Connected" badge.
+5. Kit redirects you back to dough. You should see a green "Connected" badge.
 
 The entire process takes about 30 seconds.
 
 ## Required permissions
 
-crumb requests the following Kit OAuth scopes:
+dough requests the following Kit OAuth scopes:
 
-| Scope               | Why crumb needs it                                                    |
+| Scope               | Why dough needs it                                                    |
 | ------------------- | --------------------------------------------------------------------- |
 | `subscribers:read`  | Read subscriber data for segmentation and analytics.                  |
 | `subscribers:write` | Write dietary preference tags and custom fields to subscribers.       |
@@ -42,13 +42,13 @@ crumb requests the following Kit OAuth scopes:
 | `webhooks:write`    | Register webhooks for subscriber events, link clicks, and purchases.  |
 
 <Aside>
-  All permissions are required. If you decline any scope, crumb will not be able to function
+  All permissions are required. If you decline any scope, dough will not be able to function
   correctly and will prompt you to re-authorize with all scopes.
 </Aside>
 
 ## What happens after connecting
 
-Once connected, crumb:
+Once connected, dough:
 
 1. Registers [webhooks](/kit/webhooks/) for subscriber events, link clicks, and purchases.
 2. Creates the custom fields it needs ([tags and fields](/kit/tags-and-fields/)).
@@ -58,10 +58,10 @@ No data is modified until you take an action (like sending a recipe card or conf
 
 ## Token management
 
-crumb manages your Kit access tokens automatically:
+dough manages your Kit access tokens automatically:
 
 - **Tokens are encrypted at rest** using AES-256-GCM encryption. They are never stored in plain text.
-- **Tokens are refreshed automatically** — crumb refreshes your token before it expires (5 minutes before the expiration time).
+- **Tokens are refreshed automatically** — dough refreshes your token before it expires (5 minutes before the expiration time).
 - **Tokens are never sent to your browser** — all Kit API calls happen server-side.
 
 ## Disconnecting
@@ -70,7 +70,7 @@ If you need to disconnect your Kit account:
 
 1. Go to **Settings** > **Kit Connection**.
 2. Click **Disconnect**.
-3. crumb removes the stored tokens and deregisters all webhooks.
+3. dough removes the stored tokens and deregisters all webhooks.
 
 After disconnecting:
 
@@ -79,7 +79,7 @@ After disconnecting:
 - You cannot insert new recipe cards, create broadcast drafts, or use any Kit-dependent features until you reconnect.
 
 <Aside type="caution">
-  Disconnecting does not remove tags or custom fields that crumb already created in your Kit
+  Disconnecting does not remove tags or custom fields that dough already created in your Kit
   account. Those remain in Kit and can be managed directly in Kit's interface.
 </Aside>
 
@@ -87,12 +87,12 @@ After disconnecting:
 
 If Kit reports an error or your token cannot be refreshed:
 
-- crumb marks your connection as **disconnected** and shows a warning on your dashboard.
+- dough marks your connection as **disconnected** and shows a warning on your dashboard.
 - All Kit-dependent features are disabled until you reconnect.
 - To reconnect, go to **Settings** > **Kit Connection** and click **Reconnect**. You will go through the OAuth flow again.
 
 Common reasons for disconnection:
 
 - You changed your Kit password.
-- You revoked crumb's access in Kit's App Store settings.
+- You revoked dough's access in Kit's App Store settings.
 - Kit experienced a temporary outage that caused the token refresh to fail.

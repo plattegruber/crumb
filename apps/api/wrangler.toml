@@ -1,4 +1,4 @@
-name = "crumb-api"
+name = "dough-api"
 main = "src/index.ts"
 compatibility_date = "2025-04-01"
 compatibility_flags = ["nodejs_compat"]
@@ -10,12 +10,12 @@ compatibility_flags = ["nodejs_compat"]
 
 [[d1_databases]]
 binding = "DB"
-database_name = "crumb-db"
+database_name = "dough-db"
 database_id = "placeholder-database-id"
 
 [[r2_buckets]]
 binding = "STORAGE"
-bucket_name = "crumb-storage"
+bucket_name = "dough-storage"
 
 [[kv_namespaces]]
 binding = "CACHE"
@@ -23,20 +23,20 @@ id = "placeholder-kv-namespace-id"
 
 [[queues.producers]]
 binding = "IMPORT_QUEUE"
-queue = "crumb-import-pipeline"
+queue = "dough-import-pipeline"
 
 [[queues.producers]]
 binding = "RENDER_QUEUE"
-queue = "crumb-render-pipeline"
+queue = "dough-render-pipeline"
 
 [[queues.consumers]]
-queue = "crumb-import-pipeline"
+queue = "dough-import-pipeline"
 max_batch_size = 10
 max_batch_timeout = 30
 max_retries = 3
 
 [[queues.consumers]]
-queue = "crumb-render-pipeline"
+queue = "dough-render-pipeline"
 max_batch_size = 5
 max_batch_timeout = 30
 max_retries = 3

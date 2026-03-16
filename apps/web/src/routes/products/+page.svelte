@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import type { Product } from "@crumb/shared";
+  import type { Product } from "@dough/shared";
   import { products } from "$lib/api.js";
 
   let productList = $state<Product[]>([]);
@@ -18,7 +18,7 @@
 </script>
 
 <svelte:head>
-  <title>Products - crumb</title>
+  <title>Products - dough</title>
 </svelte:head>
 
 <div class="products-page">

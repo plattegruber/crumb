@@ -8,8 +8,8 @@ import { eq, and, sql, asc } from "drizzle-orm";
 import type { Database } from "../db/index.js";
 import { collections, collectionRecipes } from "../db/schema.js";
 import type { CreatorScopedDb } from "../middleware/creator-scope.js";
-import type { Result } from "@crumb/shared";
-import { ok, err } from "@crumb/shared";
+import type { Result } from "@dough/shared";
+import { ok, err } from "@dough/shared";
 
 // ---------------------------------------------------------------------------
 // Types

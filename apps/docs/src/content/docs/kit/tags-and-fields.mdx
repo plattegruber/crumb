@@ -1,15 +1,15 @@
 ---
 title: Tags and custom fields
-description: How crumb uses Kit tags and custom fields to track dietary preferences and recipe engagement.
+description: How dough uses Kit tags and custom fields to track dietary preferences and recipe engagement.
 ---
 
 import { Aside } from "@astrojs/starlight/components";
 
-crumb creates and manages specific Kit tags and custom fields to power segmentation, engagement tracking, and automation. All crumb-managed tags use a namespaced format to avoid conflicts with tags you create yourself in Kit.
+dough creates and manages specific Kit tags and custom fields to power segmentation, engagement tracking, and automation. All dough-managed tags use a namespaced format to avoid conflicts with tags you create yourself in Kit.
 
-## Tags crumb creates
+## Tags dough creates
 
-crumb uses three tag namespaces:
+dough uses three tag namespaces:
 
 | Pattern                  | Example                    | Purpose                                                                                                  |
 | ------------------------ | -------------------------- | -------------------------------------------------------------------------------------------------------- |
@@ -17,14 +17,14 @@ crumb uses three tag namespaces:
 | `recipe:saved:{slug}`    | `recipe:saved:lemon-pasta` | Applied when a subscriber clicks Save This Recipe. Tracks which specific recipes a subscriber has saved. |
 | `product:purchased:{id}` | `product:purchased:a1b2c3` | Applied when a purchase is detected via Kit webhook. Tracks product buyers.                              |
 
-Tags are created lazily — crumb only creates a tag in Kit the first time it is needed. If the tag already exists (for example, if you manually created a `dietary:vegan` tag), crumb uses the existing one.
+Tags are created lazily — dough only creates a tag in Kit the first time it is needed. If the tag already exists (for example, if you manually created a `dietary:vegan` tag), dough uses the existing one.
 
 <Aside>
-  crumb never modifies or deletes tags you created yourself. It only manages tags within its own
+  dough never modifies or deletes tags you created yourself. It only manages tags within its own
   namespaces.
 </Aside>
 
-## Custom fields crumb creates
+## Custom fields dough creates
 
 | Field                    | Example value          | Purpose                                                            |
 | ------------------------ | ---------------------- | ------------------------------------------------------------------ |

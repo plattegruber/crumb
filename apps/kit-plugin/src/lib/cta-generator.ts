@@ -5,7 +5,7 @@
  * Kit replaces `{{subscriber.id}}` at send time with the subscriber's Kit ID.
  */
 
-import type { CreatorId, HexColor, Slug } from "@crumb/shared";
+import type { CreatorId, HexColor, Slug } from "@dough/shared";
 
 /**
  * Kit's subscriber variable syntax for subscriber ID.

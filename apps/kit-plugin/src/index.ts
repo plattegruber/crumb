@@ -1,11 +1,11 @@
 /**
  * Kit Plugin entry point.
  *
- * Exposes the CrumbPlugin global object that Kit loads inside its email editor.
+ * Exposes the DoughPlugin global object that Kit loads inside its email editor.
  * The plugin is built as a single IIFE file via Vite library mode.
  */
 
-import type { RecipeId } from "@crumb/shared";
+import type { RecipeId } from "@dough/shared";
 import { ApiClient } from "@/lib/api-client";
 import { renderCard } from "@/lib/card-renderer";
 import type {
@@ -16,10 +16,10 @@ import type {
   SearchResponse,
 } from "@/lib/types";
 import { DISPLAY_MODE } from "@/lib/types";
-import type { Result } from "@crumb/shared";
+import type { Result } from "@dough/shared";
 import type { ApiError } from "@/lib/api-client";
 
-export interface CrumbPluginInterface {
+export interface DoughPluginInterface {
   /**
    * Initialize the plugin with API base URL, auth token, and creator ID.
    * Must be called before any other method.
@@ -53,14 +53,14 @@ export interface CrumbPluginInterface {
   readonly DisplayMode: typeof DISPLAY_MODE;
 }
 
-function createPlugin(): CrumbPluginInterface {
+function createPlugin(): DoughPluginInterface {
   let client: ApiClient | null = null;
   let cachedBrand: BrandKit | null = null;
   let brandFetched = false;
 
   function requireClient(): ApiClient {
     if (client === null) {
-      throw new Error("[crumb] Plugin not initialized. Call CrumbPlugin.init() first.");
+      throw new Error("[dough] Plugin not initialized. Call DoughPlugin.init() first.");
     }
     return client;
   }
@@ -108,4 +108,4 @@ function createPlugin(): CrumbPluginInterface {
   };
 }
 
-export const CrumbPlugin: CrumbPluginInterface = createPlugin();
+export const DoughPlugin: DoughPluginInterface = createPlugin();

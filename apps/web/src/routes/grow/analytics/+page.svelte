@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import type { RecipeEngagementScore } from "@crumb/shared";
+  import type { RecipeEngagementScore } from "@dough/shared";
   import { analytics } from "$lib/api.js";
 
   let scores = $state<RecipeEngagementScore[]>([]);
@@ -28,7 +28,7 @@
 </script>
 
 <svelte:head>
-  <title>Analytics - crumb</title>
+  <title>Analytics - dough</title>
 </svelte:head>
 
 <div class="analytics-page">

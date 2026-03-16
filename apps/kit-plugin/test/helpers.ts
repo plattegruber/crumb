@@ -12,7 +12,7 @@ import type {
   Slug,
   Url,
   BrandKitId,
-} from "@crumb/shared";
+} from "@dough/shared";
 import type {
   Ingredient,
   IngredientGroup,
@@ -23,9 +23,9 @@ import type {
   RecipeClassification,
   RecipeTiming,
   RecipeYield,
-} from "@crumb/shared";
-import type { DietaryTag } from "@crumb/shared";
-import { DIETARY_TAG } from "@crumb/shared";
+} from "@dough/shared";
+import type { DietaryTag } from "@dough/shared";
+import { DIETARY_TAG } from "@dough/shared";
 import type { BrandKit, PluginRecipe } from "@/lib/types";
 
 // ---------------------------------------------------------------------------

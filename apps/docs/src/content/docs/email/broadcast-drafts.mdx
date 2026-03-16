@@ -1,25 +1,25 @@
 ---
 title: Broadcast drafts
-description: crumb auto-generates Kit broadcast drafts when you mark a recipe as email-ready.
+description: dough auto-generates Kit broadcast drafts when you mark a recipe as email-ready.
 ---
 
 import { Aside } from "@astrojs/starlight/components";
 
-When you mark a recipe as "email ready" in your library, crumb automatically creates a broadcast draft in Kit with the recipe card pre-inserted. This saves you the repetitive work of opening Kit, creating a broadcast, and configuring the recipe card block each time.
+When you mark a recipe as "email ready" in your library, dough automatically creates a broadcast draft in Kit with the recipe card pre-inserted. This saves you the repetitive work of opening Kit, creating a broadcast, and configuring the recipe card block each time.
 
 ## How it works
 
 1. Open a recipe in your library and set its status to **Active**.
 2. Toggle **Email ready** to on.
-3. crumb creates a Kit broadcast draft with:
+3. dough creates a Kit broadcast draft with:
    - **Subject line:** "[Recipe Title] — a new recipe for you"
    - **Content:** A Standard-mode recipe card block, plus a blank intro text placeholder for you to fill in.
-   - **Internal description:** "crumb auto-draft — [Recipe Title]"
-4. You receive a notification in crumb: "Your Kit draft is ready — [Recipe Title]."
+   - **Internal description:** "dough auto-draft — [Recipe Title]"
+4. You receive a notification in dough: "Your Kit draft is ready — [Recipe Title]."
 5. Open Kit, find the draft, write your intro text, and send or schedule as usual.
 
 <Aside>
-  crumb never sends emails on your behalf. Broadcast drafts are always created as drafts in Kit. You
+  dough never sends emails on your behalf. Broadcast drafts are always created as drafts in Kit. You
   review, edit, and schedule them yourself.
 </Aside>
 

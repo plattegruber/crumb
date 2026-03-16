@@ -7,8 +7,8 @@
 // webhook secret. Unverified payloads are rejected with 403.
 // ---------------------------------------------------------------------------
 
-import type { Result } from "@crumb/shared";
-import { ok, err } from "@crumb/shared";
+import type { Result } from "@dough/shared";
+import { ok, err } from "@dough/shared";
 import type { KitWebhookEventName } from "./types.js";
 import { createLogger } from "../logger.js";
 

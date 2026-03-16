@@ -5,20 +5,20 @@
 </script>
 
 <svelte:head>
-  <title>crumb - Recipe intelligence for food creators</title>
+  <title>dough - Recipe intelligence for food creators</title>
   <meta name="description" content="Recipe intelligence for food creators" />
 </svelte:head>
 
 {#if data.userId}
   <!-- Authenticated users are redirected to /library by the layout -->
   <div class="dashboard">
-    <h1>Welcome to crumb</h1>
+    <h1>Welcome to dough</h1>
     <p>Get started by heading to your <a href="/library">Recipe Library</a>.</p>
   </div>
 {:else}
   <div class="landing">
     <div class="landing-content">
-      <h1>crumb</h1>
+      <h1>dough</h1>
       <p class="tagline">Recipe intelligence for food creators.</p>
       <p class="description">
         Import your recipes, build digital products, grow your email list with dietary segmentation,

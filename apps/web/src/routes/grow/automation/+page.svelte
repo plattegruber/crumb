@@ -19,7 +19,7 @@
 </script>
 
 <svelte:head>
-  <title>Automation - crumb</title>
+  <title>Automation - dough</title>
 </svelte:head>
 
 <div class="automation-page">

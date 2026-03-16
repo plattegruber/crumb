@@ -2,7 +2,7 @@
 </script>
 
 <svelte:head>
-  <title>Settings - crumb</title>
+  <title>Settings - dough</title>
 </svelte:head>
 
 <div class="settings-page">

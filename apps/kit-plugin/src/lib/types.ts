@@ -1,6 +1,6 @@
 /**
  * Plugin-local types used across the kit-plugin package.
- * These supplement @crumb/shared types with plugin-specific structures.
+ * These supplement @dough/shared types with plugin-specific structures.
  */
 
 import type {
@@ -11,7 +11,7 @@ import type {
   RecipeId,
   Slug,
   Url,
-} from "@crumb/shared";
+} from "@dough/shared";
 import type {
   FontSpec,
   IngredientGroup,
@@ -21,7 +21,7 @@ import type {
   RecipeClassification,
   RecipeTiming,
   RecipeYield,
-} from "@crumb/shared";
+} from "@dough/shared";
 
 // ---------------------------------------------------------------------------
 // Display mode for recipe cards

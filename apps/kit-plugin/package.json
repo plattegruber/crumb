@@ -1,5 +1,5 @@
 {
-  "name": "@crumb/kit-plugin",
+  "name": "@dough/kit-plugin",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -12,7 +12,7 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "@crumb/shared": "workspace:*"
+    "@dough/shared": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^5.7.0",

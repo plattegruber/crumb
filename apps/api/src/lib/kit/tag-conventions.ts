@@ -5,7 +5,7 @@
 // SPEC 4.5: Custom field key convention.
 // ---------------------------------------------------------------------------
 
-import type { DietaryTag, Slug } from "@crumb/shared";
+import type { DietaryTag, Slug } from "@dough/shared";
 
 // ---------------------------------------------------------------------------
 // Dietary tag slug mapping

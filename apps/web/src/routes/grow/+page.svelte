@@ -2,7 +2,7 @@
 </script>
 
 <svelte:head>
-  <title>Grow - crumb</title>
+  <title>Grow - dough</title>
 </svelte:head>
 
 <div class="grow-page">

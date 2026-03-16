@@ -18,8 +18,8 @@ import {
 } from "../../src/services/recipe.js";
 import type { CreateRecipeInput } from "../../src/services/recipe.js";
 import type { CreatorId } from "../../src/types/auth.js";
-import type { IngredientId, InstructionId, PhotoId, RecipeId } from "@crumb/shared";
-import { wholeNumber, fraction, mixed } from "@crumb/shared";
+import type { IngredientId, InstructionId, PhotoId, RecipeId } from "@dough/shared";
+import { wholeNumber, fraction, mixed } from "@dough/shared";
 import { createTestTables, cleanTestTables } from "../helpers/db-setup.js";
 
 // ---------------------------------------------------------------------------

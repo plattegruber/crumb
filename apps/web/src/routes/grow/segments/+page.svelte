@@ -19,7 +19,7 @@
 </script>
 
 <svelte:head>
-  <title>Segments - crumb</title>
+  <title>Segments - dough</title>
 </svelte:head>
 
 <div class="segments-page">

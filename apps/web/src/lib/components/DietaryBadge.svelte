@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { DietaryTag } from "@crumb/shared";
+  import type { DietaryTag } from "@dough/shared";
 
   const { tag }: { tag: DietaryTag } = $props();
 

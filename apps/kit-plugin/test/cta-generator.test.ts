@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { generateSaveUrl, renderSaveButton } from "@/lib/cta-generator";
-import type { CreatorId, HexColor, Slug } from "@crumb/shared";
+import type { CreatorId, HexColor, Slug } from "@dough/shared";
 
 // ---------------------------------------------------------------------------
 // generateSaveUrl tests
@@ -9,12 +9,12 @@ import type { CreatorId, HexColor, Slug } from "@crumb/shared";
 describe("generateSaveUrl", () => {
   it("generates URL matching spec format", () => {
     const url = generateSaveUrl({
-      appDomain: "crumb.cooking",
+      appDomain: "dough.cooking",
       creatorId: "creator-123" as CreatorId,
       recipeSlug: "lemon-pasta" as Slug,
     });
 
-    expect(url).toBe("https://app.crumb.cooking/save/creator-123/lemon-pasta?ck={{subscriber.id}}");
+    expect(url).toBe("https://app.dough.cooking/save/creator-123/lemon-pasta?ck={{subscriber.id}}");
   });
 
   it("includes subscriber variable placeholder", () => {
@@ -99,14 +99,14 @@ describe("renderSaveButton", () => {
 
   it("includes the tracked URL in the button link", () => {
     const html = renderSaveButton({
-      appDomain: "crumb.cooking",
+      appDomain: "dough.cooking",
       creatorId: "creator-1" as CreatorId,
       recipeSlug: "pasta" as Slug,
       primaryColor: "#FF0000" as HexColor,
       bodyFont: "Arial",
     });
 
-    expect(html).toContain("https://app.crumb.cooking/save/creator-1/pasta?ck={{subscriber.id}}");
+    expect(html).toContain("https://app.dough.cooking/save/creator-1/pasta?ck={{subscriber.id}}");
   });
 
   it("applies primary color to button background", () => {

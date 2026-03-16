@@ -4,8 +4,8 @@
 
 import { Hono } from "hono";
 import type { AppEnv } from "../middleware/auth.js";
-import type { DietaryTag, RecipeId, CreatorId } from "@crumb/shared";
-import { DIETARY_TAG } from "@crumb/shared";
+import type { DietaryTag, RecipeId, CreatorId } from "@dough/shared";
+import { DIETARY_TAG } from "@dough/shared";
 import { drizzle } from "drizzle-orm/d1";
 import type { KitClientConfig } from "../lib/kit/client.js";
 import {

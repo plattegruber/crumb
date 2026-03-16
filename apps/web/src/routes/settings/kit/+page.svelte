@@ -2,7 +2,7 @@
 </script>
 
 <svelte:head>
-  <title>Kit Connection - crumb</title>
+  <title>Kit Connection - dough</title>
 </svelte:head>
 
 <div class="settings-subpage">
@@ -15,7 +15,7 @@
 
   <div class="card">
     <h3>Connect Kit</h3>
-    <p>Click the button below to authorize crumb to access your Kit account via OAuth.</p>
+    <p>Click the button below to authorize dough to access your Kit account via OAuth.</p>
     <p class="scopes-note">
       We request read/write access to subscribers, tags, broadcasts, sequences, and forms.
     </p>

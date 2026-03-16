@@ -1,13 +1,13 @@
 /**
- * API client for communicating with the Crumb API from within the Kit editor.
+ * API client for communicating with the Dough API from within the Kit editor.
  *
  * Handles authentication, request formatting, and response parsing
  * for all plugin-to-API communication.
  */
 
-import type { Result } from "@crumb/shared";
-import { ok, err } from "@crumb/shared";
-import type { RecipeId } from "@crumb/shared";
+import type { Result } from "@dough/shared";
+import { ok, err } from "@dough/shared";
+import type { RecipeId } from "@dough/shared";
 import type {
   BrandKit,
   PluginConfig,

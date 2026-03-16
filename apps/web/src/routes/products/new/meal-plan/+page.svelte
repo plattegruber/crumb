@@ -2,7 +2,7 @@
 </script>
 
 <svelte:head>
-  <title>New Meal Plan - crumb</title>
+  <title>New Meal Plan - dough</title>
 </svelte:head>
 
 <div class="stub-page">

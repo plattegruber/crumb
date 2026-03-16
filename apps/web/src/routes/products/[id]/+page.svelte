@@ -1,7 +1,7 @@
 <script lang="ts">
   import { page } from "$app/stores";
   import { onMount } from "svelte";
-  import type { Product } from "@crumb/shared";
+  import type { Product } from "@dough/shared";
   import { products } from "$lib/api.js";
 
   let product = $state<Product | null>(null);
@@ -21,7 +21,7 @@
 </script>
 
 <svelte:head>
-  <title>{product?.base.title ?? "Product"} - crumb</title>
+  <title>{product?.base.title ?? "Product"} - dough</title>
 </svelte:head>
 
 <div class="product-detail">
