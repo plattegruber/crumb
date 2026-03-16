@@ -7,6 +7,7 @@ import { segmentationRoutes } from "./routes/segmentation.js";
 import { imports } from "./routes/imports.js";
 import { analyticsRoutes, webhookRoutes } from "./routes/analytics.js";
 import { automationRoutes, createSaveRedirectRoutes } from "./routes/automation.js";
+import { productRoutes } from "./routes/products.js";
 import { createDb } from "./db/index.js";
 import { handleImportQueue } from "./services/queue-handlers.js";
 import type { Env } from "./env.js";
@@ -59,6 +60,7 @@ app.route("/recipes", recipeRoutes);
 app.route("/collections", collectionRoutes);
 app.route("/analytics", analyticsRoutes);
 app.route("/automation", automationRoutes);
+app.route("/products", productRoutes);
 
 // ---------------------------------------------------------------------------
 // Segmentation Engine routes (SPEC §9)

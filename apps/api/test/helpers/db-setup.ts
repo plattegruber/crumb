@@ -64,6 +64,15 @@ export async function createTestTables(d1: D1Database): Promise<void> {
   await d1.exec(
     `CREATE TABLE IF NOT EXISTS automation_configs (creator_id TEXT PRIMARY KEY, save_recipe_sequence_id TEXT, sends_this_month INTEGER NOT NULL DEFAULT 0, sends_month_reset_at TEXT, created_at TEXT NOT NULL, updated_at TEXT NOT NULL)`,
   );
+  await d1.exec(
+    `CREATE TABLE IF NOT EXISTS meal_plan_details (product_id TEXT PRIMARY KEY, days TEXT NOT NULL, shopping_list TEXT)`,
+  );
+  await d1.exec(
+    `CREATE TABLE IF NOT EXISTS lead_magnets (product_id TEXT PRIMARY KEY, parent_product_id TEXT NOT NULL, recipe_ids TEXT NOT NULL)`,
+  );
+  await d1.exec(
+    `CREATE TABLE IF NOT EXISTS brand_kits (id TEXT PRIMARY KEY, creator_id TEXT NOT NULL, name TEXT NOT NULL, logo_url TEXT, primary_color TEXT NOT NULL, secondary_color TEXT, accent_color TEXT, heading_font_family TEXT NOT NULL, heading_font_fallback TEXT NOT NULL, body_font_family TEXT NOT NULL, body_font_fallback TEXT NOT NULL, created_at TEXT NOT NULL, updated_at TEXT NOT NULL)`,
+  );
 }
 
 export async function cleanTestTables(d1: D1Database): Promise<void> {
@@ -72,6 +81,8 @@ export async function cleanTestTables(d1: D1Database): Promise<void> {
   await d1.exec(`DELETE FROM segment_profiles`);
   await d1.exec(`DELETE FROM automation_configs`);
   await d1.exec(`DELETE FROM seasonal_drops`);
+  await d1.exec(`DELETE FROM lead_magnets`);
+  await d1.exec(`DELETE FROM meal_plan_details`);
   await d1.exec(`DELETE FROM recipe_card_packs`);
   await d1.exec(`DELETE FROM ebook_details`);
   await d1.exec(`DELETE FROM product_base`);
@@ -83,5 +94,6 @@ export async function cleanTestTables(d1: D1Database): Promise<void> {
   await d1.exec(`DELETE FROM collection_recipes`);
   await d1.exec(`DELETE FROM collections`);
   await d1.exec(`DELETE FROM recipes`);
+  await d1.exec(`DELETE FROM brand_kits`);
   await d1.exec(`DELETE FROM creators`);
 }
