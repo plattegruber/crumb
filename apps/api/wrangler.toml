@@ -1,7 +1,10 @@
 name = "dough-api"
-main = "src/index.ts"
+main = "dist/index.js"
 compatibility_date = "2025-04-01"
 compatibility_flags = ["nodejs_compat"]
+
+[build]
+command = "node build.mjs"
 
 # ---------- Bindings ----------
 # Note: The placeholder IDs below are fine for local development.
@@ -11,7 +14,7 @@ compatibility_flags = ["nodejs_compat"]
 [[d1_databases]]
 binding = "DB"
 database_name = "dough-db"
-database_id = "placeholder-database-id"
+database_id = "7cef4dc3-6c4e-451b-b9ed-de392228f6a7"
 
 [[r2_buckets]]
 binding = "STORAGE"
@@ -19,7 +22,7 @@ bucket_name = "dough-storage"
 
 [[kv_namespaces]]
 binding = "CACHE"
-id = "placeholder-kv-namespace-id"
+id = "90c34b4e518e442abb8522d69b56979e"
 
 [[queues.producers]]
 binding = "IMPORT_QUEUE"
@@ -44,7 +47,7 @@ max_retries = 3
 # ---------- Environment Variables ----------
 
 [vars]
-CLERK_PUBLISHABLE_KEY = "pk_test_placeholder"
+CLERK_PUBLISHABLE_KEY = "pk_test_Z2VudWluZS1wYW5kYS02NS5jbGVyay5hY2NvdW50cy5kZXYk"
 LOG_LEVEL = "info"
 # KIT_CLIENT_ID = "placeholder"  # Optional — only needed for production OAuth flow
 
