@@ -73,15 +73,22 @@ The Cloudflare service mapping is:
 │   │   ├── test/
 │   │   ├── wrangler.toml
 │   │   └── package.json
-│   └── web/                  # SvelteKit frontend
+│   ├── web/                  # SvelteKit frontend
+│   │   ├── src/
+│   │   │   ├── routes/
+│   │   │   ├── lib/
+│   │   │   └── app.d.ts
+│   │   ├── wrangler.toml
+│   │   └── package.json
+│   └── kit-plugin/           # Kit App Store plugin — standalone JS bundle
 │       ├── src/
-│       │   ├── routes/
-│       │   ├── lib/
-│       │   └── app.d.ts
-│       ├── wrangler.toml
+│       │   ├── index.ts      # Plugin entry point
+│       │   ├── components/   # Search UI, card renderer, preview
+│       │   └── lib/          # API client, card HTML generation
+│       ├── vite.config.ts
 │       └── package.json
 └── packages/
-    └── shared/               # Shared types used by both api and web
+    └── shared/               # Shared types used by api, web, and kit-plugin
 ```
 
 ## Database

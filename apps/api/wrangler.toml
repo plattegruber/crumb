@@ -1,0 +1,50 @@
+name = "crumb-api"
+main = "src/index.ts"
+compatibility_date = "2025-04-01"
+compatibility_flags = ["nodejs_compat"]
+
+# ---------- Bindings ----------
+
+[[d1_databases]]
+binding = "DB"
+database_name = "crumb-db"
+database_id = "placeholder-database-id"
+
+[[r2_buckets]]
+binding = "STORAGE"
+bucket_name = "crumb-storage"
+
+[[kv_namespaces]]
+binding = "CACHE"
+id = "placeholder-kv-namespace-id"
+
+[[queues.producers]]
+binding = "IMPORT_QUEUE"
+queue = "crumb-import-pipeline"
+
+[[queues.producers]]
+binding = "RENDER_QUEUE"
+queue = "crumb-render-pipeline"
+
+[[queues.consumers]]
+queue = "crumb-import-pipeline"
+max_batch_size = 10
+max_batch_timeout = 30
+max_retries = 3
+
+[[queues.consumers]]
+queue = "crumb-render-pipeline"
+max_batch_size = 5
+max_batch_timeout = 30
+max_retries = 3
+
+# ---------- Environment Variables ----------
+
+[vars]
+CLERK_PUBLISHABLE_KEY = "pk_test_placeholder"
+KIT_CLIENT_ID = "placeholder"
+
+# ---------- Local Development ----------
+
+[dev]
+port = 8787
