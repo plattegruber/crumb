@@ -121,3 +121,50 @@ export type {
   DietaryTagState,
   RecipeClassification,
 } from "./value-types.js";
+
+// Data models (§2.4, §2.9–2.19)
+export type {
+  // §2.4 RecipeSource + Recipe
+  RecipeSource,
+  Recipe,
+  // §2.9 NutritionFacts
+  NutritionValues,
+  NutritionFacts,
+  // §2.10 RecipeEngagementScore
+  EngagementScoreInputs,
+  RecipeEngagementScore,
+  // §2.11 Collection
+  Collection,
+  // §2.12 ImportJob
+  ImportSource,
+  ImportError,
+  ImportStatus,
+  ImportJob,
+  // §2.13 RecipeExtract
+  RawIngredient,
+  RawIngredientGroup,
+  ExtractionConfidence,
+  RecipeExtract,
+  // §2.14 Product
+  Chapter,
+  EbookDetail,
+  MealPlanDay,
+  ShoppingItem,
+  ShoppingSection,
+  ShoppingList,
+  MealPlanDetail,
+  ProductBase,
+  Product,
+  // §2.15 PublishedListing
+  PublishedListing,
+  // §2.16 RecipeEngagementEvent
+  EngagementEventType,
+  RecipeEngagementEvent,
+  // §2.17 SegmentProfile
+  SegmentStat,
+  SegmentProfile,
+  // §2.18 KitSubscriberRecord
+  KitSubscriberRecord,
+  // §2.19 TeamMember
+  TeamMember,
+} from "./models.js";
