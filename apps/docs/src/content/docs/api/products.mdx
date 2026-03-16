@@ -1,0 +1,70 @@
+---
+title: Product endpoints
+description: API reference for product creation and management.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+The product API lets you create, read, update, and publish digital products.
+
+## List products
+
+```
+GET /api/products
+```
+
+Query parameters:
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `status` | string | Filter by status: `draft`, `published`, or `archived`. |
+| `type` | string | Filter by product type: `ebook`, `meal_plan`, `recipe_card_pack`, or `lead_magnet`. |
+| `page` | integer | Page number. |
+| `per_page` | integer | Results per page. |
+
+## Get a product
+
+```
+GET /api/products/{id}
+```
+
+## Create a product
+
+```
+POST /api/products
+Content-Type: application/json
+```
+
+The request body varies by product type. See the product data model for field details.
+
+## Update a product
+
+```
+PATCH /api/products/{id}
+Content-Type: application/json
+```
+
+## Publish a product
+
+```
+POST /api/products/{id}/publish
+Content-Type: application/json
+
+{
+  "platforms": ["stan_store", "gumroad"],
+  "price_cents": 1299,
+  "currency": "USD"
+}
+```
+
+<Aside type="caution">
+  Publishing requires that all AI-generated copy has been reviewed (`ai_copy_reviewed: true`) and that the product PDF has been generated.
+</Aside>
+
+## Generate lead magnet
+
+```
+POST /api/products/{id}/lead-magnet
+```
+
+Generates a lead magnet from an existing ebook or recipe card pack.

@@ -1,0 +1,32 @@
+---
+title: Product recommendations
+description: crumb recommends products to build based on your audience segment data.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+crumb analyzes your segment data and recipe engagement to recommend products you should consider building. Recommendations are surfaced as notifications in your dashboard.
+
+## How recommendations work
+
+After each daily segment profile computation, crumb checks for product opportunities. A recommendation is generated when all of the following are true:
+
+- A dietary segment has **50 or more subscribers**.
+- The engagement rate for that segment is **15% or higher** (meaning at least 15% of tagged subscribers saved a recipe in the last 30 days).
+- You have **5 or more recipes** with that confirmed dietary tag.
+
+When these conditions are met, you see a notification like:
+
+> "200 of your subscribers engage most with gluten-free recipes. You have 12 gluten-free recipes with an average engagement score of 7.3. This could be your next ebook."
+
+Clicking the call-to-action pre-populates the product builder with all matching recipes, sorted by engagement score.
+
+<Aside type="tip">
+  Recommendations are shown at most once per dietary tag per 30-day period. You will not be spammed with the same suggestion.
+</Aside>
+
+## Acting on recommendations
+
+You do not have to follow every recommendation. Think of them as data-driven nudges. If the numbers align with what you already know about your audience, it is a strong signal to move forward.
+
+If you are not ready to build a full ebook, consider starting with a lead magnet or recipe card pack for that dietary segment. Smaller products are faster to create and help you validate the demand before investing in a larger product.

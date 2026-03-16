@@ -1,0 +1,35 @@
+/* crumb docs — warm food-creator aesthetic */
+
+:root {
+  --sl-color-accent-low: #fdf2e9;
+  --sl-color-accent: #e67e22;
+  --sl-color-accent-high: #a04000;
+  --sl-color-white: #fdfaf6;
+  --sl-color-gray-1: #eee6dd;
+  --sl-color-gray-2: #c4b5a6;
+  --sl-color-gray-3: #8c7b6b;
+  --sl-color-gray-4: #5c4e40;
+  --sl-color-gray-5: #3b3128;
+  --sl-color-gray-6: #272017;
+  --sl-color-black: #1a1510;
+}
+
+:root[data-theme='light'] {
+  --sl-color-accent-low: #fdf2e9;
+  --sl-color-accent: #d35400;
+  --sl-color-accent-high: #7b3306;
+  --sl-color-white: #fdfaf6;
+  --sl-color-gray-1: #eee6dd;
+  --sl-color-gray-2: #c4b5a6;
+  --sl-color-gray-3: #8c7b6b;
+  --sl-color-gray-4: #5c4e40;
+  --sl-color-gray-5: #3b3128;
+  --sl-color-gray-6: #272017;
+  --sl-color-black: #1a1510;
+}
+
+/* Slightly warmer font stack */
+:root {
+  --sl-font: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue',
+    Arial, sans-serif;
+}

@@ -1,0 +1,48 @@
+---
+title: How dietary auto-tagging works
+description: How crumb analyzes ingredients to suggest dietary tags for your recipes.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+When you create or import a recipe, crumb analyzes the ingredient list and suggests dietary tags automatically. This saves you from manually classifying every recipe, especially if you have a large library.
+
+## Supported tags
+
+crumb supports these dietary tags:
+
+- **Gluten-Free** — no wheat, barley, rye, malt, triticale, or gluten-containing ingredients. Oats are flagged as ambiguous.
+- **Dairy-Free** — no milk, cream, butter, cheese, yogurt, whey, casein, lactose, or ghee.
+- **Vegan** — no meat, poultry, seafood, dairy, eggs, or honey.
+- **Vegetarian** — no meat, poultry, or seafood. Dairy and eggs are permitted.
+- **Keto** — total carbs per serving 10g or less, and total fat exceeds total protein.
+- **Paleo** — no grains, legumes, dairy, refined sugar, or processed oils. Confidence is capped at 70% because paleo classification is inherently subjective.
+- **Nut-Free** — no almonds, cashews, walnuts, pecans, pistachios, hazelnuts, macadamia, brazil nuts, peanuts, or tree nut derivatives.
+- **Egg-Free** — no eggs or egg derivatives.
+- **Soy-Free** — no soy or soy derivatives.
+
+## Confirmed vs. unconfirmed tags
+
+Auto-suggested tags start as **unconfirmed**. This is a safety mechanism.
+
+- **Unconfirmed tags** are visible to you in the recipe editor. They are suggestions that you should review.
+- **Confirmed tags** are tags you have reviewed and approved. Only confirmed tags are synced to Kit subscribers and used for audience segmentation.
+
+When you update a recipe's ingredients, crumb re-runs auto-tagging and resets any previously confirmed tags to unconfirmed. This ensures tags stay accurate as recipes change.
+
+<Aside type="caution">
+  If you change a recipe's ingredients, any confirmed dietary tags will be reset to unconfirmed. You will need to review and re-confirm them.
+</Aside>
+
+## How to confirm tags
+
+1. Open a recipe in your library.
+2. Scroll to the **Dietary Tags** section.
+3. Review the suggested tags. Remove any that are incorrect and add any that are missing.
+4. Click **Confirm Tags**.
+
+Once confirmed, these tags become active and will be applied to subscribers who save this recipe.
+
+<Aside type="tip">
+  Batch-confirming tags is fast. Go through your imported recipes and confirm tags in bulk — it takes just a few seconds per recipe and unlocks the full power of audience segmentation.
+</Aside>

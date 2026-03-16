@@ -1,0 +1,46 @@
+---
+title: Save This Recipe
+description: How the Save This Recipe button works and what happens when a subscriber clicks it.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+Every recipe card includes a **Save This Recipe** button. This button is the primary interaction point between your subscribers and crumb. When a subscriber clicks it, crumb records the engagement, tags the subscriber with dietary preferences, and can trigger follow-up sequences.
+
+## What happens when a subscriber clicks
+
+When a subscriber clicks "Save This Recipe" in your email, the following happens within a fraction of a second:
+
+1. **The subscriber is tagged in Kit** with the recipe's confirmed dietary tags (for example, `dietary:gluten-free`, `dietary:vegan`) and a recipe-specific tag (`recipe:saved:lemon-pasta`).
+2. **Custom fields are updated** — `last_recipe_saved` is set to the recipe slug and `last_recipe_saved_at` is set to the current timestamp.
+3. **An engagement event is recorded** in crumb's analytics as a "save click."
+4. **A follow-up sequence is triggered** (if you have one configured) — the subscriber is enrolled in your Save This Recipe sequence.
+5. **The subscriber is redirected** to the recipe's source URL (if the recipe was imported from a blog) or to your Kit landing page.
+
+<Aside type="tip">
+  The redirect destination gives subscribers a reason to click — they get to see the full recipe on your website. This also drives traffic back to your blog.
+</Aside>
+
+## Why Save This Recipe matters
+
+Save clicks are the strongest engagement signal in crumb. They feed into:
+
+- **Engagement scores** — save clicks are weighted heavily in the score formula.
+- **Dietary segmentation** — each save tags the subscriber with the recipe's dietary preferences, building a profile of what they care about over time.
+- **Sequence triggers** — saves can enroll subscribers into nurture sequences that lead toward product purchases.
+- **Revenue attribution** — when a subscriber who saved recipes later buys a product, crumb attributes the purchase back to the saved recipes.
+
+## Configuring the Save This Recipe sequence
+
+The Save This Recipe button works without any sequence configured — it always tags and records engagement. But to get the most out of it, set up a follow-up sequence:
+
+1. Go to **Settings** > **Automations** > **Save This Recipe Sequence**.
+2. Enable the sequence. crumb creates a default 3-email sequence in Kit:
+   - **Day 0:** Delivery email with the saved recipe as a PDF card.
+   - **Day 3:** Two more recipes from the same collection (if available).
+   - **Day 7:** A soft pitch for a related product (if published).
+3. You can customize these emails in Kit. crumb creates the drafts; you edit and activate them.
+
+<Aside>
+  Subscribers who are already in the sequence will not be re-enrolled. crumb checks for existing enrollment before adding anyone.
+</Aside>

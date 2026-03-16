@@ -1,0 +1,67 @@
+---
+title: Display modes
+description: Choose between Compact, Standard, and Full display modes for your recipe cards.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+When you insert a recipe card into a Kit email, you choose one of three display modes. Each mode shows a different amount of recipe content, letting you match the card to the purpose of your email.
+
+## Compact
+
+The most minimal display. Best for newsletters where you feature multiple recipes or want the card to be a teaser.
+
+**Includes:**
+- Primary photo (max height 200px)
+- Recipe title
+- Cook time and servings badges
+- Save This Recipe button
+
+**Use when:** You are sending a newsletter with several recipes and want each card to be quick to scan. Also good for sidebar-style recipe mentions.
+
+## Standard
+
+The most popular choice. Balances visual appeal with enough detail to be useful.
+
+**Includes:**
+- Primary photo (max height 280px)
+- Recipe title
+- Description (truncated to 2 lines)
+- Cook time, servings, and dietary icon badges
+- Partial ingredient list (up to 8 items, with "+ N more" if the recipe has more)
+- Save This Recipe button
+
+**Use when:** You are featuring a single recipe in a broadcast and want subscribers to get a sense of the recipe without leaving the email.
+
+## Full
+
+The complete recipe, right in the email. Best when subscribers should be able to cook from the email itself.
+
+**Includes:**
+- Primary photo (max height 320px)
+- Recipe title
+- Full description
+- Cook time, servings, and dietary icon badges
+- Nutrition summary (if enabled): calories, protein, carbs, and fat
+- Complete ingredient list
+- Complete numbered instructions
+- Save This Recipe button
+
+**Use when:** You are sending a dedicated recipe email and want subscribers to have everything they need to cook without clicking through.
+
+<Aside type="tip">
+  If you are unsure which mode to choose, start with Standard. It works well in most situations and gives subscribers enough information to decide whether to save the recipe.
+</Aside>
+
+## Changing the display mode
+
+You can change the display mode at any time before sending:
+
+1. Click the recipe card block in Kit's editor.
+2. The crumb plugin reopens with the current recipe selected.
+3. Toggle between Compact, Standard, and Full.
+4. Click **Update** to apply the change.
+
+## Nutrition display toggle
+
+In Full mode, you have the option to show or hide the nutrition summary. If the recipe has nutrition data (either manually entered or calculated from ingredients), toggling nutrition on displays a row with calories, protein, carbs, and fat per serving.

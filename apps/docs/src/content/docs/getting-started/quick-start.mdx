@@ -1,0 +1,91 @@
+---
+title: Quick start
+description: Connect your Kit account, import your first recipe, and send a recipe card in under 10 minutes.
+---
+
+import { Aside, Tabs, TabItem } from '@astrojs/starlight/components';
+
+This guide walks you through the three things that matter most when you first open crumb: connecting your Kit account, importing a recipe, and inserting a recipe card into a Kit email.
+
+## Step 1: Create your crumb account
+
+1. Go to **app.crumb.kitchen** and click **Sign Up**.
+2. Enter your email and create a password.
+3. Check your inbox for the verification email and click the confirmation link.
+
+<Aside type="tip">
+  Use the same email address you use for your Kit account. This makes it easier to keep things organized.
+</Aside>
+
+## Step 2: Connect your Kit account
+
+Once your email is verified, crumb will prompt you to connect Kit.
+
+1. Click **Connect Kit** on your dashboard.
+2. You will be redirected to Kit's authorization page.
+3. Review the permissions crumb is requesting and click **Authorize**.
+4. Kit redirects you back to crumb. You should see a green "Connected" badge on your dashboard.
+
+crumb needs access to your subscribers, tags, broadcasts, sequences, forms, and webhooks to work properly. All permissions are read/write so crumb can create tags, broadcast drafts, and sequences on your behalf.
+
+<Aside>
+  crumb never sends emails without your approval. It creates drafts that you review and schedule yourself inside Kit.
+</Aside>
+
+## Step 3: Import your first recipe
+
+Now that Kit is connected, let's get a recipe into your library.
+
+<Tabs>
+  <TabItem label="From a URL">
+    1. Click **Library** in the sidebar, then **Import Recipe**.
+    2. Select **From URL**.
+    3. Paste the URL of a recipe page from your blog or any recipe website.
+    4. Click **Import**. crumb will extract the recipe title, ingredients, instructions, timing, and photos.
+    5. Review the extracted recipe. Make any corrections you need.
+    6. Click **Save to Library**.
+  </TabItem>
+  <TabItem label="From Instagram">
+    1. Click **Library** in the sidebar, then **Import Recipe**.
+    2. Select **From Instagram**.
+    3. Paste the URL of an Instagram post that contains a recipe in the caption.
+    4. Click **Import**. crumb will extract the recipe from the caption text.
+    5. Review and edit the extracted recipe, then click **Save to Library**.
+  </TabItem>
+  <TabItem label="Manually">
+    1. Click **Library** in the sidebar, then **New Recipe**.
+    2. Fill in the recipe title, description, ingredients, and instructions.
+    3. Upload a photo.
+    4. Click **Save**.
+  </TabItem>
+</Tabs>
+
+<Aside type="tip">
+  crumb automatically suggests dietary tags (like Gluten-Free or Vegan) based on your ingredients. You will see these suggestions on the recipe edit page. Confirm the ones that are accurate — only confirmed tags are used for subscriber segmentation.
+</Aside>
+
+## Step 4: Send a recipe card in Kit
+
+With a recipe in your library, you can now insert it into a Kit email.
+
+1. Open **Kit** and create a new broadcast or open an existing draft.
+2. In the email editor, click the **+** button to add a new block.
+3. Find the **Recipe Card** block (from crumb) in the block list.
+4. Search for your recipe by name and select it.
+5. Choose a display mode:
+   - **Compact** — photo, title, cook time, and a Save button. Great for newsletters with multiple recipes.
+   - **Standard** — adds a short description, dietary icons, and a partial ingredient list. The most popular choice.
+   - **Full** — includes the complete ingredient list, instructions, and optional nutrition info. Best for single-recipe sends.
+6. Click **Insert**. The recipe card appears in your email, styled with your brand colors and fonts.
+7. Write your intro text above the card, then send or schedule the broadcast as usual.
+
+When a subscriber clicks **Save This Recipe** in the email, crumb automatically tags them in Kit with the recipe's dietary preferences and records the engagement event. This data feeds into your analytics and segmentation over time.
+
+## What to do next
+
+You have the basics down. Here are some things to explore:
+
+- **Import more recipes** — the more recipes in your library, the more useful crumb becomes. Try [bulk importing from Instagram](/recipes/importing/) or [syncing your WordPress recipes](/settings/wordpress/).
+- **Set up your brand kit** — configure your colors, fonts, and logo so recipe cards match your brand. See [Brand Kit settings](/settings/brand-kit/).
+- **Explore segmentation** — as subscribers interact with your recipe cards, crumb builds dietary preference segments. Learn about [how segmentation works](/growth/segmentation/).
+- **Build your first product** — once you have 5 or more recipes, try creating an [ebook](/products/ebooks/) or [meal plan](/products/meal-plans/).

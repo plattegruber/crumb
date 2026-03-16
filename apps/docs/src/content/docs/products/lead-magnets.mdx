@@ -1,0 +1,48 @@
+---
+title: Lead magnets
+description: Auto-generate free lead magnets from your products, complete with Kit opt-in forms and delivery sequences.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+A lead magnet is a free sample generated from an existing product. crumb automates the entire process: selecting the best recipes, creating a condensed PDF, building a Kit opt-in form, and setting up a delivery sequence that nurtures new subscribers toward purchasing the full product.
+
+## How lead magnet generation works
+
+1. Open a published (or draft) ebook or recipe card pack.
+2. Click **Generate Lead Magnet**.
+3. crumb selects the top **3-5 recipes** from the product by engagement score. If engagement scores are not available, the first 5 recipes are used.
+4. A condensed PDF is rendered using the same template as the parent product.
+5. The last page of the PDF includes a call to action: "Get the full [Product Title]" with a link to the product's listing (if published).
+6. crumb creates a **Kit opt-in form** that includes a dietary preference multi-select field.
+7. crumb creates a **Kit delivery sequence** (see below).
+
+## The delivery sequence
+
+When a lead magnet is created, crumb sets up a 4-email Kit sequence:
+
+| Day | Email |
+|-----|-------|
+| **0** | Delivery — "Here's your free [Lead Magnet Title]!" with the PDF attached. |
+| **2** | Value email — tips related to the lead magnet topic (AI-drafted, you edit). |
+| **4** | Another recipe card from your library. |
+| **7** | Pitch — "Get the full [Product Title]" with a link to the sales page. |
+
+All sequence emails are created as drafts. You review and activate the sequence in Kit.
+
+<Aside type="caution">
+  You must review and activate the sequence in Kit before it will start sending. crumb creates the drafts but does not activate them automatically.
+</Aside>
+
+## The opt-in form
+
+The generated Kit form:
+- Captures email and first name.
+- Includes a multi-select field for dietary preferences (Gluten-Free, Dairy-Free, Vegan, Vegetarian, Keto, Paleo, Nut-Free).
+- Tags subscribers on sign-up for tracking.
+
+The form embed code is shown in your crumb dashboard. Embed it on your blog, Substack, or landing page.
+
+<Aside type="tip">
+  The dietary preference field on the opt-in form feeds directly into your audience segmentation. Every lead magnet download becomes a data point for understanding your audience.
+</Aside>

@@ -1,0 +1,54 @@
+---
+title: Recipe library overview
+description: Your recipe library is the foundation of everything you do in crumb.
+---
+
+import { Aside, LinkCard } from '@astrojs/starlight/components';
+
+Your recipe library is where all your recipes live inside crumb. It is the foundation for everything else — email recipe cards, digital products, segmentation, and analytics all start with the recipes in your library.
+
+## What the library does
+
+- **Stores structured recipes** with titles, descriptions, ingredients, instructions, timing, photos, dietary tags, cuisine, meal type, and season.
+- **Imports recipes** from blog URLs, Instagram, TikTok, YouTube, screenshots, and WordPress recipe plugins.
+- **Organizes recipes** into collections that you can use to build products.
+- **Searches and filters** across your entire library by text, dietary tags, cuisine, meal type, cook time, season, and more.
+- **Detects duplicates** when you import a recipe that might already exist in your library.
+- **Tracks engagement** by showing each recipe's engagement score alongside its details.
+
+## Recipe lifecycle
+
+Every recipe has a status:
+
+| Status | Meaning |
+|--------|---------|
+| **Draft** | In your library but not ready for email or products. Default for newly imported recipes. |
+| **Active** | Ready to insert into Kit emails and include in digital products. |
+| **Archived** | Hidden from your library. Still works in existing products that reference it. |
+
+<Aside type="tip">
+  Archiving a recipe does not remove Kit tags that were already applied to subscribers. Past engagement data is preserved.
+</Aside>
+
+## Getting started
+
+<LinkCard
+  title="Creating recipes"
+  description="How to add recipes manually, including all available fields."
+  href="/recipes/creating-recipes/"
+/>
+<LinkCard
+  title="Importing recipes"
+  description="Import from URLs, Instagram, TikTok, YouTube, screenshots, and WordPress."
+  href="/recipes/importing/"
+/>
+<LinkCard
+  title="Collections"
+  description="Organize recipes into ordered groups for products and browsing."
+  href="/recipes/collections/"
+/>
+<LinkCard
+  title="Search and filter"
+  description="Find recipes with full-text search, dietary filters, and more."
+  href="/recipes/search-and-filter/"
+/>

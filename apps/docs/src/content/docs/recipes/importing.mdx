@@ -1,0 +1,176 @@
+---
+title: Importing recipes
+description: Import recipes from URLs, Instagram, TikTok, YouTube, screenshots, and WordPress.
+---
+
+import { Aside, Tabs, TabItem } from '@astrojs/starlight/components';
+
+crumb's import pipeline uses AI to extract structured recipe data from a wide range of sources. Every import goes through a review step where you confirm and edit the extracted recipe before it enters your library.
+
+## How importing works
+
+Every import follows the same lifecycle:
+
+1. **You provide a source** — a URL, social media link, image upload, or WordPress connection.
+2. **crumb extracts the recipe** — using a combination of structured data parsing, OCR, audio transcription, and AI.
+3. **You review the result** — crumb shows you the extracted title, ingredients, instructions, timing, photos, and suggested dietary tags. You can edit anything.
+4. **You save to your library** — the confirmed recipe is added to your library as a Draft.
+
+<Aside>
+  crumb never publishes or modifies an imported recipe without your review. You always see the extracted result and approve it before it enters your library.
+</Aside>
+
+## Import sources
+
+<Tabs>
+  <TabItem label="URL">
+    ### Importing from a URL
+
+    Best for: blog posts, recipe websites, any page with a recipe on it.
+
+    1. Go to **Library** > **Import Recipe** > **From URL**.
+    2. Paste the full URL of the recipe page.
+    3. Click **Import**.
+
+    **How it works:**
+    - crumb fetches the page and looks for structured recipe data (`schema.org` Recipe markup). Most recipe websites and WordPress recipe plugins output this data.
+    - If structured data is found and complete, crumb uses it directly with high confidence.
+    - If structured data is missing or incomplete, crumb extracts the visible text from the page and uses AI to parse the recipe.
+
+    <Aside type="tip">
+      URLs from sites that use WP Recipe Maker or Tasty Recipes tend to import with the highest accuracy because they include well-structured recipe data.
+    </Aside>
+  </TabItem>
+
+  <TabItem label="Instagram">
+    ### Importing from Instagram
+
+    Best for: recipes shared in Instagram post captions.
+
+    1. Go to **Library** > **Import Recipe** > **From Instagram**.
+    2. Paste the URL of the Instagram post.
+    3. Click **Import**.
+
+    crumb attempts to read the caption text from the post. If the post is from a private account or the platform blocks access, crumb will ask you to paste the caption text manually.
+
+    <Aside type="caution">
+      Instagram recipes in captions are often less structured than blog recipes. Expect to do more editing during the review step.
+    </Aside>
+
+    ### Bulk import from Instagram
+
+    If you have many recipe posts on Instagram:
+
+    1. Go to **Library** > **Import Recipe** > **Bulk Instagram Import**.
+    2. Connect your Instagram account via OAuth.
+    3. crumb fetches your recent posts (up to 200) and scores each one for recipe likelihood.
+    4. Review the list. Mark each post as **Import**, **Skip**, or **Not a recipe**.
+    5. Selected posts are queued and processed in parallel.
+  </TabItem>
+
+  <TabItem label="TikTok / Reels">
+    ### Importing from TikTok or Reels
+
+    Best for: recipe videos where you talk through the steps.
+
+    1. Go to **Library** > **Import Recipe** > **From Video**.
+    2. Paste the TikTok or Reel URL.
+    3. Click **Import**.
+
+    **How it works:**
+    - crumb downloads the video's audio track and transcribes it.
+    - It also extracts keyframes from the video and runs OCR to capture any on-screen text (ingredient lists, step overlays).
+    - The transcript and OCR text are combined and passed to AI for recipe extraction.
+
+    <Aside type="caution">
+      Videos must be under 10 minutes. Longer videos are rejected. For long-form content, consider importing from YouTube instead.
+    </Aside>
+  </TabItem>
+
+  <TabItem label="YouTube">
+    ### Importing from YouTube
+
+    Best for: recipe videos with descriptions or captions.
+
+    1. Go to **Library** > **Import Recipe** > **From YouTube**.
+    2. Paste the YouTube video URL.
+    3. Click **Import**.
+
+    **How it works:**
+    - crumb fetches the video description and auto-generated captions (if available).
+    - Both are combined and passed to AI for recipe extraction.
+    - If captions are unavailable, crumb falls back to the description text only.
+
+    <Aside type="tip">
+      YouTube imports work best when your video description includes a written recipe or ingredient list. If you typically put recipes in the description, your imports will be very accurate.
+    </Aside>
+  </TabItem>
+
+  <TabItem label="Screenshot">
+    ### Importing from a screenshot or photo
+
+    Best for: handwritten recipes, recipe cards from books, or screenshots of recipes from apps.
+
+    1. Go to **Library** > **Import Recipe** > **From Image**.
+    2. Upload a JPEG, PNG, HEIC, or WebP image (max 20 MB).
+    3. Click **Import**.
+
+    crumb uses a vision model to read the text in the image and extract recipe data in a single pass. It can handle both typed and handwritten text.
+
+    <Aside>
+      Handwritten recipes may have lower extraction confidence. Review the results carefully and expect to make corrections.
+    </Aside>
+  </TabItem>
+
+  <TabItem label="WordPress">
+    ### Syncing from WordPress
+
+    Best for: creators who already have recipes on a WordPress site using WP Recipe Maker or Tasty Recipes.
+
+    WordPress sync is an ongoing connection, not a one-time import. See [WordPress sync setup](/settings/wordpress/) for full configuration instructions.
+
+    **How sync works:**
+    - crumb connects to your WordPress site using a WordPress Application Password.
+    - It detects whether you use WP Recipe Maker or Tasty Recipes and fetches recipes through the appropriate API.
+    - New recipes are imported as Drafts. Updated recipes have their ingredients, instructions, and timing refreshed — but your edits to the title, description, notes, and photos in crumb are preserved.
+    - Recipes deleted from WordPress are flagged for your review in crumb, not automatically deleted.
+
+    Sync runs on demand or automatically every 24 hours.
+  </TabItem>
+</Tabs>
+
+## Reviewing imported recipes
+
+After crumb extracts a recipe, you see a review screen with all the extracted data. Here is what to look for:
+
+### Confidence indicators
+
+crumb shows a confidence score for the overall extraction and for individual fields. Fields with low confidence (below 70%) are highlighted so you can give them extra attention.
+
+### Dietary tag suggestions
+
+crumb suggests dietary tags based on the ingredients. These tags start as **unconfirmed**. You can confirm, remove, or add tags during review. Only confirmed tags are used for subscriber segmentation later.
+
+### Duplicate detection
+
+If crumb finds a recipe in your library with a very similar title (85% or higher similarity), it flags the import as a possible duplicate and shows you the matching recipe. You can choose to continue importing (creating a second copy) or skip.
+
+### Photos
+
+For URL imports, crumb pulls photos from the source page. For video imports, crumb may extract a thumbnail. You can remove any extracted photos and upload your own.
+
+## Import errors
+
+If something goes wrong during import, crumb shows a clear error message:
+
+| Situation | What you will see |
+|-----------|-------------------|
+| URL could not be reached | "Could not reach this URL. Please try again or paste the recipe text manually." |
+| No recipe found in the source | "We couldn't extract a recipe from this source. Try pasting the text directly." |
+| Video too long | "Videos must be under 10 minutes. Try a shorter clip." |
+| Image too large | "Images must be under 20 MB." |
+| Low confidence extraction | The recipe is shown for review with a warning banner: "This extraction has low confidence. Please review carefully." |
+
+<Aside type="tip">
+  If an automated import fails or produces poor results, you can always create the recipe manually. Go to **Library** > **New Recipe** and type it in yourself.
+</Aside>
