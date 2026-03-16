@@ -52,6 +52,10 @@ export class ApiError extends Error {
 async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> {
   const token = await getSessionToken();
 
+  if (!token && !apiBaseUrl) {
+    throw new ApiError(401, { error: "Not authenticated" });
+  }
+
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
     ...(options.headers as Record<string, string> | undefined),
@@ -67,11 +71,12 @@ async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> 
   });
 
   if (!res.ok) {
+    const text = await res.text();
     let body: unknown;
     try {
-      body = await res.json();
+      body = JSON.parse(text);
     } catch {
-      body = await res.text();
+      body = text;
     }
     throw new ApiError(res.status, body);
   }
