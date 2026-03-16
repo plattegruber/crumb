@@ -15,6 +15,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "docs:dev": "pnpm --filter docs dev",
+    "marketing:dev": "pnpm --filter @dough/marketing dev",
     "prepare": "lefthook install"
   },
   "engines": {
