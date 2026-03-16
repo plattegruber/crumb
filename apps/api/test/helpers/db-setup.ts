@@ -37,9 +37,36 @@ export async function createTestTables(d1: D1Database): Promise<void> {
   await d1.exec(
     `CREATE TABLE IF NOT EXISTS collection_recipes (collection_id TEXT NOT NULL, recipe_id TEXT NOT NULL, sort_order INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (collection_id, recipe_id))`,
   );
+  await d1.exec(
+    `CREATE TABLE IF NOT EXISTS recipe_engagement_events (id TEXT PRIMARY KEY, creator_id TEXT NOT NULL, recipe_id TEXT NOT NULL, event_type TEXT NOT NULL, event_data TEXT, kit_subscriber_id TEXT, source TEXT NOT NULL, occurred_at TEXT NOT NULL)`,
+  );
+  await d1.exec(
+    `CREATE INDEX IF NOT EXISTS engagement_events_creator_recipe_occurred_idx ON recipe_engagement_events(creator_id, recipe_id, occurred_at)`,
+  );
+  await d1.exec(
+    `CREATE TABLE IF NOT EXISTS recipe_engagement_scores (recipe_id TEXT PRIMARY KEY, creator_id TEXT NOT NULL, score REAL NOT NULL, computed_at TEXT NOT NULL, save_clicks_30d INTEGER NOT NULL, sequence_triggers_30d INTEGER NOT NULL, card_views_30d INTEGER NOT NULL, purchase_attributions_all INTEGER NOT NULL)`,
+  );
+  await d1.exec(
+    `CREATE TABLE IF NOT EXISTS segment_profiles (creator_id TEXT PRIMARY KEY, computed_at TEXT NOT NULL, segments TEXT NOT NULL)`,
+  );
+  await d1.exec(
+    `CREATE TABLE IF NOT EXISTS product_base (id TEXT PRIMARY KEY, creator_id TEXT NOT NULL, product_type TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'Draft', title TEXT NOT NULL, description TEXT, brand_kit_id TEXT NOT NULL, template_id TEXT NOT NULL, pdf_url TEXT, epub_url TEXT, kit_form_id TEXT, kit_sequence_id TEXT, suggested_price_cents INTEGER, currency TEXT NOT NULL DEFAULT 'USD', ai_copy_reviewed INTEGER NOT NULL DEFAULT 0, created_at TEXT NOT NULL, updated_at TEXT NOT NULL)`,
+  );
+  await d1.exec(
+    `CREATE TABLE IF NOT EXISTS ebook_details (product_id TEXT PRIMARY KEY, recipe_ids TEXT NOT NULL, chapters TEXT NOT NULL, intro_copy TEXT, author_bio TEXT, format TEXT NOT NULL)`,
+  );
+  await d1.exec(
+    `CREATE TABLE IF NOT EXISTS recipe_card_packs (product_id TEXT PRIMARY KEY, recipe_ids TEXT NOT NULL)`,
+  );
 }
 
 export async function cleanTestTables(d1: D1Database): Promise<void> {
+  await d1.exec(`DELETE FROM recipe_engagement_events`);
+  await d1.exec(`DELETE FROM recipe_engagement_scores`);
+  await d1.exec(`DELETE FROM segment_profiles`);
+  await d1.exec(`DELETE FROM recipe_card_packs`);
+  await d1.exec(`DELETE FROM ebook_details`);
+  await d1.exec(`DELETE FROM product_base`);
   await d1.exec(`DELETE FROM ingredients`);
   await d1.exec(`DELETE FROM ingredient_groups`);
   await d1.exec(`DELETE FROM instructions`);
