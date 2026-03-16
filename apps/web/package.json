@@ -10,6 +10,7 @@
     "typecheck": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json"
   },
   "dependencies": {
+    "@clerk/clerk-js": "^6.3.0",
     "@crumb/shared": "workspace:*"
   },
   "devDependencies": {
