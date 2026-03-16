@@ -8,7 +8,8 @@
     "build": "npx wrangler deploy --dry-run --outdir=dist",
     "test": "npx vitest run",
     "test:coverage": "npx vitest run --coverage",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "db:setup": "bash scripts/setup-local-db.sh"
   },
   "dependencies": {
     "@clerk/backend": "^3.2.0",

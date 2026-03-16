@@ -110,7 +110,8 @@ webhookRoutes.post("/kit", async (c) => {
   const signature = c.req.header("X-Kit-Signature") ?? "";
 
   // Verify webhook signature
-  const verifyResult = await verifyWebhookSignature(rawBody, signature, c.env.KIT_CLIENT_SECRET);
+  const kitSecret = c.env.KIT_CLIENT_SECRET ?? "";
+  const verifyResult = await verifyWebhookSignature(rawBody, signature, kitSecret);
 
   if (!verifyResult.ok) {
     return c.json({ error: verifyResult.error.message }, 403);

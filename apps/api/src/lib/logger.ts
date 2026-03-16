@@ -67,6 +67,7 @@ const SENSITIVE_KEYS = new Set([
   "cookie",
   "CLERK_SECRET_KEY",
   "KIT_CLIENT_SECRET",
+  "KIT_API_KEY",
 ]);
 
 /**
