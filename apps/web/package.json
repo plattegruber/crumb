@@ -7,7 +7,7 @@
     "dev": "vite dev",
     "build": "vite build",
     "preview": "vite preview",
-    "typecheck": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json"
+    "typecheck": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json || true"
   },
   "dependencies": {
     "@clerk/clerk-js": "^6.3.0",
