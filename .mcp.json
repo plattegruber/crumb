@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "kit-docs": {
+      "type": "http",
+      "url": "https://developers.kit.com/mcp/kit-developer-docs-mcp"
+    }
+  }
+}
