@@ -72,7 +72,7 @@ export interface CreatePhotoInput {
 }
 
 export interface CreateRecipeInput {
-  readonly id: RecipeId;
+  readonly id: string;
   readonly title: string;
   readonly description?: string | null;
   readonly sourceJson?: string;

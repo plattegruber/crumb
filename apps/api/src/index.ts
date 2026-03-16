@@ -12,6 +12,8 @@ import { automationRoutes, createSaveRedirectRoutes } from "./routes/automation.
 import { productRoutes } from "./routes/products.js";
 import { publishingRoutes } from "./routes/publishing.js";
 import { createDb } from "./db/index.js";
+import { creators } from "./db/schema.js";
+import { eq } from "drizzle-orm";
 import { handleImportQueue } from "./services/queue-handlers.js";
 import { createLogger } from "./lib/logger.js";
 import type { Env } from "./env.js";
@@ -70,6 +72,36 @@ app.route("/webhooks", webhookRoutes);
 
 // Save This Recipe redirect endpoint (public, no auth required)
 app.route("/save", createSaveRedirectRoutes());
+
+// Ensure a creator record exists for the authenticated user.
+// Auto-creates on first request so Clerk users don't need a separate signup.
+app.use("*", async (c, next) => {
+  const creatorId = c.get("creatorId" as never) as string | undefined;
+  if (!creatorId) {
+    await next();
+    return;
+  }
+  const db = createDb(c.env.DB);
+  const existing = await db
+    .select({ id: creators.id })
+    .from(creators)
+    .where(eq(creators.id, creatorId))
+    .limit(1);
+  if (existing.length === 0) {
+    const now = new Date().toISOString();
+    await db.insert(creators).values({
+      id: creatorId,
+      email: "",
+      name: "Creator",
+      password_hash: "",
+      subscription_tier: "Free",
+      subscription_started_at: now,
+      created_at: now,
+      updated_at: now,
+    });
+  }
+  await next();
+});
 
 // ---------------------------------------------------------------------------
 // Authenticated routes

@@ -50,7 +50,28 @@ recipeRoutes.post("/", async (c) => {
   const db = createDb(c.env.DB);
   const scopedDb = withCreatorScope(db, creatorId);
 
-  const body = await c.req.json<CreateRecipeInput>();
+  const raw = await c.req.json<Record<string, unknown>>();
+
+  // Transform nested frontend format to flat service format, auto-generate ID
+  const timing = raw["timing"] as Record<string, unknown> | undefined;
+  const yieldData = raw["yield"] as Record<string, unknown> | undefined;
+
+  const body: CreateRecipeInput = {
+    id: (raw["id"] as string) ?? crypto.randomUUID(),
+    title: raw["title"] as string,
+    description: (raw["description"] as string) ?? null,
+    status: (raw["status"] as RecipeStatus) ?? undefined,
+    prepMinutes: (timing?.["prep_minutes"] as number) ?? (raw["prepMinutes"] as number) ?? null,
+    cookMinutes: (timing?.["cook_minutes"] as number) ?? (raw["cookMinutes"] as number) ?? null,
+    totalMinutes: (timing?.["total_minutes"] as number) ?? (raw["totalMinutes"] as number) ?? null,
+    yieldQuantity: (yieldData?.["quantity"] as number) ?? (raw["yieldQuantity"] as number) ?? null,
+    yieldUnit: (yieldData?.["unit"] as string) ?? (raw["yieldUnit"] as string) ?? null,
+    notes: (raw["notes"] as string) ?? null,
+    cuisine: (raw["cuisine"] as string) ?? null,
+    dietaryTags: (raw["dietaryTags"] as readonly DietaryTag[]) ?? [],
+    mealTypes: (raw["mealTypes"] as readonly MealType[]) ?? [],
+    seasons: (raw["seasons"] as readonly Season[]) ?? [],
+  };
 
   const result = await createRecipe(scopedDb, body);
 
