@@ -3,7 +3,7 @@ title: Analytics and engagement scores
 description: Understand which recipes drive subscriber engagement and revenue with crumb's analytics engine.
 ---
 
-import { Aside } from '@astrojs/starlight/components';
+import { Aside } from "@astrojs/starlight/components";
 
 crumb's analytics engine tracks how your subscribers interact with your recipe content and distills that into a single, easy-to-understand engagement score for each recipe. These scores help you decide what to email, what to include in products, and where to focus your energy.
 
@@ -11,12 +11,12 @@ crumb's analytics engine tracks how your subscribers interact with your recipe c
 
 Every recipe in your library has an engagement score on a **0 to 10 scale**. The score is computed daily from four signals:
 
-| Signal | Weight | What it measures |
-|--------|--------|------------------|
-| **Save clicks (30 days)** | 3x | How many subscribers clicked "Save This Recipe" in the last 30 days. This is the strongest engagement signal. |
-| **Sequence triggers (30 days)** | 2x | How many subscribers entered a Kit sequence because of this recipe. |
-| **Card views (30 days)** | 1x | How many times this recipe card appeared in a sent broadcast. |
-| **Purchase attributions (all time)** | 4x | How many product purchases can be traced back to this recipe. |
+| Signal                               | Weight | What it measures                                                                                              |
+| ------------------------------------ | ------ | ------------------------------------------------------------------------------------------------------------- |
+| **Save clicks (30 days)**            | 3x     | How many subscribers clicked "Save This Recipe" in the last 30 days. This is the strongest engagement signal. |
+| **Sequence triggers (30 days)**      | 2x     | How many subscribers entered a Kit sequence because of this recipe.                                           |
+| **Card views (30 days)**             | 1x     | How many times this recipe card appeared in a sent broadcast.                                                 |
+| **Purchase attributions (all time)** | 4x     | How many product purchases can be traced back to this recipe.                                                 |
 
 ### How the score is calculated
 
@@ -27,7 +27,9 @@ The raw weighted sum is divided by a normalization factor based on your top-perf
 - Recipes with **no engagement data** have no score — they are not scored at 0.
 
 <Aside>
-  A recipe with no score is different from a recipe with a score of 0. No score means the recipe has not been included in any emails yet. A score of 0 would mean it was sent but received zero engagement (which is extremely rare).
+  A recipe with no score is different from a recipe with a score of 0. No score means the recipe has
+  not been included in any emails yet. A score of 0 would mean it was sent but received zero
+  engagement (which is extremely rare).
 </Aside>
 
 ## What you can do with engagement scores
@@ -59,7 +61,9 @@ crumb tracks a 30-day attribution window for product purchases:
 This helps you understand which recipes actually drive revenue — not just engagement.
 
 <Aside type="tip">
-  Revenue attribution only works for products sold through platforms that report purchases back to Kit (via Kit Commerce or purchase webhooks). If you sell through a platform without Kit integration, attribution will not be tracked.
+  Revenue attribution only works for products sold through platforms that report purchases back to
+  Kit (via Kit Commerce or purchase webhooks). If you sell through a platform without Kit
+  integration, attribution will not be tracked.
 </Aside>
 
 ## Event sources

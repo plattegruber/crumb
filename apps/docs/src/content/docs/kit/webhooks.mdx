@@ -3,19 +3,19 @@ title: Webhooks
 description: What Kit webhooks crumb registers and how they are used.
 ---
 
-import { Aside } from '@astrojs/starlight/components';
+import { Aside } from "@astrojs/starlight/components";
 
 When you connect your Kit account, crumb registers several webhooks to receive real-time notifications about subscriber activity. These webhooks power segmentation, engagement tracking, and automation.
 
 ## Registered webhooks
 
-| Kit event | What crumb does with it |
-|-----------|------------------------|
-| `subscriber.activated` | Applies dietary preferences from the subscriber's custom fields to their tags. |
-| `subscriber.tag_added` | Records tag additions as engagement events for analytics. |
-| `subscriber.unsubscribed` | Removes the subscriber from segment counts. |
-| `purchase.completed` | Records a purchase attribution event, linking the purchase to recently saved recipes. |
-| `link.clicked` | If the clicked link is a Save This Recipe URL, records a save click engagement event. |
+| Kit event                 | What crumb does with it                                                               |
+| ------------------------- | ------------------------------------------------------------------------------------- |
+| `subscriber.activated`    | Applies dietary preferences from the subscriber's custom fields to their tags.        |
+| `subscriber.tag_added`    | Records tag additions as engagement events for analytics.                             |
+| `subscriber.unsubscribed` | Removes the subscriber from segment counts.                                           |
+| `purchase.completed`      | Records a purchase attribution event, linking the purchase to recently saved recipes. |
+| `link.clicked`            | If the clicked link is a Save This Recipe URL, records a save click engagement event. |
 
 ## Security
 
@@ -26,5 +26,6 @@ All webhook payloads are verified using HMAC-SHA256 with your Kit webhook secret
 Kit may deliver the same webhook event more than once (for example, if crumb's initial acknowledgment was delayed). crumb handles this by checking for existing processed records before acting on any webhook. Duplicate deliveries are safely ignored.
 
 <Aside>
-  If crumb is temporarily unavailable, Kit retries webhook delivery with exponential backoff. No events are lost.
+  If crumb is temporarily unavailable, Kit retries webhook delivery with exponential backoff. No
+  events are lost.
 </Aside>

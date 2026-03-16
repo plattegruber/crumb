@@ -3,7 +3,7 @@ title: Recipe endpoints
 description: API reference for recipe CRUD operations.
 ---
 
-import { Aside } from '@astrojs/starlight/components';
+import { Aside } from "@astrojs/starlight/components";
 
 The recipe API lets you create, read, update, and search recipes in your library programmatically.
 
@@ -15,21 +15,21 @@ GET /api/recipes
 
 Query parameters:
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `q` | string | Full-text search across title, description, ingredients, and notes. |
-| `dietary_tags` | string | Comma-separated dietary tags to filter by. |
-| `cuisine` | string | Filter by cuisine. |
-| `meal_type` | string | Filter by meal type. |
-| `max_cook_time_minutes` | integer | Maximum cook time in minutes. |
-| `season` | string | Filter by season. |
-| `collection_id` | string | Filter to a specific collection. |
-| `status` | string | Filter by status: `active`, `draft`, or `archived`. |
-| `email_ready` | boolean | Filter by email-ready flag. |
-| `sort` | string | Sort field: `created_at`, `updated_at`, `engagement_score`, or `title`. |
-| `order` | string | Sort order: `asc` or `desc`. |
-| `page` | integer | Page number. |
-| `per_page` | integer | Results per page. |
+| Parameter               | Type    | Description                                                             |
+| ----------------------- | ------- | ----------------------------------------------------------------------- |
+| `q`                     | string  | Full-text search across title, description, ingredients, and notes.     |
+| `dietary_tags`          | string  | Comma-separated dietary tags to filter by.                              |
+| `cuisine`               | string  | Filter by cuisine.                                                      |
+| `meal_type`             | string  | Filter by meal type.                                                    |
+| `max_cook_time_minutes` | integer | Maximum cook time in minutes.                                           |
+| `season`                | string  | Filter by season.                                                       |
+| `collection_id`         | string  | Filter to a specific collection.                                        |
+| `status`                | string  | Filter by status: `active`, `draft`, or `archived`.                     |
+| `email_ready`           | boolean | Filter by email-ready flag.                                             |
+| `sort`                  | string  | Sort field: `created_at`, `updated_at`, `engagement_score`, or `title`. |
+| `order`                 | string  | Sort order: `asc` or `desc`.                                            |
+| `page`                  | integer | Page number.                                                            |
+| `per_page`              | integer | Results per page.                                                       |
 
 ## Get a recipe
 

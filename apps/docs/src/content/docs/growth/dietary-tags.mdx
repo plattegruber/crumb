@@ -3,7 +3,7 @@ title: How dietary auto-tagging works
 description: How crumb analyzes ingredients to suggest dietary tags for your recipes.
 ---
 
-import { Aside } from '@astrojs/starlight/components';
+import { Aside } from "@astrojs/starlight/components";
 
 When you create or import a recipe, crumb analyzes the ingredient list and suggests dietary tags automatically. This saves you from manually classifying every recipe, especially if you have a large library.
 
@@ -31,7 +31,8 @@ Auto-suggested tags start as **unconfirmed**. This is a safety mechanism.
 When you update a recipe's ingredients, crumb re-runs auto-tagging and resets any previously confirmed tags to unconfirmed. This ensures tags stay accurate as recipes change.
 
 <Aside type="caution">
-  If you change a recipe's ingredients, any confirmed dietary tags will be reset to unconfirmed. You will need to review and re-confirm them.
+  If you change a recipe's ingredients, any confirmed dietary tags will be reset to unconfirmed. You
+  will need to review and re-confirm them.
 </Aside>
 
 ## How to confirm tags
@@ -44,5 +45,6 @@ When you update a recipe's ingredients, crumb re-runs auto-tagging and resets an
 Once confirmed, these tags become active and will be applied to subscribers who save this recipe.
 
 <Aside type="tip">
-  Batch-confirming tags is fast. Go through your imported recipes and confirm tags in bulk — it takes just a few seconds per recipe and unlocks the full power of audience segmentation.
+  Batch-confirming tags is fast. Go through your imported recipes and confirm tags in bulk — it
+  takes just a few seconds per recipe and unlocks the full power of audience segmentation.
 </Aside>

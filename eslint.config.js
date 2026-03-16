@@ -15,6 +15,7 @@ export default tseslint.config(
       "**/.svelte-kit/**",
       "**/coverage/**",
       "**/.wrangler/**",
+      "**/.astro/**",
       "**/migrations/**/*.sql",
       ".claude/**",
     ],

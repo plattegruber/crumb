@@ -3,7 +3,7 @@ title: Importing recipes
 description: Import recipes from URLs, Instagram, TikTok, YouTube, screenshots, and WordPress.
 ---
 
-import { Aside, Tabs, TabItem } from '@astrojs/starlight/components';
+import { Aside, Tabs, TabItem } from "@astrojs/starlight/components";
 
 crumb's import pipeline uses AI to extract structured recipe data from a wide range of sources. Every import goes through a review step where you confirm and edit the extracted recipe before it enters your library.
 
@@ -17,7 +17,8 @@ Every import follows the same lifecycle:
 4. **You save to your library** — the confirmed recipe is added to your library as a Draft.
 
 <Aside>
-  crumb never publishes or modifies an imported recipe without your review. You always see the extracted result and approve it before it enters your library.
+  crumb never publishes or modifies an imported recipe without your review. You always see the
+  extracted result and approve it before it enters your library.
 </Aside>
 
 ## Import sources
@@ -40,6 +41,7 @@ Every import follows the same lifecycle:
     <Aside type="tip">
       URLs from sites that use WP Recipe Maker or Tasty Recipes tend to import with the highest accuracy because they include well-structured recipe data.
     </Aside>
+
   </TabItem>
 
   <TabItem label="Instagram">
@@ -66,6 +68,7 @@ Every import follows the same lifecycle:
     3. crumb fetches your recent posts (up to 200) and scores each one for recipe likelihood.
     4. Review the list. Mark each post as **Import**, **Skip**, or **Not a recipe**.
     5. Selected posts are queued and processed in parallel.
+
   </TabItem>
 
   <TabItem label="TikTok / Reels">
@@ -85,6 +88,7 @@ Every import follows the same lifecycle:
     <Aside type="caution">
       Videos must be under 10 minutes. Longer videos are rejected. For long-form content, consider importing from YouTube instead.
     </Aside>
+
   </TabItem>
 
   <TabItem label="YouTube">
@@ -104,6 +108,7 @@ Every import follows the same lifecycle:
     <Aside type="tip">
       YouTube imports work best when your video description includes a written recipe or ingredient list. If you typically put recipes in the description, your imports will be very accurate.
     </Aside>
+
   </TabItem>
 
   <TabItem label="Screenshot">
@@ -120,6 +125,7 @@ Every import follows the same lifecycle:
     <Aside>
       Handwritten recipes may have lower extraction confidence. Review the results carefully and expect to make corrections.
     </Aside>
+
   </TabItem>
 
   <TabItem label="WordPress">
@@ -136,6 +142,7 @@ Every import follows the same lifecycle:
     - Recipes deleted from WordPress are flagged for your review in crumb, not automatically deleted.
 
     Sync runs on demand or automatically every 24 hours.
+
   </TabItem>
 </Tabs>
 
@@ -163,13 +170,13 @@ For URL imports, crumb pulls photos from the source page. For video imports, cru
 
 If something goes wrong during import, crumb shows a clear error message:
 
-| Situation | What you will see |
-|-----------|-------------------|
-| URL could not be reached | "Could not reach this URL. Please try again or paste the recipe text manually." |
-| No recipe found in the source | "We couldn't extract a recipe from this source. Try pasting the text directly." |
-| Video too long | "Videos must be under 10 minutes. Try a shorter clip." |
-| Image too large | "Images must be under 20 MB." |
-| Low confidence extraction | The recipe is shown for review with a warning banner: "This extraction has low confidence. Please review carefully." |
+| Situation                     | What you will see                                                                                                    |
+| ----------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| URL could not be reached      | "Could not reach this URL. Please try again or paste the recipe text manually."                                      |
+| No recipe found in the source | "We couldn't extract a recipe from this source. Try pasting the text directly."                                      |
+| Video too long                | "Videos must be under 10 minutes. Try a shorter clip."                                                               |
+| Image too large               | "Images must be under 20 MB."                                                                                        |
+| Low confidence extraction     | The recipe is shown for review with a warning banner: "This extraction has low confidence. Please review carefully." |
 
 <Aside type="tip">
   If an automated import fails or produces poor results, you can always create the recipe manually. Go to **Library** > **New Recipe** and type it in yourself.
