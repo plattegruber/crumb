@@ -9,7 +9,7 @@ import {
   productPurchasedTagName,
   KIT_CUSTOM_FIELD_LABELS,
 } from "../../../src/lib/kit/tag-conventions.js";
-import type { DietaryTag, Slug } from "@crumb/shared";
+import type { DietaryTag, Slug } from "@dough/shared";
 
 // ---------------------------------------------------------------------------
 // dietaryTagName

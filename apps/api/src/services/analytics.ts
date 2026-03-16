@@ -17,8 +17,8 @@ import {
   ebookDetails,
   recipeCardPacks,
 } from "../db/schema.js";
-import type { Result } from "@crumb/shared";
-import { ok, err } from "@crumb/shared";
+import type { Result } from "@dough/shared";
+import { ok, err } from "@dough/shared";
 import { createLogger, type Logger } from "../lib/logger.js";
 
 // ---------------------------------------------------------------------------

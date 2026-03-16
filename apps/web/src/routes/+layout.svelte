@@ -104,14 +104,14 @@
 </script>
 
 <svelte:head>
-  <title>crumb</title>
+  <title>dough</title>
 </svelte:head>
 
 {#if !clerkLoaded && !isPublicPage}
   <!-- Clerk still loading — show a minimal loading state instead of flashing content -->
   <div class="auth-gate">
     <div class="auth-gate-content">
-      <h1>crumb</h1>
+      <h1>dough</h1>
       <p>Loading...</p>
     </div>
   </div>
@@ -119,7 +119,7 @@
   <!-- Unauthenticated user on protected route — show sign-in prompt -->
   <div class="auth-gate">
     <div class="auth-gate-content">
-      <h1>crumb</h1>
+      <h1>dough</h1>
       <p>Sign in to access your recipe dashboard.</p>
       <a href="/sign-in" class="btn btn-primary">Sign In</a>
     </div>
@@ -147,7 +147,7 @@
           <line x1="3" y1="18" x2="21" y2="18" />
         </svg>
       </button>
-      <span class="mobile-logo">crumb</span>
+      <span class="mobile-logo">dough</span>
     </header>
 
     <!-- Sidebar overlay for mobile -->
@@ -162,7 +162,7 @@
     <!-- Sidebar -->
     <nav class="sidebar" class:open={mobileMenuOpen}>
       <div class="sidebar-logo">
-        <a href="/">crumb</a>
+        <a href="/">dough</a>
       </div>
 
       <div class="sidebar-nav">

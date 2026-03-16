@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { Recipe, DietaryTag } from "@crumb/shared";
+  import type { Recipe, DietaryTag } from "@dough/shared";
   import DietaryBadge from "./DietaryBadge.svelte";
 
   const { recipe }: { recipe: Recipe } = $props();

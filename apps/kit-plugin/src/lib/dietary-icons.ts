@@ -6,8 +6,8 @@
  * Each icon is rendered as a small pill/badge with abbreviation text.
  */
 
-import type { DietaryTag } from "@crumb/shared";
-import { DIETARY_TAG } from "@crumb/shared";
+import type { DietaryTag } from "@dough/shared";
+import { DIETARY_TAG } from "@dough/shared";
 
 export interface DietaryIconConfig {
   readonly label: string;

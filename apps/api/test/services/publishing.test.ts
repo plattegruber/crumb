@@ -23,8 +23,8 @@ import type {
   ProductBaseRow,
 } from "../../src/services/publishing.js";
 import type { CreatorId } from "../../src/types/auth.js";
-import type { Result, PublishPlatform } from "@crumb/shared";
-import { ok, err, PUBLISH_PLATFORM } from "@crumb/shared";
+import type { Result, PublishPlatform } from "@dough/shared";
+import { ok, err, PUBLISH_PLATFORM } from "@dough/shared";
 import { createTestTables, cleanTestTables } from "../helpers/db-setup.js";
 
 // ---------------------------------------------------------------------------

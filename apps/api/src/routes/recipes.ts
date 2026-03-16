@@ -21,7 +21,7 @@ import type {
   ListRecipesParams,
   RecipeError,
 } from "../services/recipe.js";
-import type { RecipeStatus, DietaryTag, MealType, Season } from "@crumb/shared";
+import type { RecipeStatus, DietaryTag, MealType, Season } from "@dough/shared";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
 
 const recipeRoutes = new Hono<AppEnv>();

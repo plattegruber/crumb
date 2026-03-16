@@ -1,11 +1,11 @@
 ---
 title: Analytics and engagement scores
-description: Understand which recipes drive subscriber engagement and revenue with crumb's analytics engine.
+description: Understand which recipes drive subscriber engagement and revenue with dough's analytics engine.
 ---
 
 import { Aside } from "@astrojs/starlight/components";
 
-crumb's analytics engine tracks how your subscribers interact with your recipe content and distills that into a single, easy-to-understand engagement score for each recipe. These scores help you decide what to email, what to include in products, and where to focus your energy.
+dough's analytics engine tracks how your subscribers interact with your recipe content and distills that into a single, easy-to-understand engagement score for each recipe. These scores help you decide what to email, what to include in products, and where to focus your energy.
 
 ## Engagement score
 
@@ -52,10 +52,10 @@ After sending a broadcast with a recipe card, check back in a few days to see ho
 
 ## Revenue attribution
 
-crumb tracks a 30-day attribution window for product purchases:
+dough tracks a 30-day attribution window for product purchases:
 
-1. When a subscriber purchases a product (detected via Kit webhook), crumb looks at all "Save This Recipe" clicks from that subscriber in the previous 30 days.
-2. If any of the saved recipes are included in the purchased product, crumb records a purchase attribution event for each matching recipe.
+1. When a subscriber purchases a product (detected via Kit webhook), dough looks at all "Save This Recipe" clicks from that subscriber in the previous 30 days.
+2. If any of the saved recipes are included in the purchased product, dough records a purchase attribution event for each matching recipe.
 3. These attributions feed into the engagement score (weighted at 4x) and appear in your analytics dashboard.
 
 This helps you understand which recipes actually drive revenue — not just engagement.

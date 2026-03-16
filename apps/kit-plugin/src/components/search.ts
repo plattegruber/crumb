@@ -6,7 +6,7 @@
  * runs inside Kit's editor as a standalone bundle.
  */
 
-import type { DietaryTag, RecipeId } from "@crumb/shared";
+import type { DietaryTag, RecipeId } from "@dough/shared";
 import type { ApiClient } from "@/lib/api-client";
 import type { RecipeSearchFilters, RecipeSummary, SearchResponse } from "@/lib/types";
 

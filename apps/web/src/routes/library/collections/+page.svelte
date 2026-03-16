@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import type { Collection } from "@crumb/shared";
+  import type { Collection } from "@dough/shared";
   import { collections } from "$lib/api.js";
 
   let collectionList = $state<Collection[]>([]);
@@ -53,7 +53,7 @@
 </script>
 
 <svelte:head>
-  <title>Collections - crumb</title>
+  <title>Collections - dough</title>
 </svelte:head>
 
 <div class="collections-page">

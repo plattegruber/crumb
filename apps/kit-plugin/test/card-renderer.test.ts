@@ -10,7 +10,7 @@ import {
   classification,
   hexColor,
 } from "./helpers";
-import { DIETARY_TAG } from "@crumb/shared";
+import { DIETARY_TAG } from "@dough/shared";
 
 // ---------------------------------------------------------------------------
 // Shared options factories

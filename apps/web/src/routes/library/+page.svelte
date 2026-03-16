@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import type { Recipe, DietaryTag, MealType, RecipeStatus } from "@crumb/shared";
+  import type { Recipe, DietaryTag, MealType, RecipeStatus } from "@dough/shared";
   import { recipes, type ListRecipesParams } from "$lib/api.js";
   import SearchBar from "$lib/components/SearchBar.svelte";
   import RecipeCard from "$lib/components/RecipeCard.svelte";
@@ -75,7 +75,7 @@
 </script>
 
 <svelte:head>
-  <title>Recipe Library - crumb</title>
+  <title>Recipe Library - dough</title>
 </svelte:head>
 
 <div class="library-page">

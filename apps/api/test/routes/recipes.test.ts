@@ -13,7 +13,7 @@ import { collectionRoutes } from "../../src/routes/collections.js";
 import type { Env } from "../../src/env.js";
 import type { CreatorId } from "../../src/types/auth.js";
 import { env } from "cloudflare:test";
-import { wholeNumber } from "@crumb/shared";
+import { wholeNumber } from "@dough/shared";
 import { createTestTables, cleanTestTables } from "../helpers/db-setup.js";
 
 // ---------------------------------------------------------------------------

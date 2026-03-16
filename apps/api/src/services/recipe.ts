@@ -20,20 +20,19 @@ import {
 import type { CreatorScopedDb } from "../middleware/creator-scope.js";
 import { generateSlug, resolveSlugConflict } from "../lib/slug.js";
 import { jaroWinkler, normalizeForComparison } from "../lib/jaro-winkler.js";
-import type { Result } from "@crumb/shared";
-import { ok, err } from "@crumb/shared";
+import type { Result } from "@dough/shared";
+import { ok, err } from "@dough/shared";
 import type {
   Quantity,
   RecipeStatus,
   DietaryTag,
   MealType,
   Season,
-  RecipeId,
   IngredientId,
   InstructionId,
   PhotoId,
-} from "@crumb/shared";
-import { multiply } from "@crumb/shared";
+} from "@dough/shared";
+import { multiply } from "@dough/shared";
 import { createLogger, type Logger } from "../lib/logger.js";
 
 // ---------------------------------------------------------------------------

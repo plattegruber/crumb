@@ -1,15 +1,15 @@
 ---
 title: Recipe cards in Kit emails
-description: Insert beautiful, brand-matched recipe cards into your Kit emails using the crumb editor plugin.
+description: Insert beautiful, brand-matched recipe cards into your Kit emails using the dough editor plugin.
 ---
 
 import { Aside, Tabs, TabItem } from "@astrojs/starlight/components";
 
-Recipe cards are the core of how crumb connects your recipes to your Kit emails. The crumb editor plugin adds a "Recipe Card" block type to Kit's email editor, letting you insert a beautifully formatted recipe directly into any broadcast or sequence email.
+Recipe cards are the core of how dough connects your recipes to your Kit emails. The dough editor plugin adds a "Recipe Card" block type to Kit's email editor, letting you insert a beautifully formatted recipe directly into any broadcast or sequence email.
 
 ## How recipe cards work
 
-When you install the crumb plugin from the Kit App Store, a new **Recipe Card** block becomes available in Kit's email editor. This block renders your recipe — including photo, title, ingredients, instructions, and a "Save This Recipe" button — as email-compatible HTML styled with your brand colors and fonts.
+When you install the dough plugin from the Kit App Store, a new **Recipe Card** block becomes available in Kit's email editor. This block renders your recipe — including photo, title, ingredients, instructions, and a "Save This Recipe" button — as email-compatible HTML styled with your brand colors and fonts.
 
 Recipe cards are not images or attachments. They are inline HTML content that renders natively in every major email client, including Gmail, Apple Mail, Outlook, and iOS Mail.
 
@@ -50,7 +50,7 @@ Recipe cards automatically use your **brand kit** settings:
 - **Body font** — used for ingredients, instructions, and other body text. Falls back to Arial.
 
 <Aside>
-  If you have not configured a brand kit yet, recipe cards will use crumb's default styling. Go to
+  If you have not configured a brand kit yet, recipe cards will use dough's default styling. Go to
   [Brand Kit settings](/settings/brand-kit/) to set your colors and fonts.
 </Aside>
 
@@ -67,10 +67,10 @@ All styling is inline (no external CSS) and no JavaScript is used, ensuring maxi
 
 ## Empty library state
 
-If you do not have any recipes in your library yet, the Recipe Card block shows a prompt: "Add your first recipe to crumb to insert recipe cards." with a link to your crumb library.
+If you do not have any recipes in your library yet, the Recipe Card block shows a prompt: "Add your first recipe to dough to insert recipe cards." with a link to your dough library.
 
 ## Requirements
 
-- Your Kit account must be [connected to crumb](/kit/connecting/).
+- Your Kit account must be [connected to dough](/kit/connecting/).
 - You need at least one recipe in your library with **Active** status.
-- The crumb plugin must be installed from the Kit App Store.
+- The dough plugin must be installed from the Kit App Store.

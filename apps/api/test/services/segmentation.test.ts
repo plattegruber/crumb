@@ -3,8 +3,8 @@
 // ---------------------------------------------------------------------------
 
 import { describe, it, expect } from "vitest";
-import type { Ingredient, NutritionValues, DietaryTag } from "@crumb/shared";
-import { DIETARY_TAG, createIngredientId } from "@crumb/shared";
+import type { Ingredient, NutritionValues, DietaryTag } from "@dough/shared";
+import { DIETARY_TAG, createIngredientId } from "@dough/shared";
 import { inferDietaryTags } from "../../src/services/segmentation.js";
 
 // ---------------------------------------------------------------------------

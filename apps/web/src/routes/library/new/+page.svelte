@@ -59,7 +59,7 @@
 </script>
 
 <svelte:head>
-  <title>New Recipe - crumb</title>
+  <title>New Recipe - dough</title>
 </svelte:head>
 
 <div class="new-recipe-page">

@@ -1,15 +1,15 @@
 ---
 title: API authentication
-description: How to authenticate with the crumb API.
+description: How to authenticate with the dough API.
 ---
 
 import { Aside } from "@astrojs/starlight/components";
 
-The crumb API uses JWT-based authentication. All API requests must include a valid token in the `Authorization` header.
+The dough API uses JWT-based authentication. All API requests must include a valid token in the `Authorization` header.
 
 ## Obtaining a token
 
-Authenticate with your crumb credentials to receive a JWT:
+Authenticate with your dough credentials to receive a JWT:
 
 ```
 POST /api/auth/login
@@ -47,6 +47,6 @@ Tokens are refreshed automatically on each authenticated request. The refreshed 
 The API enforces rate limits per authenticated user. If you exceed the limit, you will receive a `429 Too Many Requests` response with a `Retry-After` header.
 
 <Aside>
-  The API is intended for advanced users and developers building integrations on top of crumb. Most
+  The API is intended for advanced users and developers building integrations on top of dough. Most
   creators will never need to use it directly.
 </Aside>

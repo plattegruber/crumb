@@ -7,8 +7,8 @@
 // that a Durable Objects-backed implementation will use later.
 // ---------------------------------------------------------------------------
 
-import type { Result } from "@crumb/shared";
-import { ok, err } from "@crumb/shared";
+import type { Result } from "@dough/shared";
+import { ok, err } from "@dough/shared";
 
 // ---------------------------------------------------------------------------
 // Types

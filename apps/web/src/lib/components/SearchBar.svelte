@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { DIETARY_TAG, MEAL_TYPE, RECIPE_STATUS } from "@crumb/shared";
-  import type { DietaryTag, MealType, RecipeStatus } from "@crumb/shared";
+  import { DIETARY_TAG, MEAL_TYPE, RECIPE_STATUS } from "@dough/shared";
+  import type { DietaryTag, MealType, RecipeStatus } from "@dough/shared";
 
   const {
     onSearch,

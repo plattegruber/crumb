@@ -1,15 +1,15 @@
 ---
 title: Core concepts
-description: Understand the building blocks of crumb — recipes, collections, products, segments, and automations.
+description: Understand the building blocks of dough — recipes, collections, products, segments, and automations.
 ---
 
 import { Aside, Card, CardGrid } from "@astrojs/starlight/components";
 
-Before diving into specific features, it helps to understand the core objects you will work with in crumb and how they fit together.
+Before diving into specific features, it helps to understand the core objects you will work with in dough and how they fit together.
 
 ## Recipes
 
-A **recipe** is the central object in crumb. It represents a single dish with a title, description, ingredients, instructions, timing, photos, and classification metadata (dietary tags, cuisine, meal type, season).
+A **recipe** is the central object in dough. It represents a single dish with a title, description, ingredients, instructions, timing, photos, and classification metadata (dietary tags, cuisine, meal type, season).
 
 Recipes can be created manually or imported from URLs, Instagram, TikTok, YouTube, screenshots, or a WordPress recipe plugin. Every recipe goes through a simple lifecycle:
 
@@ -18,15 +18,15 @@ Recipes can be created manually or imported from URLs, Instagram, TikTok, YouTub
 - **Archived** — the recipe is hidden from your library but still works in any products that already reference it.
 
 <Aside>
-  crumb never generates recipes with AI. AI is used only to *extract* recipes from external sources,
+  dough never generates recipes with AI. AI is used only to *extract* recipes from external sources,
   *organize* chapters in products, and *draft* supporting copy. Your recipes are always yours.
 </Aside>
 
 ## Dietary tags
 
-Every recipe can have **dietary tags** like Gluten-Free, Vegan, Keto, Dairy-Free, and others. When you import or create a recipe, crumb analyzes the ingredients and suggests tags automatically.
+Every recipe can have **dietary tags** like Gluten-Free, Vegan, Keto, Dairy-Free, and others. When you import or create a recipe, dough analyzes the ingredients and suggests tags automatically.
 
-Tags start as **unconfirmed** — meaning crumb thinks they apply, but you have not reviewed them yet. Once you confirm a tag, it becomes active and can be used to segment your subscribers.
+Tags start as **unconfirmed** — meaning dough thinks they apply, but you have not reviewed them yet. Once you confirm a tag, it becomes active and can be used to segment your subscribers.
 
 Only confirmed tags are synced to Kit. This protects you from accidentally mislabeling a recipe.
 
@@ -38,7 +38,7 @@ A recipe can belong to multiple collections. The order of recipes in a collectio
 
 ## Products
 
-A **product** is a digital file generated from your recipes. crumb supports four product types:
+A **product** is a digital file generated from your recipes. dough supports four product types:
 
 <CardGrid>
   <Card title="Ebook" icon="document">
@@ -64,12 +64,12 @@ Products go through their own lifecycle: **Draft** (building), **Published** (li
 
 ## Segments
 
-A **segment** is a group of your Kit subscribers who share a dietary preference. crumb builds segments from two sources:
+A **segment** is a group of your Kit subscribers who share a dietary preference. dough builds segments from two sources:
 
 1. **Explicit preferences** — when a subscriber fills out a preference capture form and selects dietary preferences like "Gluten-Free" or "Vegan."
-2. **Behavioral signals** — when a subscriber clicks "Save This Recipe" on a recipe with confirmed dietary tags, crumb tags them in Kit accordingly.
+2. **Behavioral signals** — when a subscriber clicks "Save This Recipe" on a recipe with confirmed dietary tags, dough tags them in Kit accordingly.
 
-Over time, crumb builds a profile of your audience's dietary interests. You can see segment sizes, engagement rates, and growth trends on your analytics dashboard.
+Over time, dough builds a profile of your audience's dietary interests. You can see segment sizes, engagement rates, and growth trends on your analytics dashboard.
 
 ## Engagement scores
 
@@ -84,18 +84,18 @@ Scores are relative to your own performance — your highest-performing recipe a
 
 ## Automations
 
-crumb creates Kit sequences and broadcast drafts on your behalf, but it never sends anything without your approval.
+dough creates Kit sequences and broadcast drafts on your behalf, but it never sends anything without your approval.
 
 Key automations include:
 
-- **Save This Recipe sequences** — when a subscriber saves a recipe, crumb can enroll them in a follow-up sequence that delivers related recipes and a soft product pitch.
-- **New recipe broadcast drafts** — when you mark a recipe as "email ready," crumb creates a Kit broadcast draft with the recipe card pre-inserted.
-- **Lead magnet delivery sequences** — when you create a lead magnet, crumb sets up a Kit sequence that delivers the free PDF and nurtures the subscriber toward the full product.
-- **Seasonal recipe drops** — you configure a season, date range, and collection, and crumb creates broadcast drafts featuring your top recipes on schedule.
+- **Save This Recipe sequences** — when a subscriber saves a recipe, dough can enroll them in a follow-up sequence that delivers related recipes and a soft product pitch.
+- **New recipe broadcast drafts** — when you mark a recipe as "email ready," dough creates a Kit broadcast draft with the recipe card pre-inserted.
+- **Lead magnet delivery sequences** — when you create a lead magnet, dough sets up a Kit sequence that delivers the free PDF and nurtures the subscriber toward the full product.
+- **Seasonal recipe drops** — you configure a season, date range, and collection, and dough creates broadcast drafts featuring your top recipes on schedule.
 
 ## Brand kit
 
-Your **brand kit** stores your visual identity: primary color, secondary color, accent color, heading font, body font, and logo. crumb uses these settings to style recipe cards in emails and format your digital products.
+Your **brand kit** stores your visual identity: primary color, secondary color, accent color, heading font, body font, and logo. dough uses these settings to style recipe cards in emails and format your digital products.
 
 On the Studio tier, you can create multiple brand kits for different product lines or partnerships.
 
@@ -105,12 +105,12 @@ Here is the typical flow:
 
 1. You **import recipes** into your library and confirm their dietary tags.
 2. You **send recipe cards** in Kit emails. Subscribers click "Save This Recipe."
-3. crumb **tags subscribers** with dietary preferences and records engagement events.
+3. dough **tags subscribers** with dietary preferences and records engagement events.
 4. **Segments form** around dietary preferences. You can see which preferences your audience cares about most.
-5. crumb **recommends products** based on segment data — for example, "You have 200 gluten-free subscribers and 12 gluten-free recipes. This could be your next ebook."
-6. You **build a product** from a collection of recipes. crumb helps with chapter organization and copy.
+5. dough **recommends products** based on segment data — for example, "You have 200 gluten-free subscribers and 12 gluten-free recipes. This could be your next ebook."
+6. You **build a product** from a collection of recipes. dough helps with chapter organization and copy.
 7. You **publish the product** to Stan Store, Gumroad, or LTK.
-8. crumb generates a **lead magnet** from the product and sets up a Kit form and delivery sequence.
+8. dough generates a **lead magnet** from the product and sets up a Kit form and delivery sequence.
 9. New subscribers opt in, receive the lead magnet, and enter your **nurture sequence** — driving them toward the full product.
 
-Every step feeds data back into crumb's analytics, helping you make better decisions about what to create next.
+Every step feeds data back into dough's analytics, helping you make better decisions about what to create next.

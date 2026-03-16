@@ -17,8 +17,8 @@ import type {
   ImportError,
   Url,
   Slug,
-} from "@crumb/shared";
-import { ok, err, createImportJobId, createRecipeId, createUrl, createSlug } from "@crumb/shared";
+} from "@dough/shared";
+import { ok, err, createImportJobId, createRecipeId, createUrl, createSlug } from "@dough/shared";
 import { createLogger, type Logger } from "../lib/logger.js";
 
 // ---------------------------------------------------------------------------

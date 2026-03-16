@@ -17,8 +17,8 @@ import {
 import { createRecipe } from "../../src/services/recipe.js";
 import type { CreateRecipeInput } from "../../src/services/recipe.js";
 import type { CreatorId } from "../../src/types/auth.js";
-import type { RecipeId, IngredientId, InstructionId } from "@crumb/shared";
-import { wholeNumber } from "@crumb/shared";
+import type { RecipeId, IngredientId, InstructionId } from "@dough/shared";
+import { wholeNumber } from "@dough/shared";
 import { createTestTables, cleanTestTables } from "../helpers/db-setup.js";
 
 // ---------------------------------------------------------------------------

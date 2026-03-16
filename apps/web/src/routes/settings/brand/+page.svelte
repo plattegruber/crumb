@@ -2,7 +2,7 @@
 </script>
 
 <svelte:head>
-  <title>Brand Kit - crumb</title>
+  <title>Brand Kit - dough</title>
 </svelte:head>
 
 <div class="settings-subpage">

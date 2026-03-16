@@ -2,7 +2,7 @@
   import { page } from "$app/stores";
   import { goto } from "$app/navigation";
   import { onMount } from "svelte";
-  import type { Recipe, DietaryTag } from "@crumb/shared";
+  import type { Recipe, DietaryTag } from "@dough/shared";
   import { recipes } from "$lib/api.js";
   import DietaryBadge from "$lib/components/DietaryBadge.svelte";
 
@@ -93,7 +93,7 @@
 </script>
 
 <svelte:head>
-  <title>{recipe?.title ?? "Recipe"} - crumb</title>
+  <title>{recipe?.title ?? "Recipe"} - dough</title>
 </svelte:head>
 
 <div class="recipe-detail">

@@ -51,12 +51,12 @@
 </script>
 
 <svelte:head>
-  <title>Sign In - crumb</title>
+  <title>Sign In - dough</title>
 </svelte:head>
 
 <div class="auth-page">
   <div class="auth-container">
-    <a href="/" class="auth-logo">crumb</a>
+    <a href="/" class="auth-logo">dough</a>
 
     {#if error}
       <div class="auth-error">

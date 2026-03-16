@@ -2,11 +2,11 @@ import { defineConfig } from "astro/config";
 import starlight from "@astrojs/starlight";
 
 export default defineConfig({
-  site: "https://docs.crumb.kitchen",
+  site: "https://docs.dough.kitchen",
   integrations: [
     starlight({
-      title: "crumb docs",
-      description: "Documentation for crumb — recipe intelligence for food creators who use Kit.",
+      title: "dough docs",
+      description: "Documentation for dough — recipe intelligence for food creators who use Kit.",
       social: [
         {
           icon: "github",

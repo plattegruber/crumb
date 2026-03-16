@@ -1,5 +1,5 @@
 {
-  "name": "@crumb/web",
+  "name": "@dough/web",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@clerk/clerk-js": "^6.3.0",
-    "@crumb/shared": "workspace:*"
+    "@dough/shared": "workspace:*"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20250310.0",

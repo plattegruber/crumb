@@ -14,8 +14,8 @@ import { createMiddleware } from "hono/factory";
 import type { AppEnv } from "./auth.js";
 import type { CreatorId, ForbiddenTeamAction, TeamMemberAccess } from "../types/auth.js";
 import { TEAM_MEMBER_FORBIDDEN_ACTIONS } from "../types/auth.js";
-import type { Result } from "@crumb/shared";
-import { ok, err } from "@crumb/shared";
+import type { Result } from "@dough/shared";
+import { ok, err } from "@dough/shared";
 
 // ---------------------------------------------------------------
 // Lookup interface

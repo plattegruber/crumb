@@ -5,8 +5,8 @@
 // segment analytics (9.4).
 // ---------------------------------------------------------------------------
 
-import type { Result } from "@crumb/shared";
-import { ok, err } from "@crumb/shared";
+import type { Result } from "@dough/shared";
+import { ok, err } from "@dough/shared";
 import type {
   DietaryTag,
   Ingredient,
@@ -14,8 +14,8 @@ import type {
   DietaryTagState,
   RecipeId,
   CreatorId,
-} from "@crumb/shared";
-import { DIETARY_TAG } from "@crumb/shared";
+} from "@dough/shared";
+import { DIETARY_TAG } from "@dough/shared";
 import { createLogger, type Logger } from "../lib/logger.js";
 
 import type { KitClientConfig } from "../lib/kit/client.js";
@@ -280,8 +280,8 @@ const GLUTEN_KEYWORDS: readonly string[] = [
   "wheat bran",
   "flour tortilla",
   "flour tortillas",
-  "bread crumbs",
-  "breadcrumbs",
+  "bread doughs",
+  "breaddoughs",
   "panko",
   "pasta",
   "spaghetti",

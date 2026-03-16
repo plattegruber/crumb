@@ -1,17 +1,17 @@
 ---
 title: Webhook event reference
-description: Reference for webhook events that crumb sends and receives.
+description: Reference for webhook events that dough sends and receives.
 ---
 
 import { Aside } from "@astrojs/starlight/components";
 
-This page documents the webhook events in the crumb ecosystem — both the Kit webhooks that crumb listens to, and the internal events that drive crumb's automation.
+This page documents the webhook events in the dough ecosystem — both the Kit webhooks that dough listens to, and the internal events that drive dough's automation.
 
-## Kit webhooks crumb receives
+## Kit webhooks dough receives
 
 These webhooks are registered automatically when you connect your Kit account.
 
-| Event                     | Payload key                 | crumb action                                  |
+| Event                     | Payload key                 | dough action                                  |
 | ------------------------- | --------------------------- | --------------------------------------------- |
 | `subscriber.activated`    | `subscriber.id`             | Apply dietary preferences from custom fields. |
 | `subscriber.tag_added`    | `subscriber.id`, `tag.name` | Record as engagement event.                   |
@@ -21,7 +21,7 @@ These webhooks are registered automatically when you connect your Kit account.
 
 ## Internal events
 
-These events are generated within crumb and drive automated workflows.
+These events are generated within dough and drive automated workflows.
 
 | Event                 | Trigger                              | Action                                                                     |
 | --------------------- | ------------------------------------ | -------------------------------------------------------------------------- |

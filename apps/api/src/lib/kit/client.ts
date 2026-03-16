@@ -7,8 +7,8 @@
 // API docs: https://developers.kit.com/v4
 // ---------------------------------------------------------------------------
 
-import type { Result } from "@crumb/shared";
-import { ok, err } from "@crumb/shared";
+import type { Result } from "@dough/shared";
+import { ok, err } from "@dough/shared";
 import { createLogger } from "../logger.js";
 import type {
   KitApiError,

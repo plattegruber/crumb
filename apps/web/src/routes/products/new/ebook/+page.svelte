@@ -2,7 +2,7 @@
 </script>
 
 <svelte:head>
-  <title>New Ebook - crumb</title>
+  <title>New Ebook - dough</title>
 </svelte:head>
 
 <div class="stub-page">

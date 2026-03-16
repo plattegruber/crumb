@@ -22,9 +22,9 @@ import {
   recipeEngagementScores,
 } from "../db/schema.js";
 import type { CreatorScopedDb } from "../middleware/creator-scope.js";
-import type { Result } from "@crumb/shared";
-import { ok, err } from "@crumb/shared";
-import type { EbookFormat } from "@crumb/shared";
+import type { Result } from "@dough/shared";
+import { ok, err } from "@dough/shared";
+import type { EbookFormat } from "@dough/shared";
 import type { Env } from "../env.js";
 import { createLogger, type Logger } from "../lib/logger.js";
 

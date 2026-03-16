@@ -8,8 +8,8 @@
 //   - If refresh returns 401, the connection is marked disconnected.
 // ---------------------------------------------------------------------------
 
-import type { Result } from "@crumb/shared";
-import { ok, err } from "@crumb/shared";
+import type { Result } from "@dough/shared";
+import { ok, err } from "@dough/shared";
 import type { KitApiError, KitOAuthTokenResponse } from "./types.js";
 import { KIT_API_ERROR_CODE } from "./types.js";
 import { refreshToken } from "./oauth.js";

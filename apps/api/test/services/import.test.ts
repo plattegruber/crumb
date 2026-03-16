@@ -20,8 +20,8 @@ import {
   type WordPressRecipe,
 } from "../../src/services/import.js";
 import { handleImportQueue, type QueueMessage } from "../../src/services/queue-handlers.js";
-import type { RecipeExtract, ImportError, Result } from "@crumb/shared";
-import { ok, err, createImportJobId, createCreatorId } from "@crumb/shared";
+import type { RecipeExtract, ImportError, Result } from "@dough/shared";
+import { ok, err, createImportJobId, createCreatorId } from "@dough/shared";
 import type { Database } from "../../src/db/index.js";
 
 // @ts-expect-error -- Vite handles ?raw imports at build time

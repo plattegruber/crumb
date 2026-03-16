@@ -9,8 +9,8 @@
 // Docs: https://developers.kit.com/api-reference/oauth-refresh-token-flow
 // ---------------------------------------------------------------------------
 
-import type { Result } from "@crumb/shared";
-import { ok, err } from "@crumb/shared";
+import type { Result } from "@dough/shared";
+import { ok, err } from "@dough/shared";
 import type { KitApiError, KitOAuthTokenResponse } from "./types.js";
 import { KIT_API_ERROR_CODE } from "./types.js";
 import type { FetchFn } from "./client.js";

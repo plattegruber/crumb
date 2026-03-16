@@ -2,7 +2,7 @@
 </script>
 
 <svelte:head>
-  <title>Team - crumb</title>
+  <title>Team - dough</title>
 </svelte:head>
 
 <div class="settings-subpage">

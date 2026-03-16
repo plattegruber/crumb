@@ -1,11 +1,11 @@
 ---
 title: WordPress sync
-description: Connect your WordPress recipe plugin to automatically sync recipes with crumb.
+description: Connect your WordPress recipe plugin to automatically sync recipes with dough.
 ---
 
 import { Aside } from "@astrojs/starlight/components";
 
-If you publish recipes on a WordPress site using WP Recipe Maker or Tasty Recipes, crumb can sync those recipes into your library automatically.
+If you publish recipes on a WordPress site using WP Recipe Maker or Tasty Recipes, dough can sync those recipes into your library automatically.
 
 ## Setting up WordPress sync
 
@@ -14,25 +14,25 @@ If you publish recipes on a WordPress site using WP Recipe Maker or Tasty Recipe
 3. Create a **WordPress Application Password**:
    - In your WordPress admin, go to **Users** > **Profile**.
    - Scroll to **Application Passwords**.
-   - Enter a name (like "crumb") and click **Add New Application Password**.
+   - Enter a name (like "dough") and click **Add New Application Password**.
    - Copy the generated password.
-4. Paste the application password into crumb.
-5. Click **Connect**. crumb tests the connection and detects your recipe plugin.
+4. Paste the application password into dough.
+5. Click **Connect**. dough tests the connection and detects your recipe plugin.
 
 <Aside>
-  crumb supports WP Recipe Maker and Tasty Recipes. If you use a different recipe plugin, WordPress
+  dough supports WP Recipe Maker and Tasty Recipes. If you use a different recipe plugin, WordPress
   sync is not available — use URL import instead.
 </Aside>
 
 ## How sync works
 
-- **New recipes** on your WordPress site are imported as Drafts in crumb.
-- **Updated recipes** are refreshed in crumb — ingredients, instructions, and timing are updated. Your edits to the title, description, notes, and photos in crumb are preserved.
-- **Deleted recipes** on WordPress are flagged in crumb for your review, not automatically deleted.
+- **New recipes** on your WordPress site are imported as Drafts in dough.
+- **Updated recipes** are refreshed in dough — ingredients, instructions, and timing are updated. Your edits to the title, description, notes, and photos in dough are preserved.
+- **Deleted recipes** on WordPress are flagged in dough for your review, not automatically deleted.
 
 Sync runs on demand (click **Sync Now** in Settings) or automatically every 24 hours.
 
 <Aside type="caution">
-  If your WordPress Application Password stops working (for example, after a password reset), crumb
+  If your WordPress Application Password stops working (for example, after a password reset), dough
   will flag the sync as failed and prompt you to regenerate the password.
 </Aside>

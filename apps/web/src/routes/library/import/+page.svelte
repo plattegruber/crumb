@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import type { ImportJob } from "@crumb/shared";
+  import type { ImportJob } from "@dough/shared";
   import { imports } from "$lib/api.js";
 
   let importUrl = $state("");
@@ -109,7 +109,7 @@
 </script>
 
 <svelte:head>
-  <title>Import Recipes - crumb</title>
+  <title>Import Recipes - dough</title>
 </svelte:head>
 
 <div class="import-page">

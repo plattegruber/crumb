@@ -13,8 +13,8 @@ import { eq, and } from "drizzle-orm";
 import type { Database } from "../db/index.js";
 import { productBase, publishedListings, leadMagnets, brandKits } from "../db/schema.js";
 import type { CreatorScopedDb } from "../middleware/creator-scope.js";
-import type { Result, PublishPlatform } from "@crumb/shared";
-import { ok, err, PUBLISH_PLATFORM } from "@crumb/shared";
+import type { Result, PublishPlatform } from "@dough/shared";
+import { ok, err, PUBLISH_PLATFORM } from "@dough/shared";
 import { createLogger, type Logger } from "../lib/logger.js";
 
 // ---------------------------------------------------------------------------

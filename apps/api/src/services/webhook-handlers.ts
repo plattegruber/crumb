@@ -14,8 +14,8 @@ import {
   computeRevenueAttribution,
   ENGAGEMENT_EVENT_TYPE,
 } from "./analytics.js";
-import type { Result } from "@crumb/shared";
-import { ok, err } from "@crumb/shared";
+import type { Result } from "@dough/shared";
+import { ok, err } from "@dough/shared";
 import { createLogger, type Logger } from "../lib/logger.js";
 
 // ---------------------------------------------------------------------------
