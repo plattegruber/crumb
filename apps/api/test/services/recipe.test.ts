@@ -100,6 +100,12 @@ function makeRecipeInput(overrides: Partial<CreateRecipeInput> = {}): CreateReci
   return { ...base, ...overrides };
 }
 
+const NOW_ISO = new Date().toISOString();
+
+function insertCreator(creatorId: string, tier: string = "Free"): string {
+  return `INSERT INTO creators (id, email, name, password_hash, subscription_tier, subscription_started_at, created_at, updated_at) VALUES ('${creatorId}', 'test@test.com', 'Test Creator', 'hash', '${tier}', '${NOW_ISO}', '${NOW_ISO}', '${NOW_ISO}')`;
+}
+
 // ---------------------------------------------------------------------------
 // Tests
 // ---------------------------------------------------------------------------
@@ -112,9 +118,7 @@ describe("Recipe Service", () => {
     await cleanTestTables(env.DB);
     db = createDb(env.DB);
     // Insert a test creator (Free tier by default)
-    await env.DB.exec(
-      `INSERT INTO creators (id, email, name, subscription_tier, created_at, updated_at) VALUES ('${TEST_CREATOR_ID}', 'test@test.com', 'Test Creator', 'Free', ${Date.now()}, ${Date.now()})`,
-    );
+    await env.DB.exec(insertCreator(TEST_CREATOR_ID));
   });
 
   describe("createRecipe", () => {
@@ -131,11 +135,11 @@ describe("Recipe Service", () => {
       expect(result.value.recipe.slug).toBe("lemon-pasta");
       expect(result.value.recipe.status).toBe("Draft");
       expect(result.value.recipe.description).toBe("A delicious lemon pasta recipe");
-      expect(result.value.recipe.dietaryTagsConfirmed).toBe(false);
-      expect(result.value.recipe.prepMinutes).toBe(10);
-      expect(result.value.recipe.cookMinutes).toBe(20);
-      expect(result.value.recipe.yieldQuantity).toBe(4);
-      expect(result.value.recipe.yieldUnit).toBe("servings");
+      expect(result.value.recipe.dietary_tags_confirmed).toBe(false);
+      expect(result.value.recipe.prep_minutes).toBe(10);
+      expect(result.value.recipe.cook_minutes).toBe(20);
+      expect(result.value.recipe.yield_quantity).toBe(4);
+      expect(result.value.recipe.yield_unit).toBe("servings");
       expect(result.value.recipe.cuisine).toBe("Italian");
 
       // Ingredient groups
@@ -215,7 +219,7 @@ describe("Recipe Service", () => {
 
       expect(result.ok).toBe(true);
       if (!result.ok) return;
-      expect(result.value.recipe.dietaryTagsConfirmed).toBe(false);
+      expect(result.value.recipe.dietary_tags_confirmed).toBe(false);
     });
   });
 
@@ -232,10 +236,10 @@ describe("Recipe Service", () => {
       expect(result.ok).toBe(true);
       if (!result.ok) return;
       expect(result.value.recipe.description).toBe("Updated description");
-      expect(result.value.recipe.cookMinutes).toBe(25);
+      expect(result.value.recipe.cook_minutes).toBe(25);
       // Unchanged fields
       expect(result.value.recipe.title).toBe("Lemon Pasta");
-      expect(result.value.recipe.prepMinutes).toBe(10);
+      expect(result.value.recipe.prep_minutes).toBe(10);
     });
 
     it("resets dietary_tags_confirmed when ingredients are updated", async () => {
@@ -267,7 +271,7 @@ describe("Recipe Service", () => {
 
       expect(result.ok).toBe(true);
       if (!result.ok) return;
-      expect(result.value.recipe.dietaryTagsConfirmed).toBe(false);
+      expect(result.value.recipe.dietary_tags_confirmed).toBe(false);
       expect(result.value.ingredientGroups).toHaveLength(1);
       expect(result.value.ingredientGroups[0]?.ingredients[0]?.item).toBe("flour");
     });
@@ -379,9 +383,9 @@ describe("Recipe Service", () => {
       const firstIng = result.value.ingredientGroups[0]?.ingredients[0];
       expect(firstIng).toBeDefined();
       if (!firstIng) return;
-      const parsed = JSON.parse(firstIng.quantity as string) as Record<string, unknown>;
-      expect(parsed["type"]).toBe("WholeNumber");
-      expect(parsed["value"]).toBe(2);
+      const qtyData = firstIng.quantity_data as Record<string, unknown>;
+      expect(qtyData["type"]).toBe("WholeNumber");
+      expect(qtyData["value"]).toBe(2);
     });
 
     it("scales fraction quantities", async () => {
@@ -398,9 +402,9 @@ describe("Recipe Service", () => {
       const oliveOilIng = result.value.ingredientGroups[1]?.ingredients[0];
       expect(oliveOilIng).toBeDefined();
       if (!oliveOilIng) return;
-      const parsed = JSON.parse(oliveOilIng.quantity as string) as Record<string, unknown>;
-      expect(parsed["type"]).toBe("WholeNumber");
-      expect(parsed["value"]).toBe(1);
+      const qtyData = oliveOilIng.quantity_data as Record<string, unknown>;
+      expect(qtyData["type"]).toBe("WholeNumber");
+      expect(qtyData["value"]).toBe(1);
     });
 
     it("scales mixed number quantities", async () => {
@@ -432,9 +436,9 @@ describe("Recipe Service", () => {
       const sugarIng = result.value.ingredientGroups[0]?.ingredients[0];
       expect(sugarIng).toBeDefined();
       if (!sugarIng) return;
-      const parsed = JSON.parse(sugarIng.quantity as string) as Record<string, unknown>;
-      expect(parsed["type"]).toBe("WholeNumber");
-      expect(parsed["value"]).toBe(3);
+      const qtyData = sugarIng.quantity_data as Record<string, unknown>;
+      expect(qtyData["type"]).toBe("WholeNumber");
+      expect(qtyData["value"]).toBe(3);
     });
 
     it("does not scale when servings param is not provided", async () => {
@@ -449,10 +453,10 @@ describe("Recipe Service", () => {
       const firstIng = result.value.ingredientGroups[0]?.ingredients[0];
       expect(firstIng).toBeDefined();
       if (!firstIng) return;
-      const parsed = JSON.parse(firstIng.quantity as string) as Record<string, unknown>;
+      const qtyData = firstIng.quantity_data as Record<string, unknown>;
       // Original value, unscaled
-      expect(parsed["type"]).toBe("WholeNumber");
-      expect(parsed["value"]).toBe(1);
+      expect(qtyData["type"]).toBe("WholeNumber");
+      expect(qtyData["value"]).toBe(1);
     });
   });
 

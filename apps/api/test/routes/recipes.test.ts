@@ -21,6 +21,7 @@ import { createTestTables, cleanTestTables } from "../helpers/db-setup.js";
 // ---------------------------------------------------------------------------
 
 const TEST_CREATOR_ID = "creator-route-1" as CreatorId;
+const NOW_ISO = new Date().toISOString();
 
 async function fakeVerify(
   token: string,
@@ -70,7 +71,7 @@ describe("Recipe Routes", () => {
     app = createTestApp();
     // Insert test creator (Creator tier to avoid free tier limits in route tests)
     await env.DB.exec(
-      `INSERT INTO creators (id, email, name, subscription_tier, created_at, updated_at) VALUES ('${TEST_CREATOR_ID}', 'test@test.com', 'Test Creator', 'Creator', ${Date.now()}, ${Date.now()})`,
+      `INSERT INTO creators (id, email, name, password_hash, subscription_tier, subscription_started_at, created_at, updated_at) VALUES ('${TEST_CREATOR_ID}', 'test@test.com', 'Test Creator', 'hash', 'Creator', '${NOW_ISO}', '${NOW_ISO}', '${NOW_ISO}')`,
     );
   });
 

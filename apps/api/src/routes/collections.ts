@@ -28,8 +28,6 @@ function errorToStatus(error: CollectionError): ContentfulStatusCode {
   switch (error.type) {
     case "not_found":
       return 404;
-    case "has_published_product":
-      return 409;
     case "invalid_input":
       return 400;
     case "database_error":

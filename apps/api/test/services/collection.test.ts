@@ -26,6 +26,7 @@ import { createTestTables, cleanTestTables } from "../helpers/db-setup.js";
 // ---------------------------------------------------------------------------
 
 const TEST_CREATOR_ID = "creator-1" as CreatorId;
+const NOW_ISO = new Date().toISOString();
 
 function makeRecipeInput(id: string, title: string): CreateRecipeInput {
   return {
@@ -68,7 +69,7 @@ describe("Collection Service", () => {
     await cleanTestTables(env.DB);
     db = createDb(env.DB);
     await env.DB.exec(
-      `INSERT INTO creators (id, email, name, subscription_tier, created_at, updated_at) VALUES ('${TEST_CREATOR_ID}', 'test@test.com', 'Test Creator', 'Creator', ${Date.now()}, ${Date.now()})`,
+      `INSERT INTO creators (id, email, name, password_hash, subscription_tier, subscription_started_at, created_at, updated_at) VALUES ('${TEST_CREATOR_ID}', 'test@test.com', 'Test Creator', 'hash', 'Creator', '${NOW_ISO}', '${NOW_ISO}', '${NOW_ISO}')`,
     );
   });
 
@@ -157,7 +158,7 @@ describe("Collection Service", () => {
   });
 
   describe("deleteCollection", () => {
-    it("deletes a collection not referenced by published products", async () => {
+    it("deletes a collection and its recipe associations", async () => {
       const scopedDb = withCreatorScope(db, TEST_CREATOR_ID);
 
       await createCollection(scopedDb, { id: "col-1", name: "My Collection" });
@@ -171,38 +172,6 @@ describe("Collection Service", () => {
       // Verify it's gone
       const fetched = await getCollection(scopedDb, "col-1");
       expect(fetched.ok).toBe(false);
-    });
-
-    it("cannot delete collection referenced by published product", async () => {
-      const scopedDb = withCreatorScope(db, TEST_CREATOR_ID);
-
-      await createCollection(scopedDb, { id: "col-1", name: "My Collection" });
-
-      // Create a published product referencing this collection
-      await env.DB.exec(
-        `INSERT INTO products (id, creator_id, type, status, title, collection_id, created_at, updated_at) VALUES ('prod-1', '${TEST_CREATOR_ID}', 'Ebook', 'Published', 'My Ebook', 'col-1', ${Date.now()}, ${Date.now()})`,
-      );
-
-      const result = await deleteCollection(scopedDb, "col-1");
-
-      expect(result.ok).toBe(false);
-      if (result.ok) return;
-      expect(result.error.type).toBe("has_published_product");
-    });
-
-    it("allows deletion when product is draft (not published)", async () => {
-      const scopedDb = withCreatorScope(db, TEST_CREATOR_ID);
-
-      await createCollection(scopedDb, { id: "col-1", name: "My Collection" });
-
-      // Create a draft product referencing this collection
-      await env.DB.exec(
-        `INSERT INTO products (id, creator_id, type, status, title, collection_id, created_at, updated_at) VALUES ('prod-1', '${TEST_CREATOR_ID}', 'Ebook', 'Draft', 'My Ebook', 'col-1', ${Date.now()}, ${Date.now()})`,
-      );
-
-      const result = await deleteCollection(scopedDb, "col-1");
-
-      expect(result.ok).toBe(true);
     });
 
     it("returns not_found for non-existent collection", async () => {
