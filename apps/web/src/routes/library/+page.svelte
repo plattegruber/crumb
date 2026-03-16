@@ -36,8 +36,12 @@
       if (filterDietaryTags.length > 0) params.dietary_tags = filterDietaryTags as DietaryTag[];
 
       const res = await recipes.list(params);
-      recipeList = res.recipes;
-      total = res.total;
+      // API returns { data, total, page, perPage, totalPages }
+      recipeList =
+        ((res as Record<string, unknown>).recipes as Recipe[]) ??
+        ((res as Record<string, unknown>).data as Recipe[]) ??
+        [];
+      total = ((res as Record<string, unknown>).total as number) ?? 0;
     } catch (e) {
       error = "Failed to load recipes. Please try again.";
       console.error(e);

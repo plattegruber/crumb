@@ -29,7 +29,10 @@
     loading = true;
     error = null;
     try {
-      recipe = await recipes.get(recipeId);
+      const res = await recipes.get(recipeId);
+      // API returns { recipe, ingredientGroups, instructionGroups, photos }
+      const data = res as Record<string, unknown>;
+      recipe = (data.recipe as Recipe) ?? (res as Recipe);
     } catch (e) {
       error = "Failed to load recipe.";
       console.error(e);
