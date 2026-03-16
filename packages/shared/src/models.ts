@@ -14,7 +14,6 @@ import type {
   KitFormId,
   KitSequenceId,
   KitSubscriberId,
-  PhotoId,
   ProductId,
   RecipeId,
   Slug,

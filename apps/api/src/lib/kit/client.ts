@@ -75,9 +75,7 @@ interface KitErrorBody {
   errors?: readonly string[];
 }
 
-async function parseErrorBody(
-  response: Response,
-): Promise<readonly string[]> {
+async function parseErrorBody(response: Response): Promise<readonly string[]> {
   try {
     const body = (await response.json()) as KitErrorBody;
     if (Array.isArray(body.errors)) {
@@ -89,10 +87,7 @@ async function parseErrorBody(
   }
 }
 
-function kitError(
-  status: number,
-  messages: readonly string[],
-): KitApiError {
+function kitError(status: number, messages: readonly string[]): KitApiError {
   return {
     status,
     code: errorCodeFromStatus(status),
@@ -180,13 +175,21 @@ async function request<T>(
 
   try {
     const data = (await response.json()) as T;
-    kitLogger.debug("kit_api_call", { method, endpoint: path, status: response.status, durationMs });
+    kitLogger.debug("kit_api_call", {
+      method,
+      endpoint: path,
+      status: response.status,
+      durationMs,
+    });
     return ok({ data, status: response.status });
   } catch {
-    kitLogger.error("kit_api_parse_error", { method, endpoint: path, status: response.status, durationMs });
-    return err(
-      kitError(response.status, ["Failed to parse response JSON"]),
-    );
+    kitLogger.error("kit_api_parse_error", {
+      method,
+      endpoint: path,
+      status: response.status,
+      durationMs,
+    });
+    return err(kitError(response.status, ["Failed to parse response JSON"]));
   }
 }
 
@@ -215,12 +218,7 @@ async function listAll<T>(
       : `${path}${separator}per_page=500`;
 
     const result: Result<{ data: PaginatedResponse; status: number }, KitApiError> =
-      await request<PaginatedResponse>(
-        config,
-        accessToken,
-        "GET",
-        pageUrl,
-      );
+      await request<PaginatedResponse>(config, accessToken, "GET", pageUrl);
 
     if (!result.ok) {
       return err(result.error);
@@ -270,9 +268,7 @@ export async function getSubscriber(
 
   const subscribers = result.value.data.subscribers;
   if (!Array.isArray(subscribers) || subscribers.length === 0) {
-    return err(
-      kitError(404, [`Subscriber not found: ${email}`]),
-    );
+    return err(kitError(404, [`Subscriber not found: ${email}`]));
   }
 
   const subscriber = subscribers[0];
@@ -375,7 +371,7 @@ export async function untagSubscriber(
   subscriberId: string,
   tagId: string,
 ): Promise<Result<void, KitApiError>> {
-  const result = await request<void>(
+  const result = await request<undefined>(
     config,
     accessToken,
     "DELETE",
@@ -410,13 +406,7 @@ export async function createTag(
   accessToken: string,
   name: string,
 ): Promise<Result<KitTag, KitApiError>> {
-  const result = await request<{ tag: KitTag }>(
-    config,
-    accessToken,
-    "POST",
-    "/tags",
-    { name },
-  );
+  const result = await request<{ tag: KitTag }>(config, accessToken, "POST", "/tags", { name });
 
   if (!result.ok) {
     return err(result.error);
@@ -449,12 +439,7 @@ export async function listCustomFields(
   config: KitClientConfig,
   accessToken: string,
 ): Promise<Result<readonly KitCustomField[], KitApiError>> {
-  return listAll<KitCustomField>(
-    config,
-    accessToken,
-    "/custom_fields",
-    "custom_fields",
-  );
+  return listAll<KitCustomField>(config, accessToken, "/custom_fields", "custom_fields");
 }
 
 /**
@@ -571,12 +556,7 @@ export async function listSequences(
   config: KitClientConfig,
   accessToken: string,
 ): Promise<Result<readonly KitSequence[], KitApiError>> {
-  return listAll<KitSequence>(
-    config,
-    accessToken,
-    "/sequences",
-    "sequences",
-  );
+  return listAll<KitSequence>(config, accessToken, "/sequences", "sequences");
 }
 
 /**
@@ -678,16 +658,10 @@ export async function registerWebhook(
   event: KitWebhookRegistrationEvent,
   targetUrl: string,
 ): Promise<Result<KitWebhook, KitApiError>> {
-  const result = await request<{ webhook: KitWebhook }>(
-    config,
-    accessToken,
-    "POST",
-    "/webhooks",
-    {
-      target_url: targetUrl,
-      event,
-    },
-  );
+  const result = await request<{ webhook: KitWebhook }>(config, accessToken, "POST", "/webhooks", {
+    target_url: targetUrl,
+    event,
+  });
 
   if (!result.ok) {
     return err(result.error);
@@ -703,12 +677,7 @@ export async function listWebhooks(
   config: KitClientConfig,
   accessToken: string,
 ): Promise<Result<readonly KitWebhook[], KitApiError>> {
-  return listAll<KitWebhook>(
-    config,
-    accessToken,
-    "/webhooks",
-    "webhooks",
-  );
+  return listAll<KitWebhook>(config, accessToken, "/webhooks", "webhooks");
 }
 
 /**
@@ -719,7 +688,7 @@ export async function deleteWebhook(
   accessToken: string,
   id: string,
 ): Promise<Result<void, KitApiError>> {
-  const result = await request<void>(
+  const result = await request<undefined>(
     config,
     accessToken,
     "DELETE",

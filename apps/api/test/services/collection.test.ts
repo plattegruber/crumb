@@ -49,9 +49,7 @@ function makeRecipeInput(id: string, title: string): CreateRecipeInput {
     instructionGroups: [
       {
         label: null,
-        instructions: [
-          { id: `${id}-inst-1` as InstructionId, body: "Mix everything" },
-        ],
+        instructions: [{ id: `${id}-inst-1` as InstructionId, body: "Mix everything" }],
       },
     ],
   };

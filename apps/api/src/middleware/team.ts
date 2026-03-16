@@ -12,12 +12,7 @@
  */
 import { createMiddleware } from "hono/factory";
 import type { AppEnv } from "./auth.js";
-import type {
-  CreatorId,
-  ForbiddenTeamAction,
-  TeamMemberAccess,
-  TeamMemberRole,
-} from "../types/auth.js";
+import type { CreatorId, ForbiddenTeamAction, TeamMemberAccess } from "../types/auth.js";
 import { TEAM_MEMBER_FORBIDDEN_ACTIONS } from "../types/auth.js";
 import type { Result } from "@crumb/shared";
 import { ok, err } from "@crumb/shared";
@@ -36,10 +31,7 @@ export interface TeamMemberLookup {
    * Returns the access grant if found, or null if no relationship
    * exists.
    */
-  findAccess(
-    memberId: CreatorId,
-    ownerId: CreatorId,
-  ): Promise<TeamMemberAccess | null>;
+  findAccess(memberId: CreatorId, ownerId: CreatorId): Promise<TeamMemberAccess | null>;
 }
 
 // ---------------------------------------------------------------
@@ -64,9 +56,7 @@ export const stubTeamMemberLookup: TeamMemberLookup = {
 // Access-check helpers
 // ---------------------------------------------------------------
 
-export type TeamAccessError =
-  | "not_a_team_member"
-  | "forbidden_action";
+export type TeamAccessError = "not_a_team_member" | "forbidden_action";
 
 /**
  * Check whether `memberId` can access `ownerId`'s resources.
@@ -96,12 +86,8 @@ export async function checkTeamAccess(
 /**
  * Returns true if the given action is forbidden for team members.
  */
-export function isForbiddenForTeamMember(
-  action: string,
-): action is ForbiddenTeamAction {
-  return (TEAM_MEMBER_FORBIDDEN_ACTIONS as readonly string[]).includes(
-    action,
-  );
+export function isForbiddenForTeamMember(action: string): action is ForbiddenTeamAction {
+  return (TEAM_MEMBER_FORBIDDEN_ACTIONS as readonly string[]).includes(action);
 }
 
 /**
@@ -138,9 +124,7 @@ export function teamAccessGuard(lookup?: TeamMemberLookup) {
 
   return createMiddleware<AppEnv>(async (c, next) => {
     const authenticatedId = c.get("creatorId");
-    const targetOwnerId = c.req.param("creatorId") as
-      | CreatorId
-      | undefined;
+    const targetOwnerId = c.req.param("creatorId") as CreatorId | undefined;
 
     // If there's no :creatorId param, skip — the route operates on
     // the authenticated user's own data.
@@ -149,17 +133,10 @@ export function teamAccessGuard(lookup?: TeamMemberLookup) {
       return;
     }
 
-    const result = await checkTeamAccess(
-      memberLookup,
-      authenticatedId,
-      targetOwnerId,
-    );
+    const result = await checkTeamAccess(memberLookup, authenticatedId, targetOwnerId);
 
     if (!result.ok) {
-      return c.json(
-        { error: "Forbidden", reason: result.error },
-        403,
-      );
+      return c.json({ error: "Forbidden", reason: result.error }, 403);
     }
 
     await next();

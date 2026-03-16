@@ -1,97 +1,97 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
-	import { goto } from '$app/navigation';
-	import { getClerk } from '$lib/clerk.js';
+  import { onMount } from "svelte";
+  import { goto } from "$app/navigation";
+  import { getClerk } from "$lib/clerk.js";
 
-	let mountEl: HTMLDivElement | undefined = $state();
-	let loading = $state(true);
-	let error = $state<string | null>(null);
+  let mountEl: HTMLDivElement | undefined = $state();
+  let loading = $state(true);
+  let error = $state<string | null>(null);
 
-	onMount(async () => {
-		const publishableKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
-		if (!publishableKey) {
-			error = 'Clerk is not configured. Set VITE_CLERK_PUBLISHABLE_KEY.';
-			loading = false;
-			return;
-		}
+  onMount(async () => {
+    const publishableKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
+    if (!publishableKey) {
+      error = "Clerk is not configured. Set VITE_CLERK_PUBLISHABLE_KEY.";
+      loading = false;
+      return;
+    }
 
-		try {
-			const clerk = await getClerk(publishableKey);
+    try {
+      const clerk = await getClerk(publishableKey);
 
-			if (clerk.user) {
-				await goto('/library');
-				return;
-			}
+      if (clerk.user) {
+        await goto("/library");
+        return;
+      }
 
-			if (mountEl) {
-				clerk.mountSignUp(mountEl, {
-					afterSignInUrl: '/library',
-					afterSignUpUrl: '/library',
-				});
-			}
-		} catch (e) {
-			error = 'Failed to load authentication.';
-			console.error(e);
-		} finally {
-			loading = false;
-		}
-	});
+      if (mountEl) {
+        clerk.mountSignUp(mountEl, {
+          afterSignInUrl: "/library",
+          afterSignUpUrl: "/library",
+        });
+      }
+    } catch (e) {
+      error = "Failed to load authentication.";
+      console.error(e);
+    } finally {
+      loading = false;
+    }
+  });
 </script>
 
 <svelte:head>
-	<title>Sign Up - crumb</title>
+  <title>Sign Up - crumb</title>
 </svelte:head>
 
 <div class="auth-page">
-	<div class="auth-container">
-		<a href="/" class="auth-logo">crumb</a>
+  <div class="auth-container">
+    <a href="/" class="auth-logo">crumb</a>
 
-		{#if error}
-			<div class="auth-error">
-				<p>{error}</p>
-			</div>
-		{:else if loading}
-			<p class="auth-loading">Loading...</p>
-		{/if}
+    {#if error}
+      <div class="auth-error">
+        <p>{error}</p>
+      </div>
+    {:else if loading}
+      <p class="auth-loading">Loading...</p>
+    {/if}
 
-		<div bind:this={mountEl}></div>
-	</div>
+    <div bind:this={mountEl}></div>
+  </div>
 </div>
 
 <style>
-	.auth-page {
-		min-height: 100vh;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		padding: var(--space-4);
-		background: var(--color-bg-secondary);
-	}
+  .auth-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-4);
+    background: var(--color-bg-secondary);
+  }
 
-	.auth-container {
-		width: 100%;
-		max-width: 480px;
-		text-align: center;
-	}
+  .auth-container {
+    width: 100%;
+    max-width: 480px;
+    text-align: center;
+  }
 
-	.auth-logo {
-		display: block;
-		font-size: var(--font-size-2xl);
-		font-weight: 700;
-		color: var(--color-primary);
-		text-decoration: none;
-		margin-bottom: var(--space-8);
-	}
+  .auth-logo {
+    display: block;
+    font-size: var(--font-size-2xl);
+    font-weight: 700;
+    color: var(--color-primary);
+    text-decoration: none;
+    margin-bottom: var(--space-8);
+  }
 
-	.auth-loading {
-		color: var(--color-text-secondary);
-	}
+  .auth-loading {
+    color: var(--color-text-secondary);
+  }
 
-	.auth-error {
-		padding: var(--space-4);
-		background: var(--color-danger-light);
-		color: var(--color-danger);
-		border-radius: var(--radius-md);
-		margin-bottom: var(--space-4);
-	}
+  .auth-error {
+    padding: var(--space-4);
+    background: var(--color-danger-light);
+    color: var(--color-danger);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--space-4);
+  }
 </style>

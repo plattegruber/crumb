@@ -59,15 +59,11 @@ describe("dietaryTagName", () => {
 
 describe("recipeSavedTagName", () => {
   it("generates correct tag for a recipe slug", () => {
-    expect(recipeSavedTagName("lemon-pasta" as Slug)).toBe(
-      "recipe:saved:lemon-pasta",
-    );
+    expect(recipeSavedTagName("lemon-pasta" as Slug)).toBe("recipe:saved:lemon-pasta");
   });
 
   it("generates correct tag for a single-word slug", () => {
-    expect(recipeSavedTagName("risotto" as Slug)).toBe(
-      "recipe:saved:risotto",
-    );
+    expect(recipeSavedTagName("risotto" as Slug)).toBe("recipe:saved:risotto");
   });
 
   it("generates correct tag for a multi-word slug", () => {
@@ -83,9 +79,7 @@ describe("recipeSavedTagName", () => {
 
 describe("productPurchasedTagName", () => {
   it("generates correct tag for a product ID", () => {
-    expect(productPurchasedTagName("a1b2c3")).toBe(
-      "product:purchased:a1b2c3",
-    );
+    expect(productPurchasedTagName("a1b2c3")).toBe("product:purchased:a1b2c3");
   });
 
   it("generates correct tag for a UUID-style product ID", () => {
@@ -101,20 +95,14 @@ describe("productPurchasedTagName", () => {
 
 describe("KIT_CUSTOM_FIELD_LABELS", () => {
   it("has correct label for preferred dietary tags", () => {
-    expect(KIT_CUSTOM_FIELD_LABELS.PreferredDietaryTags).toBe(
-      "preferred_dietary_tags",
-    );
+    expect(KIT_CUSTOM_FIELD_LABELS.PreferredDietaryTags).toBe("preferred_dietary_tags");
   });
 
   it("has correct label for last recipe saved", () => {
-    expect(KIT_CUSTOM_FIELD_LABELS.LastRecipeSaved).toBe(
-      "last_recipe_saved",
-    );
+    expect(KIT_CUSTOM_FIELD_LABELS.LastRecipeSaved).toBe("last_recipe_saved");
   });
 
   it("has correct label for last recipe saved at", () => {
-    expect(KIT_CUSTOM_FIELD_LABELS.LastRecipeSavedAt).toBe(
-      "last_recipe_saved_at",
-    );
+    expect(KIT_CUSTOM_FIELD_LABELS.LastRecipeSavedAt).toBe("last_recipe_saved_at");
   });
 });

@@ -3,10 +3,7 @@
 // ---------------------------------------------------------------------------
 
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import {
-  InMemoryRateLimiter,
-  withRateLimitRetry,
-} from "../../../src/lib/kit/rate-limiter.js";
+import { InMemoryRateLimiter, withRateLimitRetry } from "../../../src/lib/kit/rate-limiter.js";
 import { ok, err } from "@crumb/shared";
 
 // ---------------------------------------------------------------------------

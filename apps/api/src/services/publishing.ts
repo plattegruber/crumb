@@ -11,12 +11,7 @@
  */
 import { eq, and } from "drizzle-orm";
 import type { Database } from "../db/index.js";
-import {
-  productBase,
-  publishedListings,
-  leadMagnets,
-  brandKits,
-} from "../db/schema.js";
+import { productBase, publishedListings, leadMagnets, brandKits } from "../db/schema.js";
 import type { CreatorScopedDb } from "../middleware/creator-scope.js";
 import type { Result, PublishPlatform } from "@crumb/shared";
 import { ok, err, PUBLISH_PLATFORM } from "@crumb/shared";
@@ -121,9 +116,7 @@ export interface StanStoreConfig {
  * API client shape is defined; actual calls return platform_unavailable
  * until the real API integration is implemented.
  */
-export function createStanStoreAdapter(
-  config: StanStoreConfig,
-): PlatformAdapter {
+export function createStanStoreAdapter(config: StanStoreConfig): PlatformAdapter {
   return {
     platform: PUBLISH_PLATFORM.StanStore,
     async uploadProduct(
@@ -145,17 +138,14 @@ export function createStanStoreAdapter(
           store_id: config.storeId,
         };
 
-        const response = await config.fetchFn(
-          `https://api.stanstore.com/v1/products`,
-          {
-            method: "POST",
-            headers: {
-              "Authorization": `Bearer ${config.apiKey}`,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(_requestBody),
+        const response = await config.fetchFn(`https://api.stanstore.com/v1/products`, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${config.apiKey}`,
+            "Content-Type": "application/json",
           },
-        );
+          body: JSON.stringify(_requestBody),
+        });
 
         if (!response.ok) {
           if (response.status >= 500) {
@@ -217,17 +207,14 @@ export function createGumroadAdapter(config: GumroadConfig): PlatformAdapter {
           url: pdfUrl,
         };
 
-        const response = await config.fetchFn(
-          `https://api.gumroad.com/v2/products`,
-          {
-            method: "POST",
-            headers: {
-              "Authorization": `Bearer ${config.accessToken}`,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(_requestBody),
+        const response = await config.fetchFn(`https://api.gumroad.com/v2/products`, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${config.accessToken}`,
+            "Content-Type": "application/json",
           },
-        );
+          body: JSON.stringify(_requestBody),
+        });
 
         if (!response.ok) {
           if (response.status >= 500) {
@@ -249,13 +236,8 @@ export function createGumroadAdapter(config: GumroadConfig): PlatformAdapter {
         const productData = data["product"] as Record<string, unknown> | undefined;
         return ok({
           listing_url:
-            typeof productData?.["short_url"] === "string"
-              ? productData["short_url"]
-              : null,
-          platform_id:
-            typeof productData?.["id"] === "string"
-              ? productData["id"]
-              : null,
+            typeof productData?.["short_url"] === "string" ? productData["short_url"] : null,
+          platform_id: typeof productData?.["id"] === "string" ? productData["id"] : null,
         });
       } catch {
         return err({
@@ -328,10 +310,8 @@ export function createLtkAdapter(config: LtkConfig): PlatformAdapter {
 
         const data = (await response.json()) as Record<string, unknown>;
         return ok({
-          listing_url:
-            typeof data["listing_url"] === "string" ? data["listing_url"] : null,
-          platform_id:
-            typeof data["product_id"] === "string" ? data["product_id"] : null,
+          listing_url: typeof data["listing_url"] === "string" ? data["listing_url"] : null,
+          platform_id: typeof data["product_id"] === "string" ? data["product_id"] : null,
         });
       } catch {
         return err({
@@ -351,9 +331,7 @@ export function createLtkAdapter(config: LtkConfig): PlatformAdapter {
 /**
  * Validate that a platform string is a valid PublishPlatform.
  */
-export function validatePlatform(
-  platform: string,
-): Result<PublishPlatform, PublishError> {
+export function validatePlatform(platform: string): Result<PublishPlatform, PublishError> {
   const valid = Object.values(PUBLISH_PLATFORM) as string[];
   if (!valid.includes(platform)) {
     return err({
@@ -387,9 +365,7 @@ export async function publishToPlatform(
   const productRows = await db
     .select()
     .from(productBase)
-    .where(
-      and(eq(productBase.id, productId), eq(productBase.creator_id, creatorId)),
-    )
+    .where(and(eq(productBase.id, productId), eq(productBase.creator_id, creatorId)))
     .limit(1);
 
   if (productRows.length === 0 || !productRows[0]) {
@@ -491,9 +467,7 @@ export async function getProductListings(
   const productRows = await db
     .select({ id: productBase.id })
     .from(productBase)
-    .where(
-      and(eq(productBase.id, productId), eq(productBase.creator_id, creatorId)),
-    )
+    .where(and(eq(productBase.id, productId), eq(productBase.creator_id, creatorId)))
     .limit(1);
 
   if (productRows.length === 0) {
@@ -546,9 +520,7 @@ export async function packageForDownload(
   const productRows = await db
     .select()
     .from(productBase)
-    .where(
-      and(eq(productBase.id, productId), eq(productBase.creator_id, creatorId)),
-    )
+    .where(and(eq(productBase.id, productId), eq(productBase.creator_id, creatorId)))
     .limit(1);
 
   if (productRows.length === 0 || !productRows[0]) {
@@ -695,9 +667,7 @@ export async function generateShareAssets(
   const productRows = await db
     .select()
     .from(productBase)
-    .where(
-      and(eq(productBase.id, productId), eq(productBase.creator_id, creatorId)),
-    )
+    .where(and(eq(productBase.id, productId), eq(productBase.creator_id, creatorId)))
     .limit(1);
 
   if (productRows.length === 0 || !productRows[0]) {
@@ -727,10 +697,7 @@ export async function generateShareAssets(
         };
 
   // Determine CTA text based on product type
-  const ctaText =
-    product.product_type === "LeadMagnet"
-      ? "Get it free"
-      : "Available now";
+  const ctaText = product.product_type === "LeadMagnet" ? "Get it free" : "Available now";
 
   const assets: ShareAsset[] = [];
 

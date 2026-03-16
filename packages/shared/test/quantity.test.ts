@@ -1,13 +1,5 @@
 import { describe, it, expect } from "vitest";
-import {
-  gcd,
-  fraction,
-  mixed,
-  wholeNumber,
-  decimal,
-  multiply,
-  add,
-} from "../src/quantity.js";
+import { gcd, fraction, mixed, wholeNumber, decimal, multiply, add } from "../src/quantity.js";
 import type { Quantity } from "../src/quantity.js";
 
 // ---------------------------------------------------------------------------

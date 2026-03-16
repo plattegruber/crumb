@@ -25,7 +25,7 @@ import { createTestTables, cleanTestTables } from "../helpers/db-setup.js";
 // ---------------------------------------------------------------------------
 
 const TEST_CREATOR_ID = "creator-analytics-1";
-const OTHER_CREATOR_ID = "creator-analytics-2";
+const _OTHER_CREATOR_ID = "creator-analytics-2";
 
 async function seedCreator(d1: D1Database, creatorId: string): Promise<void> {
   const now = new Date().toISOString();
@@ -242,36 +242,48 @@ describe("Analytics Service", () => {
 
       // 5 save clicks, 3 sequence triggers, 10 card views, 2 purchase attributions
       for (let i = 0; i < 5; i++) {
-        await recordEngagementEvent(db, makeEventInput({
-          id: `save-${i}`,
-          recipeId: "recipe-1",
-          eventType: ENGAGEMENT_EVENT_TYPE.SaveClick,
-          occurredAt: now.toISOString(),
-        }));
+        await recordEngagementEvent(
+          db,
+          makeEventInput({
+            id: `save-${i}`,
+            recipeId: "recipe-1",
+            eventType: ENGAGEMENT_EVENT_TYPE.SaveClick,
+            occurredAt: now.toISOString(),
+          }),
+        );
       }
       for (let i = 0; i < 3; i++) {
-        await recordEngagementEvent(db, makeEventInput({
-          id: `seq-${i}`,
-          recipeId: "recipe-1",
-          eventType: ENGAGEMENT_EVENT_TYPE.SequenceTrigger,
-          occurredAt: now.toISOString(),
-        }));
+        await recordEngagementEvent(
+          db,
+          makeEventInput({
+            id: `seq-${i}`,
+            recipeId: "recipe-1",
+            eventType: ENGAGEMENT_EVENT_TYPE.SequenceTrigger,
+            occurredAt: now.toISOString(),
+          }),
+        );
       }
       for (let i = 0; i < 10; i++) {
-        await recordEngagementEvent(db, makeEventInput({
-          id: `card-${i}`,
-          recipeId: "recipe-1",
-          eventType: ENGAGEMENT_EVENT_TYPE.CardView,
-          occurredAt: now.toISOString(),
-        }));
+        await recordEngagementEvent(
+          db,
+          makeEventInput({
+            id: `card-${i}`,
+            recipeId: "recipe-1",
+            eventType: ENGAGEMENT_EVENT_TYPE.CardView,
+            occurredAt: now.toISOString(),
+          }),
+        );
       }
       for (let i = 0; i < 2; i++) {
-        await recordEngagementEvent(db, makeEventInput({
-          id: `pa-${i}`,
-          recipeId: "recipe-1",
-          eventType: ENGAGEMENT_EVENT_TYPE.PurchaseAttribution,
-          occurredAt: now.toISOString(),
-        }));
+        await recordEngagementEvent(
+          db,
+          makeEventInput({
+            id: `pa-${i}`,
+            recipeId: "recipe-1",
+            eventType: ENGAGEMENT_EVENT_TYPE.PurchaseAttribution,
+            occurredAt: now.toISOString(),
+          }),
+        );
       }
 
       const result = await computeEngagementScores(db, TEST_CREATOR_ID, null);
@@ -303,32 +315,41 @@ describe("Analytics Service", () => {
 
       // Recipe 1: 10 save clicks = raw score 30
       for (let i = 0; i < 10; i++) {
-        await recordEngagementEvent(db, makeEventInput({
-          id: `r1-save-${i}`,
-          recipeId: "recipe-1",
-          eventType: ENGAGEMENT_EVENT_TYPE.SaveClick,
-          occurredAt: now.toISOString(),
-        }));
+        await recordEngagementEvent(
+          db,
+          makeEventInput({
+            id: `r1-save-${i}`,
+            recipeId: "recipe-1",
+            eventType: ENGAGEMENT_EVENT_TYPE.SaveClick,
+            occurredAt: now.toISOString(),
+          }),
+        );
       }
 
       // Recipe 2: 5 save clicks = raw score 15
       for (let i = 0; i < 5; i++) {
-        await recordEngagementEvent(db, makeEventInput({
-          id: `r2-save-${i}`,
-          recipeId: "recipe-2",
-          eventType: ENGAGEMENT_EVENT_TYPE.SaveClick,
-          occurredAt: now.toISOString(),
-        }));
+        await recordEngagementEvent(
+          db,
+          makeEventInput({
+            id: `r2-save-${i}`,
+            recipeId: "recipe-2",
+            eventType: ENGAGEMENT_EVENT_TYPE.SaveClick,
+            occurredAt: now.toISOString(),
+          }),
+        );
       }
 
       // Recipe 3: 2 save clicks = raw score 6
       for (let i = 0; i < 2; i++) {
-        await recordEngagementEvent(db, makeEventInput({
-          id: `r3-save-${i}`,
-          recipeId: "recipe-3",
-          eventType: ENGAGEMENT_EVENT_TYPE.SaveClick,
-          occurredAt: now.toISOString(),
-        }));
+        await recordEngagementEvent(
+          db,
+          makeEventInput({
+            id: `r3-save-${i}`,
+            recipeId: "recipe-3",
+            eventType: ENGAGEMENT_EVENT_TYPE.SaveClick,
+            occurredAt: now.toISOString(),
+          }),
+        );
       }
 
       const result = await computeEngagementScores(db, TEST_CREATOR_ID, null);
@@ -338,9 +359,7 @@ describe("Analytics Service", () => {
         expect(result.value.length).toBe(3);
 
         // Sort by recipe_id to verify
-        const sorted = [...result.value].sort((a, b) =>
-          a.recipe_id.localeCompare(b.recipe_id),
-        );
+        const sorted = [...result.value].sort((a, b) => a.recipe_id.localeCompare(b.recipe_id));
 
         // Recipe 1: raw=30, max=30, normalized=10.0
         expect(sorted[0]?.score).toBe(10);
@@ -371,12 +390,15 @@ describe("Analytics Service", () => {
       await seedRecipe(env.DB, TEST_CREATOR_ID, "recipe-1", "Recipe 1");
       const now = new Date();
 
-      await recordEngagementEvent(db, makeEventInput({
-        id: "cache-test-evt",
-        recipeId: "recipe-1",
-        eventType: ENGAGEMENT_EVENT_TYPE.SaveClick,
-        occurredAt: now.toISOString(),
-      }));
+      await recordEngagementEvent(
+        db,
+        makeEventInput({
+          id: "cache-test-evt",
+          recipeId: "recipe-1",
+          eventType: ENGAGEMENT_EVENT_TYPE.SaveClick,
+          occurredAt: now.toISOString(),
+        }),
+      );
 
       // Compute with KV cache
       const result = await computeEngagementScores(db, TEST_CREATOR_ID, env.CACHE);
@@ -407,20 +429,26 @@ describe("Analytics Service", () => {
 
       // Add an event from 31 days ago
       const oldDate = new Date(Date.now() - 31 * 24 * 60 * 60 * 1000);
-      await recordEngagementEvent(db, makeEventInput({
-        id: "old-save-1",
-        recipeId: "recipe-1",
-        eventType: ENGAGEMENT_EVENT_TYPE.SaveClick,
-        occurredAt: oldDate.toISOString(),
-      }));
+      await recordEngagementEvent(
+        db,
+        makeEventInput({
+          id: "old-save-1",
+          recipeId: "recipe-1",
+          eventType: ENGAGEMENT_EVENT_TYPE.SaveClick,
+          occurredAt: oldDate.toISOString(),
+        }),
+      );
 
       // Add a recent event
-      await recordEngagementEvent(db, makeEventInput({
-        id: "recent-save-1",
-        recipeId: "recipe-1",
-        eventType: ENGAGEMENT_EVENT_TYPE.SaveClick,
-        occurredAt: new Date().toISOString(),
-      }));
+      await recordEngagementEvent(
+        db,
+        makeEventInput({
+          id: "recent-save-1",
+          recipeId: "recipe-1",
+          eventType: ENGAGEMENT_EVENT_TYPE.SaveClick,
+          occurredAt: new Date().toISOString(),
+        }),
+      );
 
       const result = await computeEngagementScores(db, TEST_CREATOR_ID, null);
 
@@ -441,20 +469,26 @@ describe("Analytics Service", () => {
 
       // Add a purchase attribution from 60 days ago
       const oldDate = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000);
-      await recordEngagementEvent(db, makeEventInput({
-        id: "old-pa-1",
-        recipeId: "recipe-1",
-        eventType: ENGAGEMENT_EVENT_TYPE.PurchaseAttribution,
-        occurredAt: oldDate.toISOString(),
-      }));
+      await recordEngagementEvent(
+        db,
+        makeEventInput({
+          id: "old-pa-1",
+          recipeId: "recipe-1",
+          eventType: ENGAGEMENT_EVENT_TYPE.PurchaseAttribution,
+          occurredAt: oldDate.toISOString(),
+        }),
+      );
 
       // Add a recent purchase attribution
-      await recordEngagementEvent(db, makeEventInput({
-        id: "recent-pa-1",
-        recipeId: "recipe-1",
-        eventType: ENGAGEMENT_EVENT_TYPE.PurchaseAttribution,
-        occurredAt: new Date().toISOString(),
-      }));
+      await recordEngagementEvent(
+        db,
+        makeEventInput({
+          id: "recent-pa-1",
+          recipeId: "recipe-1",
+          eventType: ENGAGEMENT_EVENT_TYPE.PurchaseAttribution,
+          occurredAt: new Date().toISOString(),
+        }),
+      );
 
       const result = await computeEngagementScores(db, TEST_CREATOR_ID, null);
 
@@ -576,7 +610,7 @@ describe("Analytics Service", () => {
       await seedSegmentProfile(env.DB, TEST_CREATOR_ID, {
         Keto: {
           subscriber_count: 100,
-          engagement_rate: 0.10, // Below threshold
+          engagement_rate: 0.1, // Below threshold
           growth_rate_30d: 0.1,
           top_recipe_ids: [],
         },
@@ -643,30 +677,33 @@ describe("Analytics Service", () => {
       const db = createDb(env.DB);
       await seedRecipe(env.DB, TEST_CREATOR_ID, "recipe-attr-1", "Recipe Attr 1");
       await seedRecipe(env.DB, TEST_CREATOR_ID, "recipe-attr-2", "Recipe Attr 2");
-      await seedProduct(env.DB, TEST_CREATOR_ID, "prod-attr-1", [
-        "recipe-attr-1",
-        "recipe-attr-2",
-      ]);
+      await seedProduct(env.DB, TEST_CREATOR_ID, "prod-attr-1", ["recipe-attr-1", "recipe-attr-2"]);
 
       const subscriberId = "sub-attr-1";
       const now = new Date();
 
       // Record save clicks for the subscriber
-      await recordEngagementEvent(db, makeEventInput({
-        id: "attr-save-1",
-        recipeId: "recipe-attr-1",
-        eventType: ENGAGEMENT_EVENT_TYPE.SaveClick,
-        kitSubscriberId: subscriberId,
-        occurredAt: new Date(now.getTime() - 5 * 24 * 60 * 60 * 1000).toISOString(), // 5 days ago
-      }));
+      await recordEngagementEvent(
+        db,
+        makeEventInput({
+          id: "attr-save-1",
+          recipeId: "recipe-attr-1",
+          eventType: ENGAGEMENT_EVENT_TYPE.SaveClick,
+          kitSubscriberId: subscriberId,
+          occurredAt: new Date(now.getTime() - 5 * 24 * 60 * 60 * 1000).toISOString(), // 5 days ago
+        }),
+      );
 
-      await recordEngagementEvent(db, makeEventInput({
-        id: "attr-save-2",
-        recipeId: "recipe-attr-2",
-        eventType: ENGAGEMENT_EVENT_TYPE.SaveClick,
-        kitSubscriberId: subscriberId,
-        occurredAt: new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000).toISOString(), // 2 days ago
-      }));
+      await recordEngagementEvent(
+        db,
+        makeEventInput({
+          id: "attr-save-2",
+          recipeId: "recipe-attr-2",
+          eventType: ENGAGEMENT_EVENT_TYPE.SaveClick,
+          kitSubscriberId: subscriberId,
+          occurredAt: new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000).toISOString(), // 2 days ago
+        }),
+      );
 
       const result = await computeRevenueAttribution(
         db,
@@ -689,15 +726,16 @@ describe("Analytics Service", () => {
       const subscriberId = "sub-old-attr";
 
       // Record save click from 31 days ago
-      await recordEngagementEvent(db, makeEventInput({
-        id: "old-attr-save",
-        recipeId: "recipe-old-attr",
-        eventType: ENGAGEMENT_EVENT_TYPE.SaveClick,
-        kitSubscriberId: subscriberId,
-        occurredAt: new Date(
-          Date.now() - 31 * 24 * 60 * 60 * 1000,
-        ).toISOString(),
-      }));
+      await recordEngagementEvent(
+        db,
+        makeEventInput({
+          id: "old-attr-save",
+          recipeId: "recipe-old-attr",
+          eventType: ENGAGEMENT_EVENT_TYPE.SaveClick,
+          kitSubscriberId: subscriberId,
+          occurredAt: new Date(Date.now() - 31 * 24 * 60 * 60 * 1000).toISOString(),
+        }),
+      );
 
       const result = await computeRevenueAttribution(
         db,
@@ -721,13 +759,16 @@ describe("Analytics Service", () => {
       const subscriberId = "sub-unrelated";
 
       // Save a recipe NOT in the product
-      await recordEngagementEvent(db, makeEventInput({
-        id: "unrelated-save",
-        recipeId: "recipe-unrelated",
-        eventType: ENGAGEMENT_EVENT_TYPE.SaveClick,
-        kitSubscriberId: subscriberId,
-        occurredAt: new Date().toISOString(),
-      }));
+      await recordEngagementEvent(
+        db,
+        makeEventInput({
+          id: "unrelated-save",
+          recipeId: "recipe-unrelated",
+          eventType: ENGAGEMENT_EVENT_TYPE.SaveClick,
+          kitSubscriberId: subscriberId,
+          occurredAt: new Date().toISOString(),
+        }),
+      );
 
       const result = await computeRevenueAttribution(
         db,
@@ -749,21 +790,19 @@ describe("Analytics Service", () => {
 
       const subscriberId = "sub-idem";
 
-      await recordEngagementEvent(db, makeEventInput({
-        id: "idem-save-1",
-        recipeId: "recipe-idem-attr",
-        eventType: ENGAGEMENT_EVENT_TYPE.SaveClick,
-        kitSubscriberId: subscriberId,
-        occurredAt: new Date().toISOString(),
-      }));
+      await recordEngagementEvent(
+        db,
+        makeEventInput({
+          id: "idem-save-1",
+          recipeId: "recipe-idem-attr",
+          eventType: ENGAGEMENT_EVENT_TYPE.SaveClick,
+          kitSubscriberId: subscriberId,
+          occurredAt: new Date().toISOString(),
+        }),
+      );
 
       // First attribution
-      const first = await computeRevenueAttribution(
-        db,
-        TEST_CREATOR_ID,
-        subscriberId,
-        "prod-idem",
-      );
+      const first = await computeRevenueAttribution(db, TEST_CREATOR_ID, subscriberId, "prod-idem");
       expect(first.ok).toBe(true);
 
       // Second attribution should be idempotent
@@ -782,23 +821,20 @@ describe("Analytics Service", () => {
     it("works with RecipeCardPack products", async () => {
       const db = createDb(env.DB);
       await seedRecipe(env.DB, TEST_CREATOR_ID, "recipe-pack-1", "Pack Recipe");
-      await seedProduct(
-        env.DB,
-        TEST_CREATOR_ID,
-        "prod-pack",
-        ["recipe-pack-1"],
-        "RecipeCardPack",
-      );
+      await seedProduct(env.DB, TEST_CREATOR_ID, "prod-pack", ["recipe-pack-1"], "RecipeCardPack");
 
       const subscriberId = "sub-pack";
 
-      await recordEngagementEvent(db, makeEventInput({
-        id: "pack-save-1",
-        recipeId: "recipe-pack-1",
-        eventType: ENGAGEMENT_EVENT_TYPE.SaveClick,
-        kitSubscriberId: subscriberId,
-        occurredAt: new Date().toISOString(),
-      }));
+      await recordEngagementEvent(
+        db,
+        makeEventInput({
+          id: "pack-save-1",
+          recipeId: "recipe-pack-1",
+          eventType: ENGAGEMENT_EVENT_TYPE.SaveClick,
+          kitSubscriberId: subscriberId,
+          occurredAt: new Date().toISOString(),
+        }),
+      );
 
       const result = await computeRevenueAttribution(
         db,

@@ -34,9 +34,7 @@ export const creators = sqliteTable("creators", {
   kit_access_token: text("kit_access_token"), // encrypted at rest
   kit_refresh_token: text("kit_refresh_token"), // encrypted at rest
   kit_token_expires_at: text("kit_token_expires_at"),
-  kit_scopes: text("kit_scopes", { mode: "json" }).$type<
-    ReadonlyArray<string>
-  >(),
+  kit_scopes: text("kit_scopes", { mode: "json" }).$type<ReadonlyArray<string>>(),
   kit_connected_at: text("kit_connected_at"),
 
   // Subscription (flattened from Subscription value type)
@@ -105,14 +103,10 @@ export const recipes = sqliteTable(
 
     // RecipeSource — sum type stored as type + data JSON
     source_type: text("source_type").notNull(),
-    source_data: text("source_data", { mode: "json" }).$type<
-      Record<string, unknown>
-    >(),
+    source_data: text("source_data", { mode: "json" }).$type<Record<string, unknown>>(),
 
     status: text("status").notNull().default("Draft"),
-    email_ready: integer("email_ready", { mode: "boolean" })
-      .notNull()
-      .default(false),
+    email_ready: integer("email_ready", { mode: "boolean" }).notNull().default(false),
 
     // RecipeTiming (flattened)
     prep_minutes: integer("prep_minutes"),
@@ -141,16 +135,11 @@ export const recipes = sqliteTable(
       .notNull()
       .$type<ReadonlyArray<string>>()
       .default([]),
-    seasons: text("seasons", { mode: "json" })
-      .notNull()
-      .$type<ReadonlyArray<string>>()
-      .default([]),
+    seasons: text("seasons", { mode: "json" }).notNull().$type<ReadonlyArray<string>>().default([]),
 
     // NutritionFacts (flattened source + values as JSON)
     nutrition_source: text("nutrition_source"),
-    nutrition_values: text("nutrition_values", { mode: "json" }).$type<
-      Record<string, unknown>
-    >(),
+    nutrition_values: text("nutrition_values", { mode: "json" }).$type<Record<string, unknown>>(),
 
     created_at: text("created_at").notNull(),
     updated_at: text("updated_at").notNull(),
@@ -188,9 +177,7 @@ export const ingredients = sqliteTable(
 
     // Quantity — sum type stored as type + data JSON
     quantity_type: text("quantity_type"),
-    quantity_data: text("quantity_data", { mode: "json" }).$type<
-      Record<string, unknown>
-    >(),
+    quantity_data: text("quantity_data", { mode: "json" }).$type<Record<string, unknown>>(),
 
     unit: text("unit"),
     item: text("item").notNull(),
@@ -214,9 +201,7 @@ export const instructionGroups = sqliteTable(
     label: text("label"),
     sort_order: integer("sort_order").notNull(),
   },
-  (table) => [
-    index("instruction_groups_recipe_id_idx").on(table.recipe_id),
-  ],
+  (table) => [index("instruction_groups_recipe_id_idx").on(table.recipe_id)],
 );
 
 export const instructions = sqliteTable(
@@ -304,21 +289,15 @@ export const importJobs = sqliteTable(
     // ImportStatus — stored as status text + source/extract/error JSON
     status: text("status").notNull().default("Pending"),
     source_type: text("source_type").notNull(),
-    source_data: text("source_data", { mode: "json" }).$type<
-      Record<string, unknown>
-    >(),
+    source_data: text("source_data", { mode: "json" }).$type<Record<string, unknown>>(),
 
-    extract_data: text("extract_data", { mode: "json" }).$type<
-      Record<string, unknown>
-    >(),
+    extract_data: text("extract_data", { mode: "json" }).$type<Record<string, unknown>>(),
     recipe_id: text("recipe_id").references(() => recipes.id, {
       onDelete: "set null",
     }),
 
     error_type: text("error_type"),
-    error_data: text("error_data", { mode: "json" }).$type<
-      Record<string, unknown>
-    >(),
+    error_data: text("error_data", { mode: "json" }).$type<Record<string, unknown>>(),
 
     processing_started_at: text("processing_started_at"),
     created_at: text("created_at").notNull(),
@@ -352,9 +331,7 @@ export const productBase = sqliteTable(
     kit_sequence_id: text("kit_sequence_id"),
     suggested_price_cents: integer("suggested_price_cents"),
     currency: text("currency").notNull().default("USD"),
-    ai_copy_reviewed: integer("ai_copy_reviewed", { mode: "boolean" })
-      .notNull()
-      .default(false),
+    ai_copy_reviewed: integer("ai_copy_reviewed", { mode: "boolean" }).notNull().default(false),
     created_at: text("created_at").notNull(),
     updated_at: text("updated_at").notNull(),
   },
@@ -365,18 +342,14 @@ export const ebookDetails = sqliteTable("ebook_details", {
   product_id: text("product_id")
     .primaryKey()
     .references(() => productBase.id, { onDelete: "cascade" }),
-  recipe_ids: text("recipe_ids", { mode: "json" })
-    .notNull()
-    .$type<ReadonlyArray<string>>(),
-  chapters: text("chapters", { mode: "json" })
-    .notNull()
-    .$type<
-      ReadonlyArray<{
-        title: string;
-        intro_copy: string | null;
-        recipe_ids: ReadonlyArray<string>;
-      }>
-    >(),
+  recipe_ids: text("recipe_ids", { mode: "json" }).notNull().$type<ReadonlyArray<string>>(),
+  chapters: text("chapters", { mode: "json" }).notNull().$type<
+    ReadonlyArray<{
+      title: string;
+      intro_copy: string | null;
+      recipe_ids: ReadonlyArray<string>;
+    }>
+  >(),
   intro_copy: text("intro_copy"),
   author_bio: text("author_bio"),
   format: text("format").notNull(), // LetterSize | TradeSize
@@ -386,17 +359,15 @@ export const mealPlanDetails = sqliteTable("meal_plan_details", {
   product_id: text("product_id")
     .primaryKey()
     .references(() => productBase.id, { onDelete: "cascade" }),
-  days: text("days", { mode: "json" })
-    .notNull()
-    .$type<
-      ReadonlyArray<{
-        day_number: number;
-        breakfast: string | null;
-        lunch: string | null;
-        dinner: string | null;
-        snacks: ReadonlyArray<string>;
-      }>
-    >(),
+  days: text("days", { mode: "json" }).notNull().$type<
+    ReadonlyArray<{
+      day_number: number;
+      breakfast: string | null;
+      lunch: string | null;
+      dinner: string | null;
+      snacks: ReadonlyArray<string>;
+    }>
+  >(),
   shopping_list: text("shopping_list", { mode: "json" }).$type<{
     sections: ReadonlyArray<{
       label: string;
@@ -415,9 +386,7 @@ export const recipeCardPacks = sqliteTable("recipe_card_packs", {
   product_id: text("product_id")
     .primaryKey()
     .references(() => productBase.id, { onDelete: "cascade" }),
-  recipe_ids: text("recipe_ids", { mode: "json" })
-    .notNull()
-    .$type<ReadonlyArray<string>>(),
+  recipe_ids: text("recipe_ids", { mode: "json" }).notNull().$type<ReadonlyArray<string>>(),
 });
 
 export const leadMagnets = sqliteTable("lead_magnets", {
@@ -427,9 +396,7 @@ export const leadMagnets = sqliteTable("lead_magnets", {
   parent_product_id: text("parent_product_id")
     .notNull()
     .references(() => productBase.id),
-  recipe_ids: text("recipe_ids", { mode: "json" })
-    .notNull()
-    .$type<ReadonlyArray<string>>(),
+  recipe_ids: text("recipe_ids", { mode: "json" }).notNull().$type<ReadonlyArray<string>>(),
 });
 
 // ---------------------------------------------------------------------------
@@ -448,9 +415,7 @@ export const publishedListings = sqliteTable(
     platform_id: text("platform_id"),
     published_at: text("published_at").notNull(),
   },
-  (table) => [
-    index("published_listings_product_id_idx").on(table.product_id),
-  ],
+  (table) => [index("published_listings_product_id_idx").on(table.product_id)],
 );
 
 // ---------------------------------------------------------------------------
@@ -491,9 +456,7 @@ export const recipeEngagementEvents = sqliteTable(
 
     // EngagementEventType — sum type stored as type + data JSON
     event_type: text("event_type").notNull(), // SaveClick | CardView | SequenceTrigger | PurchaseAttribution
-    event_data: text("event_data", { mode: "json" }).$type<
-      Record<string, unknown>
-    >(), // e.g. { product_id: "..." } for PurchaseAttribution
+    event_data: text("event_data", { mode: "json" }).$type<Record<string, unknown>>(), // e.g. { product_id: "..." } for PurchaseAttribution
 
     kit_subscriber_id: text("kit_subscriber_id"),
     source: text("source").notNull(), // KitWebhook | KitApiPoll | Internal
@@ -558,19 +521,17 @@ export const segmentProfiles = sqliteTable("segment_profiles", {
     .primaryKey()
     .references(() => creators.id, { onDelete: "cascade" }),
   computed_at: text("computed_at").notNull(),
-  segments: text("segments", { mode: "json" })
-    .notNull()
-    .$type<
-      Record<
-        string,
-        {
-          subscriber_count: number;
-          engagement_rate: number;
-          growth_rate_30d: number;
-          top_recipe_ids: ReadonlyArray<string>;
-        }
-      >
-    >(),
+  segments: text("segments", { mode: "json" }).notNull().$type<
+    Record<
+      string,
+      {
+        subscriber_count: number;
+        engagement_rate: number;
+        growth_rate_30d: number;
+        top_recipe_ids: ReadonlyArray<string>;
+      }
+    >
+  >(),
 });
 
 // ---------------------------------------------------------------------------

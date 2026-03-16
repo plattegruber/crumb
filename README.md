@@ -45,20 +45,20 @@ Recipe intelligence platform for food creators, built on Kit (formerly ConvertKi
 
 ## Tech Stack
 
-| Layer             | Technology                                       |
-| ----------------- | ------------------------------------------------ |
-| Runtime           | Cloudflare Workers (TypeScript)                  |
-| Database          | Cloudflare D1 (SQLite) via Drizzle ORM           |
-| File storage      | Cloudflare R2                                    |
-| Async jobs        | Cloudflare Queues                                |
-| Caching           | Cloudflare KV                                    |
-| Rate limiting     | Cloudflare Durable Objects                       |
-| Frontend          | SvelteKit 2 + Svelte 5, deployed to Cloudflare Pages |
-| Auth              | Clerk (frontend SDK + backend JWT verification)  |
-| API framework     | Hono                                             |
-| Email platform    | Kit (ConvertKit) V4 API                          |
-| Testing           | Vitest with `@cloudflare/vitest-pool-workers`    |
-| Package manager   | pnpm (workspaces)                                |
+| Layer           | Technology                                           |
+| --------------- | ---------------------------------------------------- |
+| Runtime         | Cloudflare Workers (TypeScript)                      |
+| Database        | Cloudflare D1 (SQLite) via Drizzle ORM               |
+| File storage    | Cloudflare R2                                        |
+| Async jobs      | Cloudflare Queues                                    |
+| Caching         | Cloudflare KV                                        |
+| Rate limiting   | Cloudflare Durable Objects                           |
+| Frontend        | SvelteKit 2 + Svelte 5, deployed to Cloudflare Pages |
+| Auth            | Clerk (frontend SDK + backend JWT verification)      |
+| API framework   | Hono                                                 |
+| Email platform  | Kit (ConvertKit) V4 API                              |
+| Testing         | Vitest with `@cloudflare/vitest-pool-workers`        |
+| Package manager | pnpm (workspaces)                                    |
 
 ---
 
@@ -188,12 +188,12 @@ pnpm install
 
 The API worker requires several environment bindings. Non-secret values are in `apps/api/wrangler.toml`. Secret values must be set separately:
 
-| Variable                 | Type   | How to set                                  |
-| ------------------------ | ------ | ------------------------------------------- |
-| `CLERK_PUBLISHABLE_KEY`  | var    | Already in `wrangler.toml`                  |
-| `CLERK_SECRET_KEY`       | secret | `npx wrangler secret put CLERK_SECRET_KEY`  |
-| `KIT_CLIENT_ID`          | var    | Already in `wrangler.toml`                  |
-| `KIT_CLIENT_SECRET`      | secret | `npx wrangler secret put KIT_CLIENT_SECRET` |
+| Variable                | Type   | How to set                                  |
+| ----------------------- | ------ | ------------------------------------------- |
+| `CLERK_PUBLISHABLE_KEY` | var    | Already in `wrangler.toml`                  |
+| `CLERK_SECRET_KEY`      | secret | `npx wrangler secret put CLERK_SECRET_KEY`  |
+| `KIT_CLIENT_ID`         | var    | Already in `wrangler.toml`                  |
+| `KIT_CLIENT_SECRET`     | secret | `npx wrangler secret put KIT_CLIENT_SECRET` |
 
 For local development, Wrangler uses `.dev.vars` for secret values. Create this file in `apps/api/`:
 
@@ -246,22 +246,22 @@ cd apps/kit-plugin && pnpm dev
 
 All commands can be run from the project root unless noted.
 
-| Command                                  | Description                                          |
-| ---------------------------------------- | ---------------------------------------------------- |
-| `pnpm dev`                               | Start the API worker (port 8787)                     |
-| `pnpm test`                              | Run API tests in Workers runtime                     |
-| `pnpm build`                             | Build all packages and apps                          |
-| `pnpm typecheck`                         | Typecheck all packages and apps                      |
-| `cd apps/web && pnpm dev`                | Start SvelteKit dev server (port 5173)               |
-| `cd apps/web && pnpm build`              | Build SvelteKit for Cloudflare Pages                 |
-| `cd apps/web && pnpm typecheck`          | Typecheck web app (svelte-check)                     |
-| `cd apps/kit-plugin && pnpm dev`         | Build kit-plugin in watch mode                       |
-| `cd apps/kit-plugin && pnpm build`       | Build kit-plugin IIFE bundle                         |
-| `cd apps/kit-plugin && pnpm test`        | Run kit-plugin tests                                 |
-| `cd packages/shared && pnpm test`        | Run shared package tests                             |
-| `cd apps/api && npx vitest run`          | Run API tests                                        |
-| `cd apps/api && npx vitest run --coverage` | Run API tests with coverage                        |
-| `cd apps/api && npx wrangler d1 migrations apply crumb-db --local` | Apply D1 migrations locally |
+| Command                                                            | Description                            |
+| ------------------------------------------------------------------ | -------------------------------------- |
+| `pnpm dev`                                                         | Start the API worker (port 8787)       |
+| `pnpm test`                                                        | Run API tests in Workers runtime       |
+| `pnpm build`                                                       | Build all packages and apps            |
+| `pnpm typecheck`                                                   | Typecheck all packages and apps        |
+| `cd apps/web && pnpm dev`                                          | Start SvelteKit dev server (port 5173) |
+| `cd apps/web && pnpm build`                                        | Build SvelteKit for Cloudflare Pages   |
+| `cd apps/web && pnpm typecheck`                                    | Typecheck web app (svelte-check)       |
+| `cd apps/kit-plugin && pnpm dev`                                   | Build kit-plugin in watch mode         |
+| `cd apps/kit-plugin && pnpm build`                                 | Build kit-plugin IIFE bundle           |
+| `cd apps/kit-plugin && pnpm test`                                  | Run kit-plugin tests                   |
+| `cd packages/shared && pnpm test`                                  | Run shared package tests               |
+| `cd apps/api && npx vitest run`                                    | Run API tests                          |
+| `cd apps/api && npx vitest run --coverage`                         | Run API tests with coverage            |
+| `cd apps/api && npx wrangler d1 migrations apply crumb-db --local` | Apply D1 migrations locally            |
 
 ---
 
@@ -273,18 +273,18 @@ A Cloudflare Worker using **Hono** as the HTTP framework. All routes require Cle
 
 **Services** contain business logic, separated from HTTP concerns:
 
-| Service              | Responsibility                                                           |
-| -------------------- | ------------------------------------------------------------------------ |
-| `recipe.ts`          | Recipe CRUD, full-text search, ingredient scaling via rational arithmetic |
-| `collection.ts`      | Collection management, recipe membership ordering                        |
-| `import.ts`          | Import pipeline: URL scraping, WordPress sync, AI extraction             |
-| `product.ts`         | Product builder: ebooks, meal plans, card packs, lead magnets            |
-| `publishing.ts`      | Platform publishing (Stan Store, Gumroad, LTK) + download packaging      |
-| `analytics.ts`       | Engagement score computation, product recommendations                    |
-| `automation.ts`      | Kit broadcast drafts, sequence enrollment, seasonal drops                |
-| `segmentation.ts`    | Dietary tag inference from ingredients, segment profile computation       |
-| `queue-handlers.ts`  | Queue consumer for import and render pipelines                           |
-| `webhook-handlers.ts`| Kit webhook event dispatch (subscriber, purchase, link click)            |
+| Service               | Responsibility                                                            |
+| --------------------- | ------------------------------------------------------------------------- |
+| `recipe.ts`           | Recipe CRUD, full-text search, ingredient scaling via rational arithmetic |
+| `collection.ts`       | Collection management, recipe membership ordering                         |
+| `import.ts`           | Import pipeline: URL scraping, WordPress sync, AI extraction              |
+| `product.ts`          | Product builder: ebooks, meal plans, card packs, lead magnets             |
+| `publishing.ts`       | Platform publishing (Stan Store, Gumroad, LTK) + download packaging       |
+| `analytics.ts`        | Engagement score computation, product recommendations                     |
+| `automation.ts`       | Kit broadcast drafts, sequence enrollment, seasonal drops                 |
+| `segmentation.ts`     | Dietary tag inference from ingredients, segment profile computation       |
+| `queue-handlers.ts`   | Queue consumer for import and render pipelines                            |
+| `webhook-handlers.ts` | Kit webhook event dispatch (subscriber, purchase, link click)             |
 
 **Kit Integration Layer** (`src/lib/kit/`) wraps all Kit V4 API access: OAuth flow, automatic token refresh, rate limiting (120 req/min rolling window), namespaced tag conventions, and HMAC webhook verification. No code outside this directory makes direct Kit API calls.
 
@@ -296,13 +296,13 @@ A **SvelteKit** app deployed to **Cloudflare Pages** via `@sveltejs/adapter-clou
 
 **Route groups:**
 
-| Route group       | Purpose                                         |
-| ----------------- | ----------------------------------------------- |
-| `/library`        | Recipe list, detail view, creation, import, collections |
-| `/products`       | Product list, detail, ebook/meal-plan builders   |
-| `/grow`           | Dashboard, segments, analytics, automation       |
-| `/settings`       | Account, Kit connection, brand kit, team         |
-| `/sign-in`, `/sign-up` | Clerk authentication pages                 |
+| Route group            | Purpose                                                 |
+| ---------------------- | ------------------------------------------------------- |
+| `/library`             | Recipe list, detail view, creation, import, collections |
+| `/products`            | Product list, detail, ebook/meal-plan builders          |
+| `/grow`                | Dashboard, segments, analytics, automation              |
+| `/settings`            | Account, Kit connection, brand kit, team                |
+| `/sign-in`, `/sign-up` | Clerk authentication pages                              |
 
 **Shared components** include `RecipeCard`, `SearchBar`, `Pagination`, and `DietaryBadge`.
 
@@ -333,100 +333,100 @@ TypeScript package consumed by all three apps. Contains:
 
 ### Public
 
-| Method | Path                              | Description                            |
-| ------ | --------------------------------- | -------------------------------------- |
-| GET    | `/health`                         | Health check                           |
-| POST   | `/webhooks/kit`                   | Kit webhook receiver (HMAC-verified)   |
-| GET    | `/save/:creatorId/:recipeSlug`    | Save This Recipe redirect (subscriber tracking) |
+| Method | Path                           | Description                                     |
+| ------ | ------------------------------ | ----------------------------------------------- |
+| GET    | `/health`                      | Health check                                    |
+| POST   | `/webhooks/kit`                | Kit webhook receiver (HMAC-verified)            |
+| GET    | `/save/:creatorId/:recipeSlug` | Save This Recipe redirect (subscriber tracking) |
 
 ### Recipes (SPEC SS6)
 
-| Method | Path                              | Description                            |
-| ------ | --------------------------------- | -------------------------------------- |
-| POST   | `/recipes`                        | Create a recipe                        |
-| GET    | `/recipes`                        | List/search recipes (filterable, paginated) |
-| GET    | `/recipes/:id`                    | Get recipe (supports `?servings=N` scaling) |
-| PUT    | `/recipes/:id`                    | Update a recipe                        |
-| DELETE | `/recipes/:id`                    | Archive a recipe (soft delete)         |
-| POST   | `/recipes/:id/duplicate-check`    | Check for duplicate titles             |
+| Method | Path                           | Description                                 |
+| ------ | ------------------------------ | ------------------------------------------- |
+| POST   | `/recipes`                     | Create a recipe                             |
+| GET    | `/recipes`                     | List/search recipes (filterable, paginated) |
+| GET    | `/recipes/:id`                 | Get recipe (supports `?servings=N` scaling) |
+| PUT    | `/recipes/:id`                 | Update a recipe                             |
+| DELETE | `/recipes/:id`                 | Archive a recipe (soft delete)              |
+| POST   | `/recipes/:id/duplicate-check` | Check for duplicate titles                  |
 
 ### Collections (SPEC SS6.2)
 
-| Method | Path                                       | Description                    |
-| ------ | ------------------------------------------ | ------------------------------ |
-| POST   | `/collections`                             | Create a collection            |
-| GET    | `/collections`                             | List all collections           |
-| GET    | `/collections/:id`                         | Get collection with recipes    |
-| PUT    | `/collections/:id`                         | Update a collection            |
-| DELETE | `/collections/:id`                         | Delete a collection            |
-| POST   | `/collections/:id/recipes`                 | Add recipe to collection       |
-| DELETE | `/collections/:id/recipes/:recipeId`       | Remove recipe from collection  |
+| Method | Path                                 | Description                   |
+| ------ | ------------------------------------ | ----------------------------- |
+| POST   | `/collections`                       | Create a collection           |
+| GET    | `/collections`                       | List all collections          |
+| GET    | `/collections/:id`                   | Get collection with recipes   |
+| PUT    | `/collections/:id`                   | Update a collection           |
+| DELETE | `/collections/:id`                   | Delete a collection           |
+| POST   | `/collections/:id/recipes`           | Add recipe to collection      |
+| DELETE | `/collections/:id/recipes/:recipeId` | Remove recipe from collection |
 
 ### Import Pipeline (SPEC SS7)
 
-| Method | Path                                       | Description                         |
-| ------ | ------------------------------------------ | ----------------------------------- |
-| POST   | `/imports`                                 | Create an import job                |
-| GET    | `/imports`                                 | List import jobs (paginated)        |
-| GET    | `/imports/:id`                             | Get import job with extract         |
-| POST   | `/imports/:id/confirm`                     | Confirm extract, promote to recipe  |
-| POST   | `/imports/:id/reject`                      | Reject/cancel import                |
-| POST   | `/imports/wordpress/test-connection`        | Test WordPress API connection       |
-| POST   | `/imports/wordpress/sync`                  | Trigger WordPress recipe sync       |
+| Method | Path                                 | Description                        |
+| ------ | ------------------------------------ | ---------------------------------- |
+| POST   | `/imports`                           | Create an import job               |
+| GET    | `/imports`                           | List import jobs (paginated)       |
+| GET    | `/imports/:id`                       | Get import job with extract        |
+| POST   | `/imports/:id/confirm`               | Confirm extract, promote to recipe |
+| POST   | `/imports/:id/reject`                | Reject/cancel import               |
+| POST   | `/imports/wordpress/test-connection` | Test WordPress API connection      |
+| POST   | `/imports/wordpress/sync`            | Trigger WordPress recipe sync      |
 
 ### Products (SPEC SS8)
 
-| Method | Path                                | Description                              |
-| ------ | ----------------------------------- | ---------------------------------------- |
-| POST   | `/products/ebook`                   | Create an ebook product                  |
-| POST   | `/products/meal-plan`               | Create a meal plan product               |
-| POST   | `/products/recipe-card-pack`        | Create a recipe card pack                |
-| POST   | `/products/:id/lead-magnet`         | Generate lead magnet from parent product |
-| GET    | `/products`                         | List products (filterable, paginated)    |
-| GET    | `/products/:id`                     | Get product details                      |
-| PUT    | `/products/:id`                     | Update product                           |
-| POST   | `/products/:id/review-copy`         | Mark AI-generated copy as reviewed       |
-| POST   | `/products/:id/render`              | Enqueue PDF rendering                    |
-| POST   | `/products/:id/publish`             | Transition to Published status           |
+| Method | Path                         | Description                              |
+| ------ | ---------------------------- | ---------------------------------------- |
+| POST   | `/products/ebook`            | Create an ebook product                  |
+| POST   | `/products/meal-plan`        | Create a meal plan product               |
+| POST   | `/products/recipe-card-pack` | Create a recipe card pack                |
+| POST   | `/products/:id/lead-magnet`  | Generate lead magnet from parent product |
+| GET    | `/products`                  | List products (filterable, paginated)    |
+| GET    | `/products/:id`              | Get product details                      |
+| PUT    | `/products/:id`              | Update product                           |
+| POST   | `/products/:id/review-copy`  | Mark AI-generated copy as reviewed       |
+| POST   | `/products/:id/render`       | Enqueue PDF rendering                    |
+| POST   | `/products/:id/publish`      | Transition to Published status           |
 
 ### Publishing Pipeline (SPEC SS12)
 
-| Method | Path                                       | Description                         |
-| ------ | ------------------------------------------ | ----------------------------------- |
-| POST   | `/products/:id/publish/:platform`          | Publish to external platform        |
-| POST   | `/products/:id/download-package`           | Generate download ZIP (fallback)    |
-| POST   | `/products/:id/share-assets`               | Generate social share images        |
-| GET    | `/products/:id/listings`                   | Get published listings              |
+| Method | Path                              | Description                      |
+| ------ | --------------------------------- | -------------------------------- |
+| POST   | `/products/:id/publish/:platform` | Publish to external platform     |
+| POST   | `/products/:id/download-package`  | Generate download ZIP (fallback) |
+| POST   | `/products/:id/share-assets`      | Generate social share images     |
+| GET    | `/products/:id/listings`          | Get published listings           |
 
 ### Segmentation (SPEC SS9)
 
-| Method | Path                                       | Description                         |
-| ------ | ------------------------------------------ | ----------------------------------- |
-| POST   | `/recipes/:id/dietary-tags/infer`          | Trigger dietary auto-tagging        |
-| PUT    | `/recipes/:id/dietary-tags/confirm`        | Confirm dietary tags                |
-| GET    | `/segments`                                | Get current segment profile         |
-| POST   | `/segments/compute`                        | Trigger segment profile computation |
-| POST   | `/segments/preference-form`                | Create dietary preference Kit form  |
+| Method | Path                                | Description                         |
+| ------ | ----------------------------------- | ----------------------------------- |
+| POST   | `/recipes/:id/dietary-tags/infer`   | Trigger dietary auto-tagging        |
+| PUT    | `/recipes/:id/dietary-tags/confirm` | Confirm dietary tags                |
+| GET    | `/segments`                         | Get current segment profile         |
+| POST   | `/segments/compute`                 | Trigger segment profile computation |
+| POST   | `/segments/preference-form`         | Create dietary preference Kit form  |
 
 ### Analytics (SPEC SS11)
 
-| Method | Path                                       | Description                         |
-| ------ | ------------------------------------------ | ----------------------------------- |
-| GET    | `/analytics/engagement-scores`             | List engagement scores              |
-| GET    | `/analytics/engagement-scores/:recipeId`   | Get single recipe score             |
-| POST   | `/analytics/compute-scores`                | Trigger score computation           |
-| GET    | `/analytics/recommendations`               | Get product recommendations         |
+| Method | Path                                     | Description                 |
+| ------ | ---------------------------------------- | --------------------------- |
+| GET    | `/analytics/engagement-scores`           | List engagement scores      |
+| GET    | `/analytics/engagement-scores/:recipeId` | Get single recipe score     |
+| POST   | `/analytics/compute-scores`              | Trigger score computation   |
+| GET    | `/analytics/recommendations`             | Get product recommendations |
 
 ### Automation (SPEC SS10)
 
-| Method | Path                                         | Description                           |
-| ------ | --------------------------------------------- | ------------------------------------- |
-| POST   | `/automation/save-recipe`                     | Handle Save This Recipe click         |
-| POST   | `/automation/broadcast-draft/:recipeId`       | Create Kit broadcast draft            |
-| POST   | `/automation/lead-magnet-sequence/:productId` | Create lead magnet delivery sequence  |
-| GET    | `/automation/seasonal-drops`                  | List seasonal drop configurations     |
-| POST   | `/automation/seasonal-drops`                  | Create a seasonal drop                |
-| POST   | `/automation/seasonal-drops/process`          | Process due seasonal drops            |
+| Method | Path                                          | Description                          |
+| ------ | --------------------------------------------- | ------------------------------------ |
+| POST   | `/automation/save-recipe`                     | Handle Save This Recipe click        |
+| POST   | `/automation/broadcast-draft/:recipeId`       | Create Kit broadcast draft           |
+| POST   | `/automation/lead-magnet-sequence/:productId` | Create lead magnet delivery sequence |
+| GET    | `/automation/seasonal-drops`                  | List seasonal drop configurations    |
+| POST   | `/automation/seasonal-drops`                  | Create a seasonal drop               |
+| POST   | `/automation/seasonal-drops/process`          | Process due seasonal drops           |
 
 ---
 
@@ -483,22 +483,22 @@ apps/api/test/
 
 Each section of `SPEC.md` maps to a specific implementation location:
 
-| SPEC Section                        | Implementation                                      |
-| ----------------------------------- | --------------------------------------------------- |
-| SS1 -- System Overview               | Overall architecture                                |
-| SS2 -- Data Models                    | `packages/shared/src/` + `apps/api/src/db/schema.ts` |
-| SS3 -- System Components             | `apps/api/src/services/`                            |
-| SS4 -- Kit Integration Layer          | `apps/api/src/lib/kit/`                             |
-| SS5 -- Recipe Card Plugin             | `apps/kit-plugin/`                                  |
-| SS6 -- Recipe Library                 | `apps/api/src/services/recipe.ts`, `collection.ts`; `apps/api/src/routes/recipes.ts`, `collections.ts` |
-| SS7 -- Import Pipeline                | `apps/api/src/services/import.ts`, `queue-handlers.ts`; `apps/api/src/routes/imports.ts` |
-| SS8 -- Digital Product Builder        | `apps/api/src/services/product.ts`; `apps/api/src/routes/products.ts` |
-| SS9 -- Segmentation Engine            | `apps/api/src/services/segmentation.ts`; `apps/api/src/routes/segmentation.ts` |
-| SS10 -- Automation Engine             | `apps/api/src/services/automation.ts`; `apps/api/src/routes/automation.ts` |
-| SS11 -- Analytics Engine              | `apps/api/src/services/analytics.ts`, `webhook-handlers.ts`; `apps/api/src/routes/analytics.ts` |
-| SS12 -- Publishing Pipeline           | `apps/api/src/services/publishing.ts`; `apps/api/src/routes/publishing.ts` |
-| SS13 -- Authentication & Multi-tenancy | `apps/api/src/middleware/auth.ts`, `team.ts`; `apps/web/src/lib/clerk.ts` |
-| SS14 -- Error Handling                | `packages/shared/src/result.ts`; service-level error types throughout |
+| SPEC Section                           | Implementation                                                                                         |
+| -------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| SS1 -- System Overview                 | Overall architecture                                                                                   |
+| SS2 -- Data Models                     | `packages/shared/src/` + `apps/api/src/db/schema.ts`                                                   |
+| SS3 -- System Components               | `apps/api/src/services/`                                                                               |
+| SS4 -- Kit Integration Layer           | `apps/api/src/lib/kit/`                                                                                |
+| SS5 -- Recipe Card Plugin              | `apps/kit-plugin/`                                                                                     |
+| SS6 -- Recipe Library                  | `apps/api/src/services/recipe.ts`, `collection.ts`; `apps/api/src/routes/recipes.ts`, `collections.ts` |
+| SS7 -- Import Pipeline                 | `apps/api/src/services/import.ts`, `queue-handlers.ts`; `apps/api/src/routes/imports.ts`               |
+| SS8 -- Digital Product Builder         | `apps/api/src/services/product.ts`; `apps/api/src/routes/products.ts`                                  |
+| SS9 -- Segmentation Engine             | `apps/api/src/services/segmentation.ts`; `apps/api/src/routes/segmentation.ts`                         |
+| SS10 -- Automation Engine              | `apps/api/src/services/automation.ts`; `apps/api/src/routes/automation.ts`                             |
+| SS11 -- Analytics Engine               | `apps/api/src/services/analytics.ts`, `webhook-handlers.ts`; `apps/api/src/routes/analytics.ts`        |
+| SS12 -- Publishing Pipeline            | `apps/api/src/services/publishing.ts`; `apps/api/src/routes/publishing.ts`                             |
+| SS13 -- Authentication & Multi-tenancy | `apps/api/src/middleware/auth.ts`, `team.ts`; `apps/web/src/lib/clerk.ts`                              |
+| SS14 -- Error Handling                 | `packages/shared/src/result.ts`; service-level error types throughout                                  |
 
 ---
 

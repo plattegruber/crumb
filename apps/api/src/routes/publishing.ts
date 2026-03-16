@@ -8,7 +8,6 @@ import type { AppEnv } from "../middleware/auth.js";
 import { createDb } from "../db/index.js";
 import { withCreatorScope } from "../middleware/creator-scope.js";
 import {
-  publishToPlatform,
   getProductListings,
   packageForDownload,
   generateShareAssets,
@@ -48,11 +47,6 @@ function errorToStatus(error: PublishError): ContentfulStatusCode {
  * creator-specific credentials that are not yet wired up.
  */
 publishingRoutes.post("/:id/publish/:platform", async (c) => {
-  const creatorId = c.get("creatorId");
-  const db = createDb(c.env.DB);
-  const scopedDb = withCreatorScope(db, creatorId);
-
-  const productId = c.req.param("id");
   const platformParam = c.req.param("platform");
 
   const platformResult = validatePlatform(platformParam);

@@ -70,9 +70,7 @@ describe("Kit Client — Subscribers", () => {
         fields: {},
       };
 
-      const config = mockFetch(async () =>
-        jsonResponse({ subscribers: [subscriber] }),
-      );
+      const config = mockFetch(async () => jsonResponse({ subscribers: [subscriber] }));
 
       const result = await getSubscriber(config, TOKEN, "alice@example.com");
       expect(result.ok).toBe(true);
@@ -83,9 +81,7 @@ describe("Kit Client — Subscribers", () => {
     });
 
     it("returns not found error when subscriber does not exist", async () => {
-      const config = mockFetch(async () =>
-        jsonResponse({ subscribers: [] }),
-      );
+      const config = mockFetch(async () => jsonResponse({ subscribers: [] }));
 
       const result = await getSubscriber(config, TOKEN, "nobody@example.com");
       expect(result.ok).toBe(false);
@@ -96,9 +92,7 @@ describe("Kit Client — Subscribers", () => {
     });
 
     it("returns error on 401", async () => {
-      const config = mockFetch(async () =>
-        errorResponse(["The access token is invalid"], 401),
-      );
+      const config = mockFetch(async () => errorResponse(["The access token is invalid"], 401));
 
       const result = await getSubscriber(config, TOKEN, "alice@example.com");
       expect(result.ok).toBe(false);
@@ -149,20 +143,14 @@ describe("Kit Client — Subscribers", () => {
         return jsonResponse({ subscriber }, 201);
       });
 
-      const result = await createSubscriber(
-        config,
-        TOKEN,
-        "carol@example.com",
-        null,
-        { category: "food" },
-      );
+      const result = await createSubscriber(config, TOKEN, "carol@example.com", null, {
+        category: "food",
+      });
       expect(result.ok).toBe(true);
     });
 
     it("returns validation error on 422", async () => {
-      const config = mockFetch(async () =>
-        errorResponse(["Email address is invalid"], 422),
-      );
+      const config = mockFetch(async () => errorResponse(["Email address is invalid"], 422));
 
       const result = await createSubscriber(config, TOKEN, "invalid");
       expect(result.ok).toBe(false);
@@ -200,17 +188,20 @@ describe("Kit Client — Subscribers", () => {
     it("tags a subscriber", async () => {
       const config = mockFetch(async (url) => {
         expect(url).toContain("/tags/10/subscribers/1");
-        return jsonResponse({
-          subscriber: {
-            id: 1,
-            first_name: null,
-            email_address: "a@b.com",
-            state: "active",
-            created_at: "2024-01-01T00:00:00Z",
-            tagged_at: "2024-01-02T00:00:00Z",
-            fields: {},
+        return jsonResponse(
+          {
+            subscriber: {
+              id: 1,
+              first_name: null,
+              email_address: "a@b.com",
+              state: "active",
+              created_at: "2024-01-01T00:00:00Z",
+              tagged_at: "2024-01-02T00:00:00Z",
+              fields: {},
+            },
           },
-        }, 201);
+          201,
+        );
       });
 
       const result = await tagSubscriber(config, TOKEN, "1", "10");
@@ -218,9 +209,7 @@ describe("Kit Client — Subscribers", () => {
     });
 
     it("returns error on 404", async () => {
-      const config = mockFetch(async () =>
-        errorResponse(["Not Found"], 404),
-      );
+      const config = mockFetch(async () => errorResponse(["Not Found"], 404));
 
       const result = await tagSubscriber(config, TOKEN, "999", "10");
       expect(result.ok).toBe(false);
@@ -257,9 +246,7 @@ describe("Kit Client — Tags", () => {
         if (callCount === 1) {
           expect(url).not.toContain("after=");
           return jsonResponse({
-            tags: [
-              { id: 1, name: "dietary:vegan", created_at: "2024-01-01T00:00:00Z" },
-            ],
+            tags: [{ id: 1, name: "dietary:vegan", created_at: "2024-01-01T00:00:00Z" }],
             pagination: {
               has_previous_page: false,
               has_next_page: true,
@@ -271,9 +258,7 @@ describe("Kit Client — Tags", () => {
         }
         expect(url).toContain("after=e1");
         return jsonResponse({
-          tags: [
-            { id: 2, name: "dietary:keto", created_at: "2024-01-02T00:00:00Z" },
-          ],
+          tags: [{ id: 2, name: "dietary:keto", created_at: "2024-01-02T00:00:00Z" }],
           pagination: {
             has_previous_page: true,
             has_next_page: false,
@@ -354,7 +339,12 @@ describe("Kit Client — Custom Fields", () => {
       const config = mockFetch(async () =>
         jsonResponse({
           custom_fields: [
-            { id: 1, name: "ck_field_1_preferred", key: "preferred_dietary_tags", label: "preferred_dietary_tags" },
+            {
+              id: 1,
+              name: "ck_field_1_preferred",
+              key: "preferred_dietary_tags",
+              label: "preferred_dietary_tags",
+            },
           ],
           pagination: {
             has_previous_page: false,
@@ -501,9 +491,7 @@ describe("Kit Client — Broadcasts", () => {
     });
 
     it("returns not found on 404", async () => {
-      const config = mockFetch(async () =>
-        errorResponse(["Not Found"], 404),
-      );
+      const config = mockFetch(async () => errorResponse(["Not Found"], 404));
 
       const result = await getBroadcast(config, TOKEN, "999");
       expect(result.ok).toBe(false);
@@ -524,7 +512,13 @@ describe("Kit Client — Sequences", () => {
       const config = mockFetch(async () =>
         jsonResponse({
           sequences: [
-            { id: 1, name: "Welcome", hold: false, repeat: false, created_at: "2024-01-01T00:00:00Z" },
+            {
+              id: 1,
+              name: "Welcome",
+              hold: false,
+              repeat: false,
+              created_at: "2024-01-01T00:00:00Z",
+            },
           ],
           pagination: {
             has_previous_page: false,
@@ -549,17 +543,20 @@ describe("Kit Client — Sequences", () => {
     it("adds subscriber to sequence", async () => {
       const config = mockFetch(async (url) => {
         expect(url).toContain("/sequences/66/subscribers/881");
-        return jsonResponse({
-          subscriber: {
-            id: 881,
-            first_name: null,
-            email_address: "a@b.com",
-            state: "active",
-            created_at: "2024-01-01T00:00:00Z",
-            added_at: "2024-01-02T00:00:00Z",
-            fields: {},
+        return jsonResponse(
+          {
+            subscriber: {
+              id: 881,
+              first_name: null,
+              email_address: "a@b.com",
+              state: "active",
+              created_at: "2024-01-01T00:00:00Z",
+              added_at: "2024-01-02T00:00:00Z",
+              fields: {},
+            },
           },
-        }, 201);
+          201,
+        );
       });
 
       const result = await addSubscriberToSequence(config, TOKEN, "881", "66");
@@ -613,17 +610,20 @@ describe("Kit Client — Forms", () => {
     it("adds subscriber to form", async () => {
       const config = mockFetch(async (url) => {
         expect(url).toContain("/forms/190/subscribers/668");
-        return jsonResponse({
-          subscriber: {
-            id: 668,
-            first_name: null,
-            email_address: "test@example.com",
-            state: "active",
-            created_at: "2024-01-01T00:00:00Z",
-            added_at: "2024-01-02T00:00:00Z",
-            fields: {},
+        return jsonResponse(
+          {
+            subscriber: {
+              id: 668,
+              first_name: null,
+              email_address: "test@example.com",
+              state: "active",
+              created_at: "2024-01-01T00:00:00Z",
+              added_at: "2024-01-02T00:00:00Z",
+              fields: {},
+            },
           },
-        }, 201);
+          201,
+        );
       });
 
       const result = await addSubscriberToForm(config, TOKEN, "190", "668");
@@ -649,7 +649,7 @@ describe("Kit Client — Purchases", () => {
         transaction_time: "2024-01-01T00:00:00Z",
         subtotal: 29.99,
         discount: 0,
-        tax: 2.40,
+        tax: 2.4,
         total: 32.39,
         products: [
           { name: "Ebook", pid: "p1", lid: "l1", quantity: 1, unit_price: 29.99, sku: "SKU1" },
@@ -667,7 +667,7 @@ describe("Kit Client — Purchases", () => {
         transaction_id: "txn_123",
         status: "paid",
         subtotal: 29.99,
-        tax: 2.40,
+        tax: 2.4,
         discount: 0,
         total: 32.39,
         shipping: 0,
@@ -763,9 +763,7 @@ describe("Kit Client — Webhooks", () => {
     });
 
     it("returns not found on 404", async () => {
-      const config = mockFetch(async () =>
-        errorResponse(["Not Found"], 404),
-      );
+      const config = mockFetch(async () => errorResponse(["Not Found"], 404));
 
       const result = await deleteWebhook(config, TOKEN, "999");
       expect(result.ok).toBe(false);
@@ -802,9 +800,7 @@ describe("Kit Client — Network errors", () => {
 
 describe("Kit Client — Rate limiting", () => {
   it("returns rate_limited error on 429", async () => {
-    const config = mockFetch(async () =>
-      errorResponse(["Rate limit exceeded"], 429),
-    );
+    const config = mockFetch(async () => errorResponse(["Rate limit exceeded"], 429));
 
     const result = await listTags(config, TOKEN);
     expect(result.ok).toBe(false);
@@ -820,9 +816,7 @@ describe("Kit Client — Rate limiting", () => {
 
 describe("Kit Client — Server errors", () => {
   it("returns server_error on 500", async () => {
-    const config = mockFetch(async () =>
-      errorResponse(["Internal server error"], 500),
-    );
+    const config = mockFetch(async () => errorResponse(["Internal server error"], 500));
 
     const result = await listTags(config, TOKEN);
     expect(result.ok).toBe(false);

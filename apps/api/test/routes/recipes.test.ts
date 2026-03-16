@@ -23,10 +23,7 @@ import { createTestTables, cleanTestTables } from "../helpers/db-setup.js";
 const TEST_CREATOR_ID = "creator-route-1" as CreatorId;
 const NOW_ISO = new Date().toISOString();
 
-async function fakeVerify(
-  token: string,
-  _env: Env,
-): Promise<string | null> {
+async function fakeVerify(token: string, _env: Env): Promise<string | null> {
   if (token === "valid-token") return TEST_CREATOR_ID;
   return null;
 }
@@ -78,10 +75,7 @@ describe("Recipe Routes", () => {
 
   describe("Auth", () => {
     it("returns 401 without auth token", async () => {
-      const res = await app.fetch(
-        new Request("http://localhost/recipes"),
-        testEnv(),
-      );
+      const res = await app.fetch(new Request("http://localhost/recipes"), testEnv());
 
       expect(res.status).toBe(401);
     });
@@ -132,9 +126,7 @@ describe("Recipe Routes", () => {
             instructionGroups: [
               {
                 label: null,
-                instructions: [
-                  { id: "inst-rt-1", body: "Mix and bake" },
-                ],
+                instructions: [{ id: "inst-rt-1", body: "Mix and bake" }],
               },
             ],
           }),

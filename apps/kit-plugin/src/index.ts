@@ -11,9 +11,7 @@ import { renderCard } from "@/lib/card-renderer";
 import type {
   BrandKit,
   CardRenderOptions,
-  DisplayMode,
   PluginConfig,
-  PluginRecipe,
   RecipeSearchFilters,
   SearchResponse,
 } from "@/lib/types";
@@ -35,10 +33,7 @@ export interface CrumbPluginInterface {
    * @param options - Display mode, nutrition toggle, app domain
    * @returns Promise resolving to a Result containing the HTML string
    */
-  renderCard(
-    recipeId: RecipeId,
-    options: CardRenderOptions,
-  ): Promise<Result<string, ApiError>>;
+  renderCard(recipeId: RecipeId, options: CardRenderOptions): Promise<Result<string, ApiError>>;
 
   /**
    * Search the creator's recipe library.
@@ -65,9 +60,7 @@ function createPlugin(): CrumbPluginInterface {
 
   function requireClient(): ApiClient {
     if (client === null) {
-      throw new Error(
-        "[crumb] Plugin not initialized. Call CrumbPlugin.init() first.",
-      );
+      throw new Error("[crumb] Plugin not initialized. Call CrumbPlugin.init() first.");
     }
     return client;
   }

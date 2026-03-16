@@ -14,7 +14,6 @@ import {
   recipeEngagementScores,
   recipes,
   segmentProfiles,
-  productBase,
   ebookDetails,
   recipeCardPacks,
 } from "../db/schema.js";
@@ -118,9 +117,7 @@ export async function recordEngagementEvent(
 
   // Hash subscriber ID for privacy if provided
   const hashedSubscriberId =
-    input.kitSubscriberId !== null
-      ? await hashSubscriberId(input.kitSubscriberId)
-      : null;
+    input.kitSubscriberId !== null ? await hashSubscriberId(input.kitSubscriberId) : null;
 
   await db.insert(recipeEngagementEvents).values({
     id: input.id,
@@ -236,10 +233,7 @@ export async function computeEngagementScores(
         and(
           eq(recipeEngagementEvents.creator_id, creatorId),
           eq(recipeEngagementEvents.recipe_id, recipe.id),
-          eq(
-            recipeEngagementEvents.event_type,
-            ENGAGEMENT_EVENT_TYPE.PurchaseAttribution,
-          ),
+          eq(recipeEngagementEvents.event_type, ENGAGEMENT_EVENT_TYPE.PurchaseAttribution),
         ),
       );
 
@@ -262,9 +256,7 @@ export async function computeEngagementScores(
 
   if (scoreInputs.length === 0) {
     // Delete existing scores for this creator
-    await db
-      .delete(recipeEngagementScores)
-      .where(eq(recipeEngagementScores.creator_id, creatorId));
+    await db.delete(recipeEngagementScores).where(eq(recipeEngagementScores.creator_id, creatorId));
     return ok([]);
   }
 

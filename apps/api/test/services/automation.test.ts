@@ -156,11 +156,7 @@ function createKitConfig(fetchFn: typeof globalThis.fetch): KitClientConfig {
 // DB helpers
 // ---------------------------------------------------------------------------
 
-async function insertCreator(
-  d1: D1Database,
-  id: string,
-  tier: string = "Free",
-): Promise<void> {
+async function insertCreator(d1: D1Database, id: string, tier: string = "Free"): Promise<void> {
   const now = new Date().toISOString();
   await d1.exec(
     `INSERT INTO creators (id, email, name, password_hash, subscription_tier, subscription_started_at, created_at, updated_at) VALUES ('${id}', '${id}@example.com', 'Test Creator', 'hash', '${tier}', '${now}', '${now}', '${now}')`,
@@ -303,9 +299,7 @@ describe("handleSaveThisRecipe", () => {
     );
     expect(tagCreateCalls.length).toBeGreaterThanOrEqual(1);
 
-    const updateCalls = calls.filter(
-      (c) => c.url.includes("/subscribers/") && c.method === "PUT",
-    );
+    const updateCalls = calls.filter((c) => c.url.includes("/subscribers/") && c.method === "PUT");
     expect(updateCalls.length).toBe(1);
   });
 
@@ -412,7 +406,7 @@ describe("handleSaveThisRecipe", () => {
       dietaryTagsConfirmed: true,
     });
 
-    const { fetchFn, calls } = createMockFetch();
+    const { fetchFn } = createMockFetch();
     const kitConfig = createKitConfig(fetchFn);
     const db = createDb(env.DB);
 
@@ -765,7 +759,13 @@ describe("Seasonal Drops", () => {
     it("should create broadcast for drop whose start date has arrived", async () => {
       await insertCreator(env.DB, TEST_CREATOR_ID);
       await insertCollection(env.DB, "col-sd-p1", TEST_CREATOR_ID, "Active Collection");
-      await insertRecipe(env.DB, "recipe-sd-1", TEST_CREATOR_ID, "holiday-cookie", "Holiday Cookie");
+      await insertRecipe(
+        env.DB,
+        "recipe-sd-1",
+        TEST_CREATOR_ID,
+        "holiday-cookie",
+        "Holiday Cookie",
+      );
       await insertCollectionRecipe(env.DB, "col-sd-p1", "recipe-sd-1");
 
       // Create a drop that starts today (or in the past)
@@ -786,12 +786,7 @@ describe("Seasonal Drops", () => {
       const { fetchFn, calls } = createMockFetch();
       const kitConfig = createKitConfig(fetchFn);
 
-      const result = await processSeasonalDrops(
-        db,
-        TEST_CREATOR_ID,
-        TEST_ACCESS_TOKEN,
-        kitConfig,
-      );
+      const result = await processSeasonalDrops(db, TEST_CREATOR_ID, TEST_ACCESS_TOKEN, kitConfig);
 
       expect(result.ok).toBe(true);
       if (!result.ok) return;
@@ -830,15 +825,10 @@ describe("Seasonal Drops", () => {
         recurrence: "None",
       });
 
-      const { fetchFn, calls } = createMockFetch();
+      const { fetchFn } = createMockFetch();
       const kitConfig = createKitConfig(fetchFn);
 
-      const result = await processSeasonalDrops(
-        db,
-        TEST_CREATOR_ID,
-        TEST_ACCESS_TOKEN,
-        kitConfig,
-      );
+      const result = await processSeasonalDrops(db, TEST_CREATOR_ID, TEST_ACCESS_TOKEN, kitConfig);
 
       expect(result.ok).toBe(true);
       if (!result.ok) return;
@@ -850,7 +840,13 @@ describe("Seasonal Drops", () => {
     it("should not process future drops", async () => {
       await insertCreator(env.DB, TEST_CREATOR_ID);
       await insertCollection(env.DB, "col-sd-f1", TEST_CREATOR_ID, "Future Collection");
-      await insertRecipe(env.DB, "recipe-future", TEST_CREATOR_ID, "future-recipe", "Future Recipe");
+      await insertRecipe(
+        env.DB,
+        "recipe-future",
+        TEST_CREATOR_ID,
+        "future-recipe",
+        "Future Recipe",
+      );
       await insertCollectionRecipe(env.DB, "col-sd-f1", "recipe-future");
 
       const db = createDb(env.DB);
@@ -867,12 +863,7 @@ describe("Seasonal Drops", () => {
       const { fetchFn } = createMockFetch();
       const kitConfig = createKitConfig(fetchFn);
 
-      const result = await processSeasonalDrops(
-        db,
-        TEST_CREATOR_ID,
-        TEST_ACCESS_TOKEN,
-        kitConfig,
-      );
+      const result = await processSeasonalDrops(db, TEST_CREATOR_ID, TEST_ACCESS_TOKEN, kitConfig);
 
       expect(result.ok).toBe(true);
       if (!result.ok) return;
@@ -884,7 +875,13 @@ describe("Seasonal Drops", () => {
     it("should enforce free tier send limit during processing", async () => {
       await insertCreator(env.DB, TEST_CREATOR_ID, "Free");
       await insertCollection(env.DB, "col-sd-limit", TEST_CREATOR_ID, "Limit Collection");
-      await insertRecipe(env.DB, "recipe-limit-sd", TEST_CREATOR_ID, "limit-recipe", "Limit Recipe");
+      await insertRecipe(
+        env.DB,
+        "recipe-limit-sd",
+        TEST_CREATOR_ID,
+        "limit-recipe",
+        "Limit Recipe",
+      );
       await insertCollectionRecipe(env.DB, "col-sd-limit", "recipe-limit-sd");
 
       // Set sends to 3 (the limit)
@@ -905,12 +902,7 @@ describe("Seasonal Drops", () => {
       const { fetchFn } = createMockFetch();
       const kitConfig = createKitConfig(fetchFn);
 
-      const result = await processSeasonalDrops(
-        db,
-        TEST_CREATOR_ID,
-        TEST_ACCESS_TOKEN,
-        kitConfig,
-      );
+      const result = await processSeasonalDrops(db, TEST_CREATOR_ID, TEST_ACCESS_TOKEN, kitConfig);
 
       expect(result.ok).toBe(false);
       if (result.ok) return;
@@ -946,9 +938,7 @@ describe("Custom field updates", () => {
     expect(result.value.customFieldsUpdated).toBe(true);
 
     // Check the update subscriber call contained the right fields
-    const updateCalls = calls.filter(
-      (c) => c.url.includes("/subscribers/") && c.method === "PUT",
-    );
+    const updateCalls = calls.filter((c) => c.url.includes("/subscribers/") && c.method === "PUT");
     expect(updateCalls.length).toBe(1);
 
     const updateBody = updateCalls[0]?.body as Record<string, unknown>;

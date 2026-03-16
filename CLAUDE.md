@@ -19,6 +19,7 @@ Do not rely on training data. APIs, SDK shapes, and Wrangler
 config syntax change frequently.
 
 Required fetches before first use:
+
 - Cloudflare Workers: https://developers.cloudflare.com/workers/
 - Cloudflare D1: https://developers.cloudflare.com/d1/
 - Cloudflare R2: https://developers.cloudflare.com/r2/
@@ -39,20 +40,21 @@ fetch the docs before writing code. Never guess.
 Read SPEC.md at the project root for the authoritative specification.
 The Cloudflare service mapping is:
 
-| SPEC component              | Cloudflare primitive          |
-|-----------------------------|-------------------------------|
-| Application core API        | Workers (Hono router)         |
-| All entity persistence      | D1 via Drizzle ORM            |
-| PDF/EPUB/photo file storage | R2                            |
-| Import pipeline jobs        | Queues (consumer Workers)     |
-| PDF rendering jobs          | Queues (consumer Workers)     |
-| Kit subscriber cache        | KV (TTL: 5 minutes)           |
-| Engagement score cache      | KV (TTL: 24 hours)            |
-| Rate-limit state (Kit API)  | Durable Objects               |
-| Frontend                    | SvelteKit on Pages            |
-| Auth session verification   | Clerk JWT middleware on Worker|
+| SPEC component              | Cloudflare primitive           |
+| --------------------------- | ------------------------------ |
+| Application core API        | Workers (Hono router)          |
+| All entity persistence      | D1 via Drizzle ORM             |
+| PDF/EPUB/photo file storage | R2                             |
+| Import pipeline jobs        | Queues (consumer Workers)      |
+| PDF rendering jobs          | Queues (consumer Workers)      |
+| Kit subscriber cache        | KV (TTL: 5 minutes)            |
+| Engagement score cache      | KV (TTL: 24 hours)             |
+| Rate-limit state (Kit API)  | Durable Objects                |
+| Frontend                    | SvelteKit on Pages             |
+| Auth session verification   | Clerk JWT middleware on Worker |
 
 ## File structure
+
 ```
 /
 ├── SPEC.md

@@ -83,11 +83,7 @@ export function fraction(numerator: number, denominator: number): Fraction {
   return { type: "Fraction", numerator: s.numerator, denominator: s.denominator };
 }
 
-export function mixed(
-  whole: number,
-  numerator: number,
-  denominator: number,
-): Mixed {
+export function mixed(whole: number, numerator: number, denominator: number): Mixed {
   if (denominator === 0) {
     throw new Error("Denominator must not be zero");
   }

@@ -6,7 +6,6 @@ import { Hono } from "hono";
 import type { AppEnv } from "../middleware/auth.js";
 import { createDb } from "../db/index.js";
 import { createImportJobId } from "@crumb/shared";
-import type { CreatorId } from "../types/auth.js";
 import {
   createImportService,
   createDefaultFetcher,
@@ -21,9 +20,7 @@ const imports = new Hono<AppEnv>();
 /**
  * Build the import service from Hono context bindings.
  */
-function getImportService(c: {
-  env: AppEnv["Bindings"];
-}) {
+function getImportService(c: { env: AppEnv["Bindings"] }) {
   const db = createDb(c.env.DB);
 
   const queue: ImportQueue = {
@@ -60,9 +57,10 @@ function getImportService(c: {
 /**
  * Map service errors to HTTP status codes and response bodies.
  */
-function errorResponse(
-  error: ImportServiceError,
-): { status: 400 | 404 | 409 | 500; body: { error: string; message: string } } {
+function errorResponse(error: ImportServiceError): {
+  status: 400 | 404 | 409 | 500;
+  body: { error: string; message: string };
+} {
   switch (error.type) {
     case "NotFound":
       return {
@@ -79,8 +77,7 @@ function errorResponse(
         status: 400,
         body: {
           error: error.error.type,
-          message:
-            "reason" in error.error ? error.error.reason : error.error.type,
+          message: "reason" in error.error ? error.error.reason : error.error.type,
         },
       };
     case "DatabaseError":
@@ -111,17 +108,11 @@ imports.post("/", async (c) => {
   const sourceData = body.source_data;
 
   if (typeof sourceType !== "string") {
-    return c.json(
-      { error: "ValidationError", message: "source_type is required" },
-      400,
-    );
+    return c.json({ error: "ValidationError", message: "source_type is required" }, 400);
   }
 
   if (sourceData === null || typeof sourceData !== "object") {
-    return c.json(
-      { error: "ValidationError", message: "source_data must be an object" },
-      400,
-    );
+    return c.json({ error: "ValidationError", message: "source_data must be an object" }, 400);
   }
 
   const service = getImportService(c);
@@ -234,24 +225,15 @@ imports.post("/wordpress/test-connection", async (c) => {
   }>();
 
   if (typeof body.site_url !== "string") {
-    return c.json(
-      { error: "ValidationError", message: "site_url is required" },
-      400,
-    );
+    return c.json({ error: "ValidationError", message: "site_url is required" }, 400);
   }
 
   if (typeof body.api_key !== "string") {
-    return c.json(
-      { error: "ValidationError", message: "api_key is required" },
-      400,
-    );
+    return c.json({ error: "ValidationError", message: "api_key is required" }, 400);
   }
 
   const service = getImportService(c);
-  const result = await service.testWordPressConnection(
-    body.site_url,
-    body.api_key,
-  );
+  const result = await service.testWordPressConnection(body.site_url, body.api_key);
 
   if (!result.ok) {
     const resp = errorResponse(result.error);
@@ -274,40 +256,25 @@ imports.post("/wordpress/sync", async (c) => {
   }>();
 
   if (typeof body.site_url !== "string") {
-    return c.json(
-      { error: "ValidationError", message: "site_url is required" },
-      400,
-    );
+    return c.json({ error: "ValidationError", message: "site_url is required" }, 400);
   }
 
   if (typeof body.api_key !== "string") {
-    return c.json(
-      { error: "ValidationError", message: "api_key is required" },
-      400,
-    );
+    return c.json({ error: "ValidationError", message: "api_key is required" }, 400);
   }
 
-  if (
-    body.plugin !== "WpRecipeMaker" &&
-    body.plugin !== "TastyRecipes"
-  ) {
+  if (body.plugin !== "WpRecipeMaker" && body.plugin !== "TastyRecipes") {
     return c.json(
       {
         error: "ValidationError",
-        message:
-          "plugin must be 'WpRecipeMaker' or 'TastyRecipes'",
+        message: "plugin must be 'WpRecipeMaker' or 'TastyRecipes'",
       },
       400,
     );
   }
 
   const service = getImportService(c);
-  const result = await service.syncWordPress(
-    creatorId,
-    body.site_url,
-    body.api_key,
-    body.plugin,
-  );
+  const result = await service.syncWordPress(creatorId, body.site_url, body.api_key, body.plugin);
 
   if (!result.ok) {
     const resp = errorResponse(result.error);

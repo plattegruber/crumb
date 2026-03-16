@@ -9,10 +9,7 @@ import { verifyWebhookSignature } from "../../../src/lib/kit/webhooks.js";
 // Helper: compute HMAC-SHA256 hex digest
 // ---------------------------------------------------------------------------
 
-async function computeHmacHex(
-  payload: string,
-  secret: string,
-): Promise<string> {
+async function computeHmacHex(payload: string, secret: string): Promise<string> {
   const key = await crypto.subtle.importKey(
     "raw",
     new TextEncoder().encode(secret),
@@ -21,11 +18,7 @@ async function computeHmacHex(
     ["sign"],
   );
 
-  const signature = await crypto.subtle.sign(
-    "HMAC",
-    key,
-    new TextEncoder().encode(payload),
-  );
+  const signature = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(payload));
 
   const bytes = new Uint8Array(signature);
   let hex = "";

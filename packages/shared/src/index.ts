@@ -88,22 +88,8 @@ export {
 } from "./enums.js";
 
 // Quantity sum type and arithmetic
-export type {
-  Quantity,
-  WholeNumber,
-  Fraction,
-  Mixed,
-  Decimal,
-} from "./quantity.js";
-export {
-  wholeNumber,
-  fraction,
-  mixed,
-  decimal,
-  gcd,
-  multiply,
-  add,
-} from "./quantity.js";
+export type { Quantity, WholeNumber, Fraction, Mixed, Decimal } from "./quantity.js";
+export { wholeNumber, fraction, mixed, decimal, gcd, multiply, add } from "./quantity.js";
 
 // Value types
 export type {

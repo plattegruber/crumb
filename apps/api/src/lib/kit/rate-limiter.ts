@@ -83,9 +83,7 @@ export class InMemoryRateLimiter implements RateLimiter {
       // Calculate how long until the oldest request falls out of the window
       const oldestInWindow = activeTimestamps[0];
       const retryAfterMs =
-        oldestInWindow !== undefined
-          ? oldestInWindow + WINDOW_MS - now
-          : WINDOW_MS;
+        oldestInWindow !== undefined ? oldestInWindow + WINDOW_MS - now : WINDOW_MS;
 
       return err({
         type: "rate_limited" as const,

@@ -95,12 +95,7 @@ export async function resolveAccessToken(
   }
 
   // Token is close to expiry or already expired — refresh it
-  const refreshResult = await refreshToken(
-    tokens.refreshToken,
-    clientId,
-    clientSecret,
-    fetchFn,
-  );
+  const refreshResult = await refreshToken(tokens.refreshToken, clientId, clientSecret, fetchFn);
 
   if (!refreshResult.ok) {
     const apiError = refreshResult.error;

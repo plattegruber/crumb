@@ -14,9 +14,7 @@ describe("generateSaveUrl", () => {
       recipeSlug: "lemon-pasta" as Slug,
     });
 
-    expect(url).toBe(
-      "https://app.crumb.cooking/save/creator-123/lemon-pasta?ck={{subscriber.id}}",
-    );
+    expect(url).toBe("https://app.crumb.cooking/save/creator-123/lemon-pasta?ck={{subscriber.id}}");
   });
 
   it("includes subscriber variable placeholder", () => {
@@ -76,9 +74,7 @@ describe("generateSaveUrl", () => {
       recipeSlug: "recipe" as Slug,
     });
 
-    expect(url).toBe(
-      "https://app.sub.domain.co.uk/save/c-1/recipe?ck={{subscriber.id}}",
-    );
+    expect(url).toBe("https://app.sub.domain.co.uk/save/c-1/recipe?ck={{subscriber.id}}");
   });
 });
 
@@ -110,9 +106,7 @@ describe("renderSaveButton", () => {
       bodyFont: "Arial",
     });
 
-    expect(html).toContain(
-      "https://app.crumb.cooking/save/creator-1/pasta?ck={{subscriber.id}}",
-    );
+    expect(html).toContain("https://app.crumb.cooking/save/creator-1/pasta?ck={{subscriber.id}}");
   });
 
   it("applies primary color to button background", () => {

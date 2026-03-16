@@ -7,11 +7,31 @@
  */
 
 import { createMiddleware } from "hono/factory";
-import { createLogger } from "../lib/logger.js";
-import { createMetrics, METRIC } from "../lib/metrics.js";
-import type { AppEnvWithLogger } from "../types/hono.js";
+import type { AppEnv } from "./auth.js";
+import { createLogger, type Logger } from "../lib/logger.js";
+import { createMetrics, METRIC, type MetricsCollector } from "../lib/metrics.js";
 
-export type { RequestLoggerVariables, AppEnvWithLogger } from "../types/hono.js";
+// ---------------------------------------------------------------------------
+// Extended AppEnv with logger and request context
+// ---------------------------------------------------------------------------
+
+/**
+ * Variables added to the Hono context by the request logger middleware.
+ */
+export interface RequestLoggerVariables {
+  readonly requestId: string;
+  readonly logger: Logger;
+  readonly metrics: MetricsCollector;
+}
+
+/**
+ * Extended AppEnv that includes the request logger variables.
+ * Routes can use this type to access logger and requestId from context.
+ */
+export type AppEnvWithLogger = {
+  Bindings: AppEnv["Bindings"];
+  Variables: AppEnv["Variables"] & RequestLoggerVariables;
+};
 
 // ---------------------------------------------------------------------------
 // Middleware
@@ -32,7 +52,9 @@ export function requestLogger() {
     const startTime = Date.now();
 
     // Determine log level from env var
-    const logLevelStr = c.env.LOG_LEVEL;
+    const logLevel =
+      "LOG_LEVEL" in c.env ? (c.env as Record<string, unknown>)["LOG_LEVEL"] : undefined;
+    const logLevelStr = typeof logLevel === "string" ? logLevel : undefined;
 
     // Create logger scoped to this request
     const logger = createLogger("api", requestId, logLevelStr);
@@ -73,8 +95,12 @@ export function requestLogger() {
       path: c.req.path,
       status: String(c.res.status),
     });
-    metrics.observe(METRIC.HttpRequestDurationMs, {
-      path: c.req.path,
-    }, durationMs);
+    metrics.observe(
+      METRIC.HttpRequestDurationMs,
+      {
+        path: c.req.path,
+      },
+      durationMs,
+    );
   });
 }
