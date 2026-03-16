@@ -509,6 +509,47 @@ export const recipeEngagementEvents = sqliteTable(
 );
 
 // ---------------------------------------------------------------------------
+// §10.4 SeasonalDrop
+// ---------------------------------------------------------------------------
+
+export const seasonalDrops = sqliteTable(
+  "seasonal_drops",
+  {
+    id: text("id").primaryKey(),
+    creator_id: text("creator_id")
+      .notNull()
+      .references(() => creators.id, { onDelete: "cascade" }),
+    label: text("label").notNull(),
+    start_date: text("start_date").notNull(), // ISO date YYYY-MM-DD
+    end_date: text("end_date").notNull(), // ISO date YYYY-MM-DD
+    collection_id: text("collection_id")
+      .notNull()
+      .references(() => collections.id),
+    target_segment: text("target_segment"), // DietaryTag or null for all
+    recurrence: text("recurrence").notNull().default("None"), // None | Annual
+    last_processed_at: text("last_processed_at"),
+    created_at: text("created_at").notNull(),
+    updated_at: text("updated_at").notNull(),
+  },
+  (table) => [index("seasonal_drops_creator_id_idx").on(table.creator_id)],
+);
+
+// ---------------------------------------------------------------------------
+// §10.1 AutomationConfig — stores per-creator automation settings
+// ---------------------------------------------------------------------------
+
+export const automationConfigs = sqliteTable("automation_configs", {
+  creator_id: text("creator_id")
+    .primaryKey()
+    .references(() => creators.id, { onDelete: "cascade" }),
+  save_recipe_sequence_id: text("save_recipe_sequence_id"),
+  sends_this_month: integer("sends_this_month").notNull().default(0),
+  sends_month_reset_at: text("sends_month_reset_at"),
+  created_at: text("created_at").notNull(),
+  updated_at: text("updated_at").notNull(),
+});
+
+// ---------------------------------------------------------------------------
 // §2.17 SegmentProfile
 // ---------------------------------------------------------------------------
 

@@ -6,6 +6,7 @@ import { collectionRoutes } from "./routes/collections.js";
 import { segmentationRoutes } from "./routes/segmentation.js";
 import { imports } from "./routes/imports.js";
 import { analyticsRoutes, webhookRoutes } from "./routes/analytics.js";
+import { automationRoutes, createSaveRedirectRoutes } from "./routes/automation.js";
 import { createDb } from "./db/index.js";
 import { handleImportQueue } from "./services/queue-handlers.js";
 import type { Env } from "./env.js";
@@ -16,8 +17,8 @@ export type { AuthContext, CreatorId } from "./types/auth.js";
 /** Paths that do not require authentication. */
 const PUBLIC_PATHS = new Set(["/health"]);
 
-/** Paths that are public but handled by their own routers. */
-const PUBLIC_PATH_PREFIXES = ["/webhooks/"];
+/** Paths/prefixes that are public (webhook HMAC or save redirect). */
+const PUBLIC_PATH_PREFIXES = ["/webhooks/", "/save/"];
 
 const app = new Hono<AppEnv>();
 
@@ -27,7 +28,6 @@ app.use("*", async (c, next) => {
     await next();
     return;
   }
-  // Skip auth for webhook endpoints (they use HMAC signature verification)
   for (const prefix of PUBLIC_PATH_PREFIXES) {
     if (c.req.path.startsWith(prefix)) {
       await next();
@@ -48,6 +48,9 @@ app.get("/health", (c) => {
 // Webhook routes (public, HMAC-verified)
 app.route("/webhooks", webhookRoutes);
 
+// Save This Recipe redirect endpoint (public, no auth required)
+app.route("/save", createSaveRedirectRoutes());
+
 // ---------------------------------------------------------------------------
 // Authenticated routes
 // ---------------------------------------------------------------------------
@@ -55,6 +58,7 @@ app.route("/webhooks", webhookRoutes);
 app.route("/recipes", recipeRoutes);
 app.route("/collections", collectionRoutes);
 app.route("/analytics", analyticsRoutes);
+app.route("/automation", automationRoutes);
 
 // ---------------------------------------------------------------------------
 // Segmentation Engine routes (SPEC §9)
