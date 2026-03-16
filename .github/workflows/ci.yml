@@ -1,5 +1,8 @@
 name: CI
 
+# CI runs tests, linting, and typechecking only.
+# Deployment to Cloudflare is handled by the deploy workflow (deploy.yml).
+
 on:
   push:
     branches: [main]
