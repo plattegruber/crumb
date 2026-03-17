@@ -1048,16 +1048,16 @@ describe("Import Pipeline", () => {
   // Not-yet-implemented sources
   // -------------------------------------------------------------------------
 
-  describe("not-yet-implemented sources", () => {
-    const unsupportedSources = [
+  describe("agent-routed sources without agent configured", () => {
+    const agentSources = [
       "FromInstagramPost",
       "FromTikTokVideo",
       "FromYouTubeVideo",
       "FromScreenshot",
     ];
 
-    for (const source of unsupportedSources) {
-      it(`marks ${source} as failed with not-yet-implemented`, async () => {
+    for (const source of agentSources) {
+      it(`marks ${source} as failed when agent extractor is not configured`, async () => {
         const db = getDb();
         const service = createImportService(createTestDeps(db));
 
@@ -1079,7 +1079,7 @@ describe("Import Pipeline", () => {
           expect(job.status).toBe("Failed");
           expect(job.error_type).toBe("ExtractionFailed");
           const errorData = job.error_data as Record<string, unknown>;
-          expect(errorData["reason"]).toContain("not yet implemented");
+          expect(errorData["reason"]).toContain("not configured");
         }
       });
     }

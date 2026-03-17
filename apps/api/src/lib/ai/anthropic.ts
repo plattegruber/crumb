@@ -1,0 +1,190 @@
+// ---------------------------------------------------------------------------
+// Anthropic Claude adapter for the extraction agent
+// ---------------------------------------------------------------------------
+// Translates between our agent's tool-calling protocol and the Anthropic
+// Messages API. Uses Claude Sonnet 4 for superior agentic reasoning.
+// ---------------------------------------------------------------------------
+
+import type { AgentTool } from "./tools.js";
+
+/** Default Claude model for agent reasoning. */
+export const CLAUDE_MODEL = "claude-sonnet-4-20250514";
+
+/**
+ * Anthropic Messages API types (minimal subset we need).
+ */
+interface AnthropicMessage {
+  role: "user" | "assistant";
+  content: string | AnthropicContentBlock[];
+}
+
+type AnthropicContentBlock =
+  | { type: "text"; text: string }
+  | { type: "image"; source: { type: "base64"; media_type: string; data: string } }
+  | { type: "tool_use"; id: string; name: string; input: Record<string, unknown> }
+  | { type: "tool_result"; tool_use_id: string; content: string };
+
+interface AnthropicToolDef {
+  name: string;
+  description: string;
+  input_schema: Record<string, unknown>;
+}
+
+interface AnthropicResponse {
+  id: string;
+  content: AnthropicContentBlock[];
+  stop_reason: "end_turn" | "tool_use" | "max_tokens" | "stop_sequence";
+  usage: { input_tokens: number; output_tokens: number };
+}
+
+/**
+ * Configuration for the Anthropic-backed agent.
+ */
+export interface AnthropicAgentConfig {
+  readonly apiKey: string;
+  readonly model?: string;
+  readonly systemPrompt: string;
+  readonly tools: AgentTool[];
+  readonly maxTurns?: number;
+  readonly timeoutMs?: number;
+  readonly fetchFn?: typeof fetch;
+}
+
+/**
+ * Run the agent loop using the Anthropic Messages API with native tool use.
+ *
+ * This is a direct implementation rather than going through the AiRunFn
+ * abstraction, because Claude's tool use protocol is richer (tool_use_id,
+ * multi-turn tool results, vision via content blocks).
+ */
+export async function runClaudeAgent(
+  config: AnthropicAgentConfig,
+  userMessage: string | AnthropicContentBlock[],
+): Promise<{
+  finalToolCall: { name: string; arguments: Record<string, unknown> } | null;
+  textResponse: string | null;
+  turns: number;
+}> {
+  const model = config.model ?? CLAUDE_MODEL;
+  const maxTurns = config.maxTurns ?? 30;
+  const timeoutMs = config.timeoutMs ?? 300000; // 5 minutes
+  const fetchFn = config.fetchFn ?? globalThis.fetch;
+
+  // Build Anthropic tool definitions
+  const toolDefs: AnthropicToolDef[] = config.tools.map((tool) => ({
+    name: tool.name,
+    description: tool.description,
+    input_schema: {
+      type: "object",
+      properties: tool.parameters.properties,
+      required: tool.parameters.required ?? [],
+    },
+  }));
+
+  // Build tool lookup
+  const toolMap = new Map<string, AgentTool>();
+  for (const tool of config.tools) {
+    toolMap.set(tool.name, tool);
+  }
+
+  // Initialize conversation
+  const messages: AnthropicMessage[] = [
+    {
+      role: "user",
+      content: typeof userMessage === "string" ? userMessage : userMessage,
+    },
+  ];
+
+  const startTime = Date.now();
+
+  for (let turn = 0; turn < maxTurns; turn++) {
+    if (Date.now() - startTime > timeoutMs) {
+      return { finalToolCall: null, textResponse: "Agent timed out", turns: turn };
+    }
+
+    // Call Anthropic Messages API
+    const response = await fetchFn("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "x-api-key": config.apiKey,
+        "content-type": "application/json",
+        "anthropic-version": "2023-06-01",
+      },
+      body: JSON.stringify({
+        model,
+        max_tokens: 4096,
+        system: config.systemPrompt,
+        tools: toolDefs,
+        messages,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Anthropic API error ${response.status}: ${errorText}`);
+    }
+
+    const data = (await response.json()) as AnthropicResponse;
+
+    // Add assistant response to conversation
+    messages.push({ role: "assistant", content: data.content });
+
+    // Check if the model wants to use tools
+    if (data.stop_reason === "tool_use") {
+      const toolResults: AnthropicContentBlock[] = [];
+
+      for (const block of data.content) {
+        if (block.type !== "tool_use") continue;
+
+        const tool = toolMap.get(block.name);
+
+        // Check for terminal tool
+        if (block.name === "extract_recipe") {
+          return {
+            finalToolCall: { name: block.name, arguments: block.input },
+            textResponse: null,
+            turns: turn + 1,
+          };
+        }
+
+        if (tool === undefined) {
+          toolResults.push({
+            type: "tool_result",
+            tool_use_id: block.id,
+            content: JSON.stringify({ error: `Unknown tool: ${block.name}` }),
+          });
+          continue;
+        }
+
+        // Execute the tool
+        try {
+          const result = await tool.execute(block.input);
+          toolResults.push({
+            type: "tool_result",
+            tool_use_id: block.id,
+            content: result,
+          });
+        } catch (e: unknown) {
+          const msg = e instanceof Error ? e.message : "Unknown error";
+          toolResults.push({
+            type: "tool_result",
+            tool_use_id: block.id,
+            content: JSON.stringify({ error: `Tool error: ${msg}` }),
+          });
+        }
+      }
+
+      // Add tool results as user message (Anthropic protocol)
+      messages.push({ role: "user", content: toolResults });
+    } else {
+      // Model returned a text response (end_turn)
+      const textBlocks = data.content.filter(
+        (b): b is { type: "text"; text: string } => b.type === "text",
+      );
+      const text = textBlocks.map((b) => b.text).join("\n");
+      return { finalToolCall: null, textResponse: text, turns: turn + 1 };
+    }
+  }
+
+  return { finalToolCall: null, textResponse: "Max turns exceeded", turns: maxTurns };
+}

@@ -20,6 +20,12 @@ import type {
 } from "@dough/shared";
 import { ok, err, createImportJobId, createRecipeId, createUrl, createSlug } from "@dough/shared";
 import { createLogger, type Logger } from "../lib/logger.js";
+import {
+  runExtractionAgent,
+  type AgentInput,
+  type AiRunFn,
+  type FetchFn,
+} from "../lib/ai/index.js";
 
 // ---------------------------------------------------------------------------
 // Import status constants
@@ -39,11 +45,20 @@ export type ImportStatusValue = (typeof IMPORT_STATUS)[keyof typeof IMPORT_STATU
 // ---------------------------------------------------------------------------
 
 /**
- * AI recipe extractor interface.
- * Implementations can be swapped for testing (mock/fixture-based).
+ * AI recipe extractor interface (legacy).
+ * Retained for backward compatibility; new code uses the agent-based extractor.
  */
 export interface RecipeExtractor {
   extract(text: string): Promise<Result<RecipeExtract, ImportError>>;
+}
+
+/**
+ * AI agent-based extractor interface.
+ * Uses a Workers AI-powered agent loop to intelligently extract recipes
+ * from any input type (URL, text, image).
+ */
+export interface AgentExtractor {
+  extract(input: AgentInput): Promise<Result<RecipeExtract, ImportError>>;
 }
 
 /**
@@ -399,6 +414,8 @@ export interface ImportServiceDeps {
   readonly extractor: RecipeExtractor;
   readonly fetcher: HttpFetcher;
   readonly wordpress: WordPressClient;
+  /** Optional AI agent extractor. When provided, the agent handles all extraction. */
+  readonly agentExtractor?: AgentExtractor;
   readonly generateId?: () => string;
   readonly logger?: Logger;
 }
@@ -551,8 +568,22 @@ export function createImportService(deps: ImportServiceDeps) {
         case "FromInstagramPost":
         case "FromTikTokVideo":
         case "FromYouTubeVideo":
+          return processAgentImport(jobId, {
+            type: "url",
+            content: extractUrlFromSourceData(job.source_data as Record<string, unknown>),
+          });
+
         case "FromScreenshot":
-          return handleNotYetImplemented(jobId, sourceType);
+          return processAgentImport(jobId, {
+            type: "image",
+            content: extractImageFromSourceData(job.source_data as Record<string, unknown>),
+          });
+
+        case "FromText":
+          return processAgentImport(jobId, {
+            type: "text",
+            content: extractTextFromSourceData(job.source_data as Record<string, unknown>),
+          });
 
         case "FromWordPressSync":
           // WordPress sync is handled separately
@@ -605,7 +636,7 @@ export function createImportService(deps: ImportServiceDeps) {
   }
 
   // -------------------------------------------------------------------------
-  // URL Import (SS7.3)
+  // URL Import (SS7.3) — uses AI agent when available
   // -------------------------------------------------------------------------
 
   async function processUrlImport(
@@ -618,14 +649,19 @@ export function createImportService(deps: ImportServiceDeps) {
       return ok(undefined);
     }
 
-    // Fetch HTML with retry (SS14.1: retry once after 5s on timeout)
+    // If the agent extractor is available, use it for all URL imports.
+    // The agent will handle schema.org, plain text, link-following, etc.
+    if (deps.agentExtractor !== undefined) {
+      return processAgentImport(jobId, { type: "url", content: url });
+    }
+
+    // Fallback: legacy pipeline (fetch + schema.org + AI extractor)
     let fetchResult = await deps.fetcher.fetch(url, {
       signal: AbortSignal.timeout(10000),
       redirect: "follow",
     });
 
     if (!fetchResult.ok) {
-      // Retry once after 5s
       await new Promise((resolve) => setTimeout(resolve, 5000));
       fetchResult = await deps.fetcher.fetch(url, {
         signal: AbortSignal.timeout(10000),
@@ -645,7 +681,6 @@ export function createImportService(deps: ImportServiceDeps) {
 
     const html = fetchResult.value.text;
 
-    // Step 1: Try schema.org ld+json extraction
     const schemaOrg = extractSchemaOrgRecipe(html);
     if (schemaOrg !== null && isSchemaOrgComplete(schemaOrg)) {
       const extract = schemaOrgToExtract(schemaOrg);
@@ -653,7 +688,6 @@ export function createImportService(deps: ImportServiceDeps) {
       return ok(undefined);
     }
 
-    // Step 2: Extract visible text and use AI extraction
     const visibleText = extractVisibleText(html);
     if (visibleText.length === 0) {
       await markFailed(
@@ -691,7 +725,6 @@ export function createImportService(deps: ImportServiceDeps) {
       });
     }
 
-    // SS14.1: AI extraction produces no title or no ingredients -> failed
     if (
       extract.title === null ||
       extract.title.length === 0 ||
@@ -708,6 +741,97 @@ export function createImportService(deps: ImportServiceDeps) {
 
     await markNeedsReview(jobId, extract);
     return ok(undefined);
+  }
+
+  // -------------------------------------------------------------------------
+  // Agent-based import (SS7 — all source types)
+  // -------------------------------------------------------------------------
+
+  async function processAgentImport(
+    jobId: ImportJobId,
+    input: AgentInput,
+  ): Promise<Result<void, ImportServiceError>> {
+    if (deps.agentExtractor === undefined) {
+      await markFailed(jobId, "ExtractionFailed", "AI agent extractor is not configured.");
+      return ok(undefined);
+    }
+
+    // Skip empty inputs
+    if (input.content.length === 0) {
+      await markFailed(jobId, "ExtractionFailed", "No content provided for extraction.");
+      return ok(undefined);
+    }
+
+    const extractResult = await deps.agentExtractor.extract(input);
+
+    if (!extractResult.ok) {
+      const importError = extractResult.error;
+      await markFailed(
+        jobId,
+        importError.type,
+        "reason" in importError ? importError.reason : "Extraction failed",
+      );
+      return ok(undefined);
+    }
+
+    const extract = extractResult.value;
+
+    logger.info("agent_extraction_result", {
+      jobId,
+      inputType: input.type,
+      title: extract.title ?? null,
+      ingredientGroupCount: extract.ingredients.length,
+      confidence: extract.confidence ?? null,
+    });
+
+    if (extract.confidence.overall < 0.5) {
+      logger.warn("agent_low_confidence_extraction", {
+        jobId,
+        confidence: extract.confidence,
+      });
+    }
+
+    if (
+      extract.title === null ||
+      extract.title.length === 0 ||
+      extract.ingredients.length === 0 ||
+      extract.ingredients.every((g) => g.ingredients.length === 0)
+    ) {
+      await markFailed(
+        jobId,
+        "ExtractionFailed",
+        "We couldn't extract a recipe from this source. Try pasting the text directly.",
+      );
+      return ok(undefined);
+    }
+
+    await markNeedsReview(jobId, extract);
+    return ok(undefined);
+  }
+
+  // -------------------------------------------------------------------------
+  // Not-yet-implemented source types
+  // -------------------------------------------------------------------------
+
+  // -------------------------------------------------------------------------
+  // Source data extraction helpers
+  // -------------------------------------------------------------------------
+
+  function extractUrlFromSourceData(sourceData: Record<string, unknown>): string {
+    const url = sourceData["url"];
+    return typeof url === "string" ? url : "";
+  }
+
+  function extractImageFromSourceData(sourceData: Record<string, unknown>): string {
+    const image = sourceData["image"];
+    if (typeof image === "string") return image;
+    const uploadId = sourceData["upload_id"];
+    return typeof uploadId === "string" ? uploadId : "";
+  }
+
+  function extractTextFromSourceData(sourceData: Record<string, unknown>): string {
+    const text = sourceData["text"];
+    return typeof text === "string" ? text : "";
   }
 
   // -------------------------------------------------------------------------
@@ -1328,6 +1452,41 @@ export function createDefaultFetcher(): HttpFetcher {
           reason: e instanceof Error ? e.message : "Network error",
         });
       }
+    },
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Default agent extractor factory
+// ---------------------------------------------------------------------------
+
+/**
+ * Create an AgentExtractor backed by the AI extraction agent.
+ * Prefers Anthropic Claude when an API key is available, falls back to Workers AI.
+ */
+export function createDefaultAgentExtractor(ai?: Ai, anthropicApiKey?: string): AgentExtractor {
+  const aiRunFn: AiRunFn = ai
+    ? (model: string, inputs: Record<string, unknown>) =>
+        ai.run(
+          model as Parameters<Ai["run"]>[0],
+          inputs as Parameters<Ai["run"]>[1],
+        ) as Promise<unknown>
+    : async () => ({});
+
+  const fetchFn: FetchFn = (url: string, init?: RequestInit) => globalThis.fetch(url, init);
+
+  return {
+    async extract(input: AgentInput): Promise<Result<RecipeExtract, ImportError>> {
+      return runExtractionAgent(
+        {
+          aiRunFn,
+          anthropicApiKey,
+          fetchFn,
+          maxTurns: 30,
+          timeoutMs: 300000, // 5 minutes
+        },
+        input,
+      );
     },
   };
 }

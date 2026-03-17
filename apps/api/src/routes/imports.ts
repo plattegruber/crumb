@@ -11,7 +11,9 @@ import {
   createImportService,
   createDefaultFetcher,
   createDefaultWordPressClient,
+  createDefaultAgentExtractor,
   type RecipeExtractor,
+  type AgentExtractor,
   type ImportQueue,
   type ImportServiceError,
 } from "../services/import.js";
@@ -56,12 +58,19 @@ function getImportService(c: { env: AppEnv["Bindings"] }) {
           },
         };
 
+        // Create agent extractor for fallback processing
+        let fallbackAgent: AgentExtractor | undefined;
+        if (c.env.AI !== undefined || c.env.ANTHROPIC_API_KEY !== undefined) {
+          fallbackAgent = createDefaultAgentExtractor(c.env.AI, c.env.ANTHROPIC_API_KEY);
+        }
+
         const fallbackService = createImportService({
           db: fallbackDb,
           queue: { async send() {} },
           extractor: fallbackExtractor,
           fetcher: fallbackFetcher,
           wordpress: fallbackWordpress,
+          agentExtractor: fallbackAgent,
         });
 
         const jobId = createImportJobId(message.importJobId);
@@ -76,7 +85,7 @@ function getImportService(c: { env: AppEnv["Bindings"] }) {
     },
   };
 
-  // Placeholder AI extractor — will be replaced with real implementation
+  // Legacy AI extractor — falls back to error when agent is not available
   const extractor: RecipeExtractor = {
     async extract(_text: string) {
       return {
@@ -89,6 +98,12 @@ function getImportService(c: { env: AppEnv["Bindings"] }) {
     },
   };
 
+  // Create agent extractor using Workers AI binding
+  let agentExtractor: AgentExtractor | undefined;
+  if (c.env.AI !== undefined || c.env.ANTHROPIC_API_KEY !== undefined) {
+    agentExtractor = createDefaultAgentExtractor(c.env.AI, c.env.ANTHROPIC_API_KEY);
+  }
+
   const fetcher = createDefaultFetcher();
   const wordpress = createDefaultWordPressClient(fetcher);
 
@@ -98,6 +113,7 @@ function getImportService(c: { env: AppEnv["Bindings"] }) {
     extractor,
     fetcher,
     wordpress,
+    agentExtractor,
   });
 }
 
@@ -149,10 +165,25 @@ imports.post("/", async (c) => {
   const body = await c.req.json<{
     source_type?: unknown;
     source_data?: unknown;
+    // Convenience fields — auto-maps to FromText / FromScreenshot
+    text?: unknown;
+    image?: unknown;
   }>();
 
-  const sourceType = body.source_type;
-  const sourceData = body.source_data;
+  let sourceType = body.source_type;
+  let sourceData = body.source_data;
+
+  // Convenience: if `text` is provided without source_type, auto-detect
+  if (sourceType === undefined && typeof body.text === "string") {
+    sourceType = "FromText";
+    sourceData = { text: body.text };
+  }
+
+  // Convenience: if `image` is provided without source_type, auto-detect
+  if (sourceType === undefined && typeof body.image === "string") {
+    sourceType = "FromScreenshot";
+    sourceData = { image: body.image };
+  }
 
   if (typeof sourceType !== "string") {
     return c.json({ error: "ValidationError", message: "source_type is required" }, 400);
