@@ -105,7 +105,7 @@
   {:else}
     <div class="collection-grid">
       {#each collectionList as collection (collection.id)}
-        <div class="collection-card card">
+        <a href="/library/collections/{collection.id}" class="collection-card card">
           <h3>{collection.name}</h3>
           {#if collection.description}
             <p class="collection-desc">{collection.description}</p>
@@ -113,7 +113,7 @@
           <p class="collection-meta">
             {collection.recipe_ids.length} recipe{collection.recipe_ids.length === 1 ? "" : "s"}
           </p>
-        </div>
+        </a>
       {/each}
     </div>
   {/if}
@@ -151,6 +151,17 @@
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: var(--space-4);
+  }
+
+  .collection-card {
+    text-decoration: none;
+    color: var(--color-text);
+    transition: box-shadow var(--transition-fast);
+  }
+
+  .collection-card:hover {
+    box-shadow: var(--shadow-md);
+    color: var(--color-text);
   }
 
   .collection-card h3 {
