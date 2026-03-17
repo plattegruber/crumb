@@ -149,6 +149,20 @@ The Cloudflare service mapping is:
 - Clerk secret key: `CLERK_SECRET_KEY` (secret)
 - Kit OAuth credentials: `KIT_CLIENT_ID` (var), `KIT_CLIENT_SECRET` (secret)
 
+## Definition of Done
+
+A task is NOT considered done until ALL of the following are true:
+
+1. Code is on a feature branch with passing tests locally.
+2. PR is created and CI passes (lint, typecheck, tests).
+3. PR is merged to `main`.
+4. The deploy workflow completes successfully (API Worker + Pages).
+5. The change is verified live on production (`makedough.app`,
+   `dash.makedough.app`, `docs.makedough.app`, or
+   `api.makedough.app` as applicable).
+
+Do not report a task as complete until step 5 is confirmed.
+
 ## Git
 
 - Main branch: `main` — protected, no direct pushes.
