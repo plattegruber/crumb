@@ -27,7 +27,9 @@ export async function getClerk(publishableKey: string): Promise<Clerk> {
   clerkPromise = (async () => {
     // Use the Clerk browser bundle via a script tag for full UI support.
     // The NPM ESM import strips UI components in Vite's bundler.
-    const clerkFapiHost = "genuine-panda-65.clerk.accounts.dev";
+    // Derive FAPI host from publishable key (base64-encoded after pk_test_/pk_live_)
+    const keyPayload = publishableKey.replace(/^pk_(test|live)_/, "");
+    const clerkFapiHost = atob(keyPayload).replace(/\$$/, "");
     const scriptUrl = `https://${clerkFapiHost}/npm/@clerk/clerk-js@5/dist/clerk.browser.js`;
 
     await new Promise<void>((resolve, reject) => {
