@@ -76,6 +76,18 @@ importers:
         specifier: ^4.0.0
         version: 4.73.0(@cloudflare/workers-types@4.20260316.1)(bufferutil@4.1.0)(utf-8-validate@6.0.6)
 
+  apps/clerk-proxy:
+    devDependencies:
+      '@cloudflare/workers-types':
+        specifier: ^4.20250310.0
+        version: 4.20260316.1
+      typescript:
+        specifier: ^5.7.0
+        version: 5.9.3
+      wrangler:
+        specifier: ^4.0.0
+        version: 4.73.0(@cloudflare/workers-types@4.20260316.1)(bufferutil@4.1.0)(utf-8-validate@6.0.6)
+
   apps/docs:
     dependencies:
       '@astrojs/starlight':
