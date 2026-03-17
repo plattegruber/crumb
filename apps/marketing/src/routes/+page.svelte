@@ -1,3 +1,36 @@
+<script lang="ts">
+  import { onMount } from "svelte";
+
+  const { data } = $props();
+
+  function formatDate(dateStr: string): string {
+    return new Date(dateStr).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  }
+
+  onMount(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("visible");
+          }
+        });
+      },
+      { threshold: 0.12, rootMargin: "0px 0px -40px 0px" },
+    );
+
+    document.querySelectorAll(".reveal, .reveal-stagger").forEach((el) => {
+      observer.observe(el);
+    });
+
+    return () => observer.disconnect();
+  });
+</script>
+
 <svelte:head>
   <title>Dough — Recipe Intelligence for Food Creators</title>
   <meta
@@ -8,51 +41,67 @@
 
 <!-- Hero -->
 <section class="hero">
+  <div class="hero__grain"></div>
   <div class="container">
-    <div class="hero__content">
-      <h1>Recipe intelligence for food creators</h1>
-      <p class="hero__subtitle">
-        Turn your recipes into revenue. Dough connects to your Kit account and adds the recipe layer
-        that food creators need: import from anywhere, send beautiful recipe cards in emails,
-        auto-segment subscribers by dietary preference, and turn your best recipes into digital
-        products that sell.
-      </p>
-      <div class="hero__actions">
-        <a href="https://dash.makedough.app/sign-up" class="btn btn--primary btn--large"
-          >Get started free</a
-        >
-        <a href="/features" class="btn btn--secondary btn--large">See features</a>
-      </div>
-    </div>
-    <div class="hero__visual">
-      <div class="hero__card">
-        <div class="hero__card-header">
-          <span class="hero__card-badge">Recipe Card</span>
+    <div class="hero__layout">
+      <div class="hero__content">
+        <h1 class="hero__title">
+          <span class="hero__title-line">Recipe intelligence</span>
+          <span class="hero__title-line hero__title-line--delay">for food creators</span>
+        </h1>
+        <p class="hero__subtitle">
+          Turn your recipes into revenue. Dough connects to your Kit account and adds the recipe
+          layer food creators need: import from anywhere, send beautiful recipe cards in emails,
+          auto-segment subscribers by dietary preference, and turn your best recipes into digital
+          products that sell.
+        </p>
+        <div class="hero__actions">
+          <a href="https://dash.makedough.app/sign-up" class="btn btn--primary btn--large"
+            >Get started free</a
+          >
+          <a href="/features" class="btn btn--secondary btn--large">See features</a>
         </div>
-        <div class="hero__card-body">
-          <h3>Crispy Lemon Herb Chicken</h3>
-          <div class="hero__card-meta">
-            <span>35 min</span>
-            <span>4 servings</span>
-            <span>Gluten-free</span>
+      </div>
+      <div class="hero__visual">
+        <div class="hero__card">
+          <div class="hero__card-header">
+            <span class="hero__card-badge">Recipe Card</span>
           </div>
-          <div class="hero__card-ingredients">
-            <div class="hero__ingredient"></div>
-            <div class="hero__ingredient"></div>
-            <div class="hero__ingredient"></div>
-            <div class="hero__ingredient hero__ingredient--short"></div>
+          <div class="hero__card-body">
+            <h3>Crispy Lemon Herb Chicken</h3>
+            <div class="hero__card-meta">
+              <span>35 min</span>
+              <span>4 servings</span>
+              <span>Gluten-free</span>
+            </div>
+            <div class="hero__card-ingredients">
+              <div class="hero__ingredient"></div>
+              <div class="hero__ingredient"></div>
+              <div class="hero__ingredient"></div>
+              <div class="hero__ingredient hero__ingredient--short"></div>
+            </div>
+            <div class="hero__card-cta">Save This Recipe</div>
           </div>
-          <div class="hero__card-cta">Save This Recipe</div>
         </div>
       </div>
     </div>
   </div>
 </section>
 
+<!-- Wave divider -->
+<div class="wave-divider">
+  <svg viewBox="0 0 1440 60" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+    <path
+      d="M0,40 C360,80 720,0 1080,40 C1260,60 1380,30 1440,35 L1440,60 L0,60 Z"
+      fill="var(--color-bg-alt)"
+    />
+  </svg>
+</div>
+
 <!-- Features Grid -->
 <section class="section section--alt" id="features">
   <div class="container">
-    <div class="section__header">
+    <div class="section__header reveal">
       <h2>Everything food creators need</h2>
       <p>
         Built specifically for food bloggers, recipe developers, and cooking influencers who use Kit
@@ -60,7 +109,7 @@
       </p>
     </div>
 
-    <div class="features-grid">
+    <div class="features-grid reveal-stagger">
       <div class="feature-card">
         <div class="feature-card__icon">
           <svg
@@ -86,7 +135,7 @@
       </div>
 
       <div class="feature-card">
-        <div class="feature-card__icon">
+        <div class="feature-card__icon feature-card__icon--sage">
           <svg
             width="28"
             height="28"
@@ -110,7 +159,7 @@
       </div>
 
       <div class="feature-card">
-        <div class="feature-card__icon">
+        <div class="feature-card__icon feature-card__icon--terracotta">
           <svg
             width="28"
             height="28"
@@ -135,7 +184,7 @@
       </div>
 
       <div class="feature-card">
-        <div class="feature-card__icon">
+        <div class="feature-card__icon feature-card__icon--saffron">
           <svg
             width="28"
             height="28"
@@ -163,19 +212,20 @@
 <!-- Social Proof -->
 <section class="section">
   <div class="container">
-    <div class="section__header">
+    <div class="section__header reveal">
       <h2>Loved by food creators</h2>
       <p>Join the creators who are turning their recipes into a real business.</p>
     </div>
 
-    <div class="testimonials">
+    <div class="testimonials reveal-stagger">
       <div class="testimonial">
+        <div class="testimonial__quote">&ldquo;</div>
         <p class="testimonial__text">
-          "Dough completely changed how I send recipe emails. My open rates went up 40% once I
-          started using the recipe cards instead of linking to my blog."
+          Dough completely changed how I send recipe emails. My open rates went up 40% once I
+          started using the recipe cards instead of linking to my blog.
         </p>
         <div class="testimonial__author">
-          <div class="testimonial__avatar">S</div>
+          <div class="testimonial__avatar">SC</div>
           <div>
             <div class="testimonial__name">Sarah Chen</div>
             <div class="testimonial__role">Food blogger, 45K subscribers</div>
@@ -184,12 +234,13 @@
       </div>
 
       <div class="testimonial">
+        <div class="testimonial__quote">&ldquo;</div>
         <p class="testimonial__text">
-          "The dietary segmentation is magic. I used to send the same recipes to everyone. Now my
-          vegan subscribers get vegan content and my engagement scores are through the roof."
+          The dietary segmentation is magic. I used to send the same recipes to everyone. Now my
+          vegan subscribers get vegan content and my engagement scores are through the roof.
         </p>
         <div class="testimonial__author">
-          <div class="testimonial__avatar">M</div>
+          <div class="testimonial__avatar">MR</div>
           <div>
             <div class="testimonial__name">Marcus Rivera</div>
             <div class="testimonial__role">Recipe developer, 28K subscribers</div>
@@ -198,12 +249,13 @@
       </div>
 
       <div class="testimonial">
+        <div class="testimonial__quote">&ldquo;</div>
         <p class="testimonial__text">
-          "I turned my 50 best recipes into an ebook in under an hour. It's already my top-selling
-          product on Kit. Dough pays for itself ten times over."
+          I turned my 50 best recipes into an ebook in under an hour. It's already my top-selling
+          product on Kit. Dough pays for itself ten times over.
         </p>
         <div class="testimonial__author">
-          <div class="testimonial__avatar">J</div>
+          <div class="testimonial__avatar">JO</div>
           <div>
             <div class="testimonial__name">Jamie Okafor</div>
             <div class="testimonial__role">Cooking influencer, 92K subscribers</div>
@@ -214,10 +266,39 @@
   </div>
 </section>
 
+<!-- Latest from the blog -->
+{#if data.posts && data.posts.length > 0}
+  <section class="section section--warm">
+    <div class="container">
+      <div class="section__header reveal">
+        <h2>Latest from the blog</h2>
+        <p>Tips, guides, and insights for food creators building their recipe email business.</p>
+      </div>
+
+      <div class="blog-grid reveal-stagger">
+        {#each data.posts as post (post.slug)}
+          <a href="/blog/{post.slug}" class="blog-card">
+            <div class="blog-card__date">{formatDate(post.date)}</div>
+            <h3 class="blog-card__title">{post.title}</h3>
+            <p class="blog-card__desc">{post.description}</p>
+            <div class="blog-card__read">
+              Read article <span class="blog-card__arrow">&rarr;</span>
+            </div>
+          </a>
+        {/each}
+      </div>
+
+      <div class="blog-more reveal">
+        <a href="/blog" class="btn btn--secondary">View all posts</a>
+      </div>
+    </div>
+  </section>
+{/if}
+
 <!-- CTA -->
 <section class="section cta-section">
   <div class="container">
-    <div class="cta-block">
+    <div class="cta-block reveal">
       <h2>Ready to turn your recipes into revenue?</h2>
       <p>
         Connect your Kit account and start building your recipe-powered email business today. Free
@@ -231,77 +312,133 @@
 </section>
 
 <style>
-  /* Hero */
+  /* ---- Hero ---- */
   .hero {
-    padding: 6rem 0;
-    background: linear-gradient(135deg, var(--color-brand-bg) 0%, #fff 60%);
-  }
-
-  .hero .container {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 4rem;
+    position: relative;
+    min-height: 90vh;
+    display: flex;
     align-items: center;
+    padding: 6rem 0 4rem;
+    background: linear-gradient(
+      165deg,
+      var(--color-cream) 0%,
+      var(--color-parchment) 35%,
+      #f8e8d6 65%,
+      var(--color-cream) 100%
+    );
+    overflow: hidden;
   }
 
-  .hero__content h1 {
-    margin-bottom: 1.5rem;
+  .hero__grain {
+    position: absolute;
+    inset: -50%;
+    width: 200%;
+    height: 200%;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+    animation: grain 8s steps(10) infinite;
+    pointer-events: none;
+    opacity: 0.5;
+  }
+
+  .hero__layout {
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: 4.5rem;
+    align-items: center;
+    position: relative;
+    z-index: 1;
+  }
+
+  .hero__content {
+    max-width: 600px;
+  }
+
+  .hero__title {
+    margin-bottom: 1.75rem;
+    font-size: 4.25rem;
+    font-weight: 900;
+    letter-spacing: -0.03em;
+    line-height: 1.04;
+  }
+
+  .hero__title-line {
+    display: block;
+    animation: fadeInUp 0.8s var(--ease-out) both;
+  }
+
+  .hero__title-line--delay {
+    animation-delay: 0.15s;
+    color: var(--color-terracotta);
   }
 
   .hero__subtitle {
-    font-size: 1.25rem;
+    font-size: 1.2rem;
     color: var(--color-text-secondary);
-    line-height: 1.7;
-    margin-bottom: 2rem;
+    line-height: 1.75;
+    margin-bottom: 2.25rem;
+    animation: fadeInUp 0.8s var(--ease-out) 0.3s both;
   }
 
   .hero__actions {
     display: flex;
     gap: 1rem;
     flex-wrap: wrap;
+    animation: fadeInUp 0.8s var(--ease-out) 0.45s both;
   }
 
   /* Hero visual - mock recipe card */
   .hero__visual {
     display: flex;
     justify-content: center;
+    animation: slideInRight 0.9s var(--ease-out) 0.3s both;
   }
 
   .hero__card {
     background: #fff;
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-lg);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-xl);
     overflow: hidden;
     width: 100%;
     max-width: 360px;
-    border: 1px solid var(--color-border);
+    border: 1px solid rgba(232, 221, 208, 0.6);
+    transition:
+      transform 0.4s var(--ease-out),
+      box-shadow 0.4s var(--ease-out);
+  }
+
+  .hero__card:hover {
+    transform: translateY(-4px) rotate(-0.5deg);
+    box-shadow: 0 20px 60px rgba(44, 24, 16, 0.15);
   }
 
   .hero__card-header {
-    background: linear-gradient(135deg, #f5d0a9, #f0b87a);
-    padding: 3rem 1.5rem 1rem;
+    background: linear-gradient(145deg, #f0c89a, #e8a96f, #dfa060);
+    padding: 3.5rem 1.75rem 1.25rem;
     position: relative;
   }
 
   .hero__card-badge {
     position: absolute;
-    top: 0.75rem;
-    right: 0.75rem;
-    background: var(--color-brand);
+    top: 1rem;
+    right: 1rem;
+    background: var(--color-terracotta);
     color: #fff;
-    font-size: 0.75rem;
-    font-weight: 600;
-    padding: 0.25rem 0.625rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 0.3rem 0.7rem;
     border-radius: 100px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
   }
 
   .hero__card-body {
-    padding: 1.5rem;
+    padding: 1.75rem;
   }
 
   .hero__card-body h3 {
-    font-size: 1.25rem;
+    font-size: 1.3rem;
     margin-bottom: 0.75rem;
+    font-weight: 700;
   }
 
   .hero__card-meta {
@@ -310,18 +447,30 @@
     font-size: 0.8125rem;
     color: var(--color-text-muted);
     margin-bottom: 1.25rem;
+    font-weight: 500;
+  }
+
+  .hero__card-meta span {
+    position: relative;
+  }
+
+  .hero__card-meta span + span::before {
+    content: "\00B7";
+    position: absolute;
+    left: -0.65rem;
+    color: var(--color-border);
   }
 
   .hero__card-ingredients {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
-    margin-bottom: 1.25rem;
+    margin-bottom: 1.5rem;
   }
 
   .hero__ingredient {
     height: 8px;
-    background: var(--color-bg-alt);
+    background: var(--color-parchment);
     border-radius: 4px;
   }
 
@@ -330,16 +479,17 @@
   }
 
   .hero__card-cta {
-    background: var(--color-brand);
+    background: var(--color-terracotta);
     color: #fff;
     text-align: center;
-    padding: 0.625rem;
+    padding: 0.75rem;
     border-radius: var(--radius);
-    font-weight: 600;
+    font-weight: 700;
     font-size: 0.9375rem;
+    letter-spacing: 0.01em;
   }
 
-  /* Feature cards */
+  /* ---- Feature cards ---- */
   .features-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -347,46 +497,61 @@
   }
 
   .feature-card {
-    background: var(--color-bg);
+    background: var(--color-cream);
     border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg);
-    padding: 2rem;
+    border-radius: var(--radius-xl);
+    padding: 2.5rem;
     transition:
-      box-shadow 0.2s,
-      transform 0.2s;
+      box-shadow 0.35s var(--ease-out),
+      transform 0.35s var(--ease-out);
   }
 
   .feature-card:hover {
-    box-shadow: var(--shadow-md);
-    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+    transform: scale(1.02);
   }
 
   .feature-card__icon {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 3rem;
-    height: 3rem;
-    background: var(--color-brand-bg);
-    color: var(--color-brand);
-    border-radius: var(--radius);
-    margin-bottom: 1.25rem;
+    width: 3.25rem;
+    height: 3.25rem;
+    background: var(--color-sage-bg);
+    color: var(--color-sage);
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+  }
+
+  .feature-card__icon--sage {
+    background: var(--color-sage-bg);
+    color: var(--color-sage);
+  }
+
+  .feature-card__icon--terracotta {
+    background: rgba(199, 91, 57, 0.1);
+    color: var(--color-terracotta);
+  }
+
+  .feature-card__icon--saffron {
+    background: var(--color-saffron-bg);
+    color: var(--color-saffron);
   }
 
   .feature-card h3 {
-    font-size: 1.25rem;
+    font-size: 1.35rem;
     margin-bottom: 0.75rem;
-    font-family: var(--font-sans);
-    font-weight: 600;
+    font-weight: 700;
   }
 
   .feature-card p {
     color: var(--color-text-secondary);
-    line-height: 1.6;
+    line-height: 1.7;
     margin: 0;
+    font-size: 0.9875rem;
   }
 
-  /* Testimonials */
+  /* ---- Testimonials ---- */
   .testimonials {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -395,43 +560,64 @@
 
   .testimonial {
     background: var(--color-bg-alt);
-    border-radius: var(--radius-lg);
-    padding: 2rem;
+    border-radius: var(--radius-xl);
+    padding: 2.5rem;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+    position: relative;
+    border: 1px solid transparent;
+    transition:
+      border-color 0.3s var(--ease-out),
+      box-shadow 0.3s var(--ease-out);
+  }
+
+  .testimonial:hover {
+    border-color: var(--color-border);
+    box-shadow: var(--shadow-md);
+  }
+
+  .testimonial__quote {
+    font-family: var(--font-display);
+    font-size: 4rem;
+    font-weight: 800;
+    color: var(--color-saffron-light);
+    line-height: 1;
+    margin-bottom: -0.5rem;
+    opacity: 0.6;
   }
 
   .testimonial__text {
-    font-size: 1.0625rem;
-    line-height: 1.7;
+    font-size: 1.05rem;
+    line-height: 1.75;
     color: var(--color-text);
-    margin-bottom: 1.5rem;
-    font-style: italic;
+    margin-bottom: 1.75rem;
   }
 
   .testimonial__author {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: 0.875rem;
   }
 
   .testimonial__avatar {
-    width: 2.5rem;
-    height: 2.5rem;
-    background: var(--color-brand);
+    width: 2.75rem;
+    height: 2.75rem;
+    background: linear-gradient(135deg, var(--color-saffron), var(--color-terracotta));
     color: #fff;
-    border-radius: 50%;
+    border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: 700;
-    font-size: 1rem;
+    font-size: 0.8rem;
+    letter-spacing: 0.02em;
   }
 
   .testimonial__name {
     font-weight: 600;
     font-size: 0.9375rem;
+    color: var(--color-text);
   }
 
   .testimonial__role {
@@ -439,39 +625,145 @@
     color: var(--color-text-muted);
   }
 
-  /* CTA Section */
+  /* ---- Blog Section ---- */
+  .blog-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+  }
+
+  .blog-card {
+    background: var(--color-cream);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    padding: 2.25rem;
+    text-decoration: none;
+    display: flex;
+    flex-direction: column;
+    transition:
+      box-shadow 0.35s var(--ease-out),
+      transform 0.35s var(--ease-out);
+  }
+
+  .blog-card:hover {
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-4px);
+    color: inherit;
+  }
+
+  .blog-card:hover .blog-card__arrow {
+    transform: translateX(4px);
+  }
+
+  .blog-card__date {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 0.75rem;
+  }
+
+  .blog-card__title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    line-height: 1.3;
+    color: var(--color-text);
+    margin-bottom: 0.75rem;
+  }
+
+  .blog-card__desc {
+    font-size: 0.9375rem;
+    color: var(--color-text-secondary);
+    line-height: 1.65;
+    margin-bottom: 1.25rem;
+    flex: 1;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .blog-card__read {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--color-terracotta);
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+  }
+
+  .blog-card__arrow {
+    display: inline-block;
+    transition: transform 0.25s var(--ease-out);
+  }
+
+  .blog-more {
+    text-align: center;
+    margin-top: 3rem;
+  }
+
+  /* ---- CTA Section ---- */
   .cta-section {
-    background: var(--color-bg-alt);
+    background: var(--color-bg-dark);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .cta-section::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(212, 134, 11, 0.12) 0%, transparent 70%);
+    pointer-events: none;
   }
 
   .cta-block {
     text-align: center;
     max-width: 640px;
     margin: 0 auto;
+    position: relative;
+    z-index: 1;
   }
 
   .cta-block h2 {
-    margin-bottom: 1rem;
+    color: var(--color-cream);
+    margin-bottom: 1.25rem;
   }
 
   .cta-block p {
-    font-size: 1.125rem;
-    color: var(--color-text-secondary);
-    margin-bottom: 2rem;
+    font-size: 1.15rem;
+    color: #9a8a7e;
+    margin-bottom: 2.5rem;
+    line-height: 1.7;
   }
 
+  /* ---- Responsive ---- */
   @media (max-width: 768px) {
     .hero {
       padding: 3.5rem 0;
+      min-height: auto;
     }
 
-    .hero .container {
+    .hero__layout {
       grid-template-columns: 1fr;
       gap: 3rem;
     }
 
+    .hero__title {
+      font-size: 2.5rem;
+    }
+
     .hero__visual {
       order: -1;
+    }
+
+    .hero__card {
+      max-width: 300px;
     }
 
     .features-grid {
@@ -481,11 +773,33 @@
     .testimonials {
       grid-template-columns: 1fr;
     }
+
+    .blog-grid {
+      grid-template-columns: 1fr;
+    }
   }
 
   @media (min-width: 769px) and (max-width: 1024px) {
     .testimonials {
       grid-template-columns: 1fr 1fr;
+    }
+
+    .blog-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .hero__title {
+      font-size: 3.25rem;
+    }
+  }
+
+  @media (max-width: 375px) {
+    .hero__title {
+      font-size: 2rem;
+    }
+
+    .hero__subtitle {
+      font-size: 1.05rem;
     }
   }
 </style>
