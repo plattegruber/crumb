@@ -157,7 +157,7 @@ export default {
       },
     };
 
-    // Placeholder extractor — will be replaced with real AI implementation
+    // Legacy extractor fallback
     const extractor = {
       async extract(_text: string) {
         return {
@@ -170,6 +170,10 @@ export default {
       },
     };
 
+    // Create agent extractor using Workers AI binding when available
+    const { createDefaultAgentExtractor } = await import("./services/import.js");
+    const agentExtractor = env.AI !== undefined || env.ANTHROPIC_API_KEY !== undefined ? createDefaultAgentExtractor(env.AI, env.ANTHROPIC_API_KEY) : undefined;
+
     await handleImportQueue(
       {
         messages: batch.messages.map((msg) => ({
@@ -178,7 +182,7 @@ export default {
           retry: () => msg.retry(),
         })),
       },
-      { db, queue, extractor },
+      { db, queue, extractor, agentExtractor },
     );
 
     logger.info("queue_batch_completed", {

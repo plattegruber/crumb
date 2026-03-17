@@ -25,6 +25,14 @@ export interface Env {
   /** Kit OAuth client secret — required for production OAuth flow. */
   KIT_CLIENT_SECRET?: string;
 
+  // --- Workers AI ---
+  /** Workers AI binding. Present when [ai] is configured in wrangler.toml. */
+  AI?: Ai;
+
+  // --- Anthropic ---
+  /** Anthropic API key for Claude-powered recipe extraction. */
+  ANTHROPIC_API_KEY?: string;
+
   // --- Observability ---
   LOG_LEVEL: string;
 }

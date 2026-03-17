@@ -12,6 +12,7 @@ import {
   createDefaultFetcher,
   createDefaultWordPressClient,
   type RecipeExtractor,
+  type AgentExtractor,
   type ImportQueue,
 } from "./import.js";
 
@@ -19,6 +20,7 @@ export interface QueueHandlerDeps {
   readonly db: Database;
   readonly queue: ImportQueue;
   readonly extractor: RecipeExtractor;
+  readonly agentExtractor?: AgentExtractor;
 }
 
 export interface QueueMessage {
@@ -49,6 +51,7 @@ export async function handleImportQueue(batch: QueueBatch, deps: QueueHandlerDep
     db: deps.db,
     queue: deps.queue,
     extractor: deps.extractor,
+    agentExtractor: deps.agentExtractor,
     fetcher,
     wordpress,
     logger,
