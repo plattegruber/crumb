@@ -43,7 +43,11 @@
     <nav class="nav__links" class:nav__links--open={mobileMenuOpen}>
       <a href="/features" class="nav__link" onclick={closeMenu}>Features</a>
       <a href="/blog" class="nav__link" onclick={closeMenu}>Blog</a>
-      <a href="https://dash.makedough.app/sign-up" class="btn btn--primary nav__cta" onclick={closeMenu}>Get Started</a>
+      <a
+        href="https://dash.makedough.app/sign-up"
+        class="btn btn--primary nav__cta"
+        onclick={closeMenu}>Get Started</a
+      >
     </nav>
   </div>
 </header>

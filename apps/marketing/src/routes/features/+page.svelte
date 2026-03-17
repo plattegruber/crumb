@@ -312,7 +312,9 @@
         Connect your Kit account and start building your recipe-powered email business. Free to
         start, no credit card required.
       </p>
-      <a href="https://dash.makedough.app/sign-up" class="btn btn--primary btn--large">Get started free</a>
+      <a href="https://dash.makedough.app/sign-up" class="btn btn--primary btn--large"
+        >Get started free</a
+      >
     </div>
   </div>
 </section>
