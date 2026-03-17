@@ -30,11 +30,16 @@ const PUBLIC_PATH_PREFIXES = ["/webhooks/", "/save/"];
 
 const app = new Hono<AppEnvWithLogger>();
 
-// CORS — allow the SvelteKit dev server (localhost:5173) to call the API.
+// CORS — allow the dashboard to call the API (local dev + production).
 app.use(
   "*",
   cors({
-    origin: ["http://localhost:5173", "http://127.0.0.1:5173"],
+    origin: [
+      "http://localhost:5173",
+      "http://127.0.0.1:5173",
+      "https://dash.makedough.app",
+      "https://makedough.app",
+    ],
     allowMethods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowHeaders: ["Content-Type", "Authorization"],
     credentials: true,
