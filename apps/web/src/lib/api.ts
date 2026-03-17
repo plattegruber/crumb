@@ -412,8 +412,38 @@ export const automation = {
 };
 
 // ---------------------------------------------------------------------------
-// Products endpoints (stub -- routes not yet implemented in API)
+// Products endpoints
 // ---------------------------------------------------------------------------
+
+export interface CreateEbookInput {
+  title: string;
+  description: string | null;
+  brand_kit_id: string;
+  template_id: string;
+  recipe_ids: string[];
+  chapters: { title: string; intro_copy: string | null; recipe_ids: string[] }[];
+  intro_copy: string | null;
+  author_bio: string | null;
+  format: string;
+  suggested_price_cents: number | null;
+}
+
+export interface MealPlanDayInput {
+  day_number: number;
+  breakfast: string | null;
+  lunch: string | null;
+  dinner: string | null;
+  snacks: string[];
+}
+
+export interface CreateMealPlanInput {
+  title: string;
+  description: string | null;
+  brand_kit_id: string;
+  template_id: string;
+  days: MealPlanDayInput[];
+  suggested_price_cents: number | null;
+}
 
 export const products = {
   async list(): Promise<Product[]> {
@@ -431,6 +461,33 @@ export const products = {
     } catch {
       return null;
     }
+  },
+
+  async createEbook(input: CreateEbookInput): Promise<Product> {
+    return apiFetch<Product>("/products/ebook", {
+      method: "POST",
+      body: JSON.stringify(input),
+    });
+  },
+
+  async createMealPlan(input: CreateMealPlanInput): Promise<Product> {
+    return apiFetch<Product>("/products/meal-plan", {
+      method: "POST",
+      body: JSON.stringify(input),
+    });
+  },
+
+  async publish(id: ProductId | string, platform: string): Promise<Product> {
+    return apiFetch<Product>(`/products/${id}/publish`, {
+      method: "POST",
+      body: JSON.stringify({ platform }),
+    });
+  },
+
+  async generateLeadMagnet(id: ProductId | string): Promise<Product> {
+    return apiFetch<Product>(`/products/${id}/lead-magnet`, {
+      method: "POST",
+    });
   },
 };
 
