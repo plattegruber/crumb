@@ -31,6 +31,9 @@ jobs:
   deploy-web:
     name: Deploy Dashboard (Pages)
     runs-on: ubuntu-latest
+    env:
+      VITE_CLERK_PUBLISHABLE_KEY: pk_live_Y2xlcmsubWFrZWRvdWdoLmFwcCQ
+      VITE_API_BASE_URL: https://api.makedough.app
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
