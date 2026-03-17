@@ -65,8 +65,6 @@ jobs:
   deploy-marketing:
     name: Deploy Marketing Site (Pages)
     runs-on: ubuntu-latest
-    # Only run if the marketing app exists
-    if: hashFiles('apps/marketing/package.json') != ''
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
