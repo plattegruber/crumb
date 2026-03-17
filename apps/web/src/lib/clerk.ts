@@ -27,10 +27,19 @@ export async function getClerk(publishableKey: string): Promise<Clerk> {
   clerkPromise = (async () => {
     // Use the Clerk browser bundle via a script tag for full UI support.
     // The NPM ESM import strips UI components in Vite's bundler.
-    // Derive FAPI host from publishable key (base64-encoded after pk_test_/pk_live_)
-    const keyPayload = publishableKey.replace(/^pk_(test|live)_/, "");
-    const clerkFapiHost = atob(keyPayload).replace(/\$$/, "");
-    const scriptUrl = `https://${clerkFapiHost}/npm/@clerk/clerk-js@5/dist/clerk.browser.js`;
+    // For production with a Cloudflare proxy, load via the proxy path.
+    // For development, derive the FAPI host from the publishable key.
+    const isProduction = publishableKey.startsWith("pk_live_");
+    let scriptUrl: string;
+    if (isProduction) {
+      // Production: load through the /__clerk proxy on makedough.app
+      scriptUrl = "https://makedough.app/__clerk/npm/@clerk/clerk-js@5/dist/clerk.browser.js";
+    } else {
+      // Development: derive FAPI host from key
+      const keyPayload = publishableKey.replace(/^pk_(test|live)_/, "");
+      const clerkFapiHost = atob(keyPayload).replace(/\$$/, "");
+      scriptUrl = `https://${clerkFapiHost}/npm/@clerk/clerk-js@5/dist/clerk.browser.js`;
+    }
 
     await new Promise<void>((resolve, reject) => {
       // Check if already loaded
@@ -61,7 +70,7 @@ export async function getClerk(publishableKey: string): Promise<Clerk> {
       throw new Error("Clerk failed to initialize");
     }
 
-    await clerk.load();
+    await clerk.load(isProduction ? { proxyUrl: "https://makedough.app/__clerk/" } : undefined);
     clerkInstance = clerk;
     return clerk;
   })();

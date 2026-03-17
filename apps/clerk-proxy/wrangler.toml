@@ -1,0 +1,11 @@
+name = "dough-clerk-proxy"
+main = "src/index.ts"
+compatibility_date = "2025-04-01"
+
+routes = [
+  { pattern = "makedough.app/__clerk*", zone_name = "makedough.app" }
+]
+
+[vars]
+CLERK_PROXY_URL = "https://makedough.app/__clerk/"
+CLERK_FRONTEND_API = "https://frontend-api.clerk.dev"
