@@ -21,8 +21,11 @@ jobs:
           node-version: "20"
           cache: "pnpm"
       - run: pnpm install --frozen-lockfile
+      - name: Build Worker
+        run: node build.mjs
+        working-directory: apps/api
       - name: Deploy Worker
-        run: npx wrangler deploy
+        run: npx wrangler deploy dist/index.js
         working-directory: apps/api
 
   deploy-web:
