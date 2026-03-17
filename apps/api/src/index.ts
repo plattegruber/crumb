@@ -11,6 +11,7 @@ import { analyticsRoutes, webhookRoutes } from "./routes/analytics.js";
 import { automationRoutes, createSaveRedirectRoutes } from "./routes/automation.js";
 import { productRoutes } from "./routes/products.js";
 import { publishingRoutes } from "./routes/publishing.js";
+import { settingsRoutes } from "./routes/settings.js";
 import { createDb } from "./db/index.js";
 import { creators } from "./db/schema.js";
 import { eq } from "drizzle-orm";
@@ -117,6 +118,7 @@ app.route("/collections", collectionRoutes);
 app.route("/analytics", analyticsRoutes);
 app.route("/automation", automationRoutes);
 app.route("/products", productRoutes);
+app.route("/settings", settingsRoutes);
 
 // ---------------------------------------------------------------------------
 // Publishing Pipeline routes (SPEC §12)

@@ -433,3 +433,166 @@ export const products = {
     }
   },
 };
+
+// ---------------------------------------------------------------------------
+// Settings endpoints
+// ---------------------------------------------------------------------------
+
+export interface KitStatus {
+  connected: boolean;
+  account_id: string | null;
+  connected_at: string | null;
+  scopes: readonly string[] | null;
+  token_expires_at: string | null;
+}
+
+export interface BrandKit {
+  id: string;
+  creator_id: string;
+  name: string;
+  logo_url: string | null;
+  primary_color: string;
+  secondary_color: string | null;
+  accent_color: string | null;
+  heading_font_family: string;
+  heading_font_fallback: readonly string[];
+  body_font_family: string;
+  body_font_fallback: readonly string[];
+  created_at: string;
+  updated_at: string;
+}
+
+export interface BrandKitInput {
+  name?: string;
+  logo_url?: string | null;
+  primary_color?: string;
+  secondary_color?: string | null;
+  accent_color?: string | null;
+  heading_font_family?: string;
+  heading_font_fallback?: readonly string[];
+  body_font_family?: string;
+  body_font_fallback?: readonly string[];
+}
+
+export interface TeamMember {
+  id: string;
+  creator_id: string;
+  email: string;
+  role: string;
+  invited_at: string;
+  accepted_at: string | null;
+}
+
+export interface WordPressStatus {
+  connected: boolean;
+  site_url: string | null;
+  plugin: string | null;
+  connected_at: string | null;
+}
+
+export interface CreatorAccount {
+  id: string;
+  email: string;
+  name: string;
+  subscription_tier: string;
+  subscription_started_at: string;
+  subscription_renews_at: string | null;
+  kit_connected_at: string | null;
+  wordpress_connected_at: string | null;
+  created_at: string;
+}
+
+export const settings = {
+  // Kit Connection
+  async getKitStatus(): Promise<KitStatus> {
+    return apiFetch<KitStatus>("/settings/kit/status");
+  },
+
+  async getKitAuthUrl(redirectUri?: string): Promise<{ url: string; state: string }> {
+    const params = redirectUri ? `?redirect_uri=${encodeURIComponent(redirectUri)}` : "";
+    return apiFetch<{ url: string; state: string }>(`/settings/kit/auth-url${params}`);
+  },
+
+  async exchangeKitCode(
+    code: string,
+    redirectUri: string,
+  ): Promise<{ connected: boolean; connected_at: string }> {
+    return apiFetch<{ connected: boolean; connected_at: string }>("/settings/kit/callback", {
+      method: "POST",
+      body: JSON.stringify({ code, redirect_uri: redirectUri }),
+    });
+  },
+
+  async disconnectKit(): Promise<{ connected: boolean }> {
+    return apiFetch<{ connected: boolean }>("/settings/kit/disconnect", {
+      method: "POST",
+    });
+  },
+
+  // Brand Kit
+  async getBrandKit(): Promise<{ brand_kit: BrandKit | null }> {
+    return apiFetch<{ brand_kit: BrandKit | null }>("/settings/brand");
+  },
+
+  async saveBrandKit(input: BrandKitInput): Promise<{ brand_kit: BrandKit }> {
+    return apiFetch<{ brand_kit: BrandKit }>("/settings/brand", {
+      method: "PUT",
+      body: JSON.stringify(input),
+    });
+  },
+
+  // Team Management
+  async getTeam(): Promise<{ members: TeamMember[]; subscription_tier: string }> {
+    return apiFetch<{ members: TeamMember[]; subscription_tier: string }>("/settings/team");
+  },
+
+  async inviteTeamMember(email: string, role?: string): Promise<{ member: TeamMember }> {
+    return apiFetch<{ member: TeamMember }>("/settings/team/invite", {
+      method: "POST",
+      body: JSON.stringify({ email, role }),
+    });
+  },
+
+  async removeTeamMember(id: string): Promise<{ deleted: boolean }> {
+    return apiFetch<{ deleted: boolean }>(`/settings/team/${id}`, {
+      method: "DELETE",
+    });
+  },
+
+  // WordPress
+  async getWordPressStatus(): Promise<WordPressStatus> {
+    return apiFetch<WordPressStatus>("/settings/wordpress");
+  },
+
+  async connectWordPress(
+    siteUrl: string,
+    apiKey: string,
+    plugin?: string,
+  ): Promise<WordPressStatus & { connected: true }> {
+    return apiFetch<WordPressStatus & { connected: true }>("/settings/wordpress", {
+      method: "POST",
+      body: JSON.stringify({ site_url: siteUrl, api_key: apiKey, plugin }),
+    });
+  },
+
+  async testWordPress(
+    siteUrl: string,
+    apiKey: string,
+  ): Promise<{ success: boolean; message: string }> {
+    return apiFetch<{ success: boolean; message: string }>("/settings/wordpress/test", {
+      method: "POST",
+      body: JSON.stringify({ site_url: siteUrl, api_key: apiKey }),
+    });
+  },
+
+  async disconnectWordPress(): Promise<{ connected: boolean }> {
+    return apiFetch<{ connected: boolean }>("/settings/wordpress/disconnect", {
+      method: "POST",
+    });
+  },
+
+  // Account
+  async getAccount(): Promise<{ creator: CreatorAccount }> {
+    return apiFetch<{ creator: CreatorAccount }>("/settings/account");
+  },
+};
