@@ -98,6 +98,7 @@
         { href: "/settings/kit", label: "Kit Connection" },
         { href: "/settings/brand", label: "Brand Kit" },
         { href: "/settings/team", label: "Team" },
+        { href: "/settings/wordpress", label: "WordPress" },
       ],
     },
   ];
