@@ -17,11 +17,23 @@ import {
 } from "../services/recipe.js";
 import type {
   CreateRecipeInput,
+  CreateIngredientGroupInput,
+  CreateIngredientInput,
+  CreateInstructionGroupInput,
+  CreateInstructionInput,
   UpdateRecipeInput,
   ListRecipesParams,
   RecipeError,
 } from "../services/recipe.js";
-import type { RecipeStatus, DietaryTag, MealType, Season } from "@dough/shared";
+import type {
+  RecipeStatus,
+  DietaryTag,
+  MealType,
+  Season,
+  IngredientId,
+  InstructionId,
+  Quantity,
+} from "@dough/shared";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
 
 const recipeRoutes = new Hono<AppEnv>();
@@ -56,6 +68,56 @@ recipeRoutes.post("/", async (c) => {
   const timing = raw["timing"] as Record<string, unknown> | undefined;
   const yieldData = raw["yield"] as Record<string, unknown> | undefined;
 
+  // Transform ingredient groups from frontend format
+  const rawIngredientGroups = raw["ingredientGroups"] as
+    | readonly Record<string, unknown>[]
+    | undefined;
+  const ingredientGroups: CreateIngredientGroupInput[] | undefined = rawIngredientGroups
+    ? rawIngredientGroups.map((g) => ({
+        label: (g["label"] as string) ?? null,
+        ingredients: ((g["ingredients"] as readonly Record<string, unknown>[]) ?? []).map(
+          (ing): CreateIngredientInput => {
+            // Parse quantity: frontend sends a simple string value, convert to Quantity
+            const qtyStr = ing["quantity"] as string | null;
+            let quantity: Quantity | null = null;
+            if (qtyStr !== null && qtyStr !== undefined && String(qtyStr).trim() !== "") {
+              const num = parseFloat(String(qtyStr));
+              if (!isNaN(num)) {
+                if (Number.isInteger(num)) {
+                  quantity = { type: "WholeNumber", value: num } as Quantity;
+                } else {
+                  quantity = { type: "Decimal", value: num } as Quantity;
+                }
+              }
+            }
+            return {
+              id: (ing["id"] as IngredientId) ?? (crypto.randomUUID() as IngredientId),
+              quantity,
+              unit: (ing["unit"] as string) ?? null,
+              item: (ing["item"] as string) ?? "",
+              notes: (ing["notes"] as string) ?? null,
+            };
+          },
+        ),
+      }))
+    : undefined;
+
+  // Transform instruction groups from frontend format
+  const rawInstructionGroups = raw["instructionGroups"] as
+    | readonly Record<string, unknown>[]
+    | undefined;
+  const instructionGroups: CreateInstructionGroupInput[] | undefined = rawInstructionGroups
+    ? rawInstructionGroups.map((g) => ({
+        label: (g["label"] as string) ?? null,
+        instructions: ((g["instructions"] as readonly Record<string, unknown>[]) ?? []).map(
+          (inst): CreateInstructionInput => ({
+            id: (inst["id"] as InstructionId) ?? (crypto.randomUUID() as InstructionId),
+            body: (inst["body"] as string) ?? "",
+          }),
+        ),
+      }))
+    : undefined;
+
   const body: CreateRecipeInput = {
     id: (raw["id"] as string) ?? crypto.randomUUID(),
     title: raw["title"] as string,
@@ -71,6 +133,8 @@ recipeRoutes.post("/", async (c) => {
     dietaryTags: (raw["dietaryTags"] as readonly DietaryTag[]) ?? [],
     mealTypes: (raw["mealTypes"] as readonly MealType[]) ?? [],
     seasons: (raw["seasons"] as readonly Season[]) ?? [],
+    ingredientGroups,
+    instructionGroups,
   };
 
   const result = await createRecipe(scopedDb, body);
@@ -152,7 +216,104 @@ recipeRoutes.put("/:id", async (c) => {
   const scopedDb = withCreatorScope(db, creatorId);
 
   const recipeId = c.req.param("id");
-  const body = await c.req.json<UpdateRecipeInput>();
+  const raw = await c.req.json<Record<string, unknown>>();
+
+  // Transform ingredient groups from frontend format if present
+  const rawIngredientGroups = raw["ingredientGroups"] as
+    | readonly Record<string, unknown>[]
+    | undefined;
+  const updatedIngredientGroups: CreateIngredientGroupInput[] | undefined = rawIngredientGroups
+    ? rawIngredientGroups.map((g) => ({
+        label: (g["label"] as string) ?? null,
+        ingredients: ((g["ingredients"] as readonly Record<string, unknown>[]) ?? []).map(
+          (ing): CreateIngredientInput => {
+            const qtyStr = ing["quantity"] as string | null;
+            let quantity: Quantity | null = null;
+            if (qtyStr !== null && qtyStr !== undefined && String(qtyStr).trim() !== "") {
+              const num = parseFloat(String(qtyStr));
+              if (!isNaN(num)) {
+                if (Number.isInteger(num)) {
+                  quantity = { type: "WholeNumber", value: num } as Quantity;
+                } else {
+                  quantity = { type: "Decimal", value: num } as Quantity;
+                }
+              }
+            }
+            return {
+              id: (ing["id"] as IngredientId) ?? (crypto.randomUUID() as IngredientId),
+              quantity,
+              unit: (ing["unit"] as string) ?? null,
+              item: (ing["item"] as string) ?? "",
+              notes: (ing["notes"] as string) ?? null,
+            };
+          },
+        ),
+      }))
+    : undefined;
+
+  // Transform instruction groups from frontend format if present
+  const rawInstructionGroups = raw["instructionGroups"] as
+    | readonly Record<string, unknown>[]
+    | undefined;
+  const updatedInstructionGroups: CreateInstructionGroupInput[] | undefined = rawInstructionGroups
+    ? rawInstructionGroups.map((g) => ({
+        label: (g["label"] as string) ?? null,
+        instructions: ((g["instructions"] as readonly Record<string, unknown>[]) ?? []).map(
+          (inst): CreateInstructionInput => ({
+            id: (inst["id"] as InstructionId) ?? (crypto.randomUUID() as InstructionId),
+            body: (inst["body"] as string) ?? "",
+          }),
+        ),
+      }))
+    : undefined;
+
+  const timing = raw["timing"] as Record<string, unknown> | undefined;
+  const yieldData = raw["yield"] as Record<string, unknown> | undefined;
+
+  const body: UpdateRecipeInput = {
+    title: raw["title"] as string | undefined,
+    description:
+      raw["description"] !== undefined ? ((raw["description"] as string) ?? null) : undefined,
+    status: raw["status"] as RecipeStatus | undefined,
+    emailReady: raw["emailReady"] as boolean | undefined,
+    prepMinutes:
+      timing?.["prep_minutes"] !== undefined
+        ? ((timing["prep_minutes"] as number) ?? null)
+        : raw["prepMinutes"] !== undefined
+          ? ((raw["prepMinutes"] as number) ?? null)
+          : undefined,
+    cookMinutes:
+      timing?.["cook_minutes"] !== undefined
+        ? ((timing["cook_minutes"] as number) ?? null)
+        : raw["cookMinutes"] !== undefined
+          ? ((raw["cookMinutes"] as number) ?? null)
+          : undefined,
+    totalMinutes:
+      timing?.["total_minutes"] !== undefined
+        ? ((timing["total_minutes"] as number) ?? null)
+        : raw["totalMinutes"] !== undefined
+          ? ((raw["totalMinutes"] as number) ?? null)
+          : undefined,
+    yieldQuantity:
+      yieldData?.["quantity"] !== undefined
+        ? ((yieldData["quantity"] as number) ?? null)
+        : raw["yieldQuantity"] !== undefined
+          ? ((raw["yieldQuantity"] as number) ?? null)
+          : undefined,
+    yieldUnit:
+      yieldData?.["unit"] !== undefined
+        ? ((yieldData["unit"] as string) ?? null)
+        : raw["yieldUnit"] !== undefined
+          ? ((raw["yieldUnit"] as string) ?? null)
+          : undefined,
+    notes: raw["notes"] !== undefined ? ((raw["notes"] as string) ?? null) : undefined,
+    cuisine: raw["cuisine"] !== undefined ? ((raw["cuisine"] as string) ?? null) : undefined,
+    dietaryTags: raw["dietaryTags"] as readonly DietaryTag[] | undefined,
+    mealTypes: raw["mealTypes"] as readonly MealType[] | undefined,
+    seasons: raw["seasons"] as readonly Season[] | undefined,
+    ingredientGroups: updatedIngredientGroups,
+    instructionGroups: updatedInstructionGroups,
+  };
 
   const result = await updateRecipe(scopedDb, recipeId, body);
 

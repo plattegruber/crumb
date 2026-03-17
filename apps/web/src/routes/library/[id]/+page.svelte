@@ -2,37 +2,29 @@
   import { page } from "$app/stores";
   import { goto } from "$app/navigation";
   import { onMount } from "svelte";
-  import type { Recipe, DietaryTag } from "@dough/shared";
+  import type { DietaryTag } from "@dough/shared";
   import { recipes } from "$lib/api.js";
+  import {
+    normalizeRecipeResponse,
+    type NormalizedRecipe,
+    type NormalizedQuantity,
+  } from "$lib/api-types.js";
   import DietaryBadge from "$lib/components/DietaryBadge.svelte";
 
-  let recipe = $state<Recipe | null>(null);
+  let recipe = $state<NormalizedRecipe | null>(null);
   let loading = $state(true);
   let error = $state<string | null>(null);
   let deleting = $state(false);
+  let showDeleteConfirm = $state(false);
 
-  const recipeId = $derived($page.params.id ?? "");
-
-  const dietaryTags = $derived.by((): DietaryTag[] => {
-    if (!recipe) return [];
-    const tags = recipe.classification.dietary.tags;
-    if (
-      tags instanceof Set ||
-      (tags && typeof (tags as Iterable<DietaryTag>)[Symbol.iterator] === "function")
-    ) {
-      return [...tags] as DietaryTag[];
-    }
-    return [];
-  });
+  const recipeId = $derived($page.params["id"] ?? "");
 
   async function fetchRecipe() {
     loading = true;
     error = null;
     try {
       const res = await recipes.get(recipeId);
-      // API returns { recipe, ingredientGroups, instructionGroups, photos }
-      const data = res as Record<string, unknown>;
-      recipe = (data.recipe as Recipe) ?? (res as Recipe);
+      recipe = normalizeRecipeResponse(res);
     } catch (e) {
       error = "Failed to load recipe.";
       console.error(e);
@@ -42,7 +34,6 @@
   }
 
   async function handleDelete() {
-    if (!confirm("Are you sure you want to archive this recipe?")) return;
     deleting = true;
     try {
       await recipes.delete(recipeId);
@@ -52,6 +43,7 @@
       console.error(e);
     } finally {
       deleting = false;
+      showDeleteConfirm = false;
     }
   }
 
@@ -63,23 +55,15 @@
     return mins > 0 ? `${hours}h ${mins}m` : `${hours}h`;
   }
 
-  function formatQuantity(
-    q: {
-      type: string;
-      value?: number;
-      numerator?: number;
-      denominator?: number;
-      whole?: number;
-    } | null,
-  ): string {
-    if (!q) return "";
+  function formatQuantity(q: NormalizedQuantity | null): string {
+    if (q === null) return "";
     switch (q.type) {
       case "WholeNumber":
         return String(q.value ?? "");
       case "Fraction":
-        return `${q.numerator}/${q.denominator}`;
+        return `${q.numerator ?? ""}/${q.denominator ?? ""}`;
       case "Mixed":
-        return `${q.whole} ${q.numerator}/${q.denominator}`;
+        return `${q.whole ?? ""} ${q.numerator ?? ""}/${q.denominator ?? ""}`;
       case "Decimal":
         return String(q.value ?? "");
       default:
@@ -112,8 +96,10 @@
         {#if recipe.description}
           <p class="description">{recipe.description}</p>
         {/if}
-        <div class="recipe-status" data-status={recipe.status}>
-          {recipe.status}
+        <div class="status-row">
+          <span class="recipe-status" data-status={recipe.status}>
+            {recipe.status}
+          </span>
           {#if recipe.email_ready}
             <span class="email-ready">Email Ready</span>
           {/if}
@@ -121,11 +107,29 @@
       </div>
 
       <div class="recipe-actions">
-        <button class="btn btn-danger" onclick={handleDelete} disabled={deleting}>
-          {deleting ? "Archiving..." : "Archive"}
+        <a href="/library/{recipeId}/edit" class="btn">Edit</a>
+        <button
+          class="btn btn-danger"
+          onclick={() => (showDeleteConfirm = true)}
+          disabled={deleting}
+        >
+          Archive
         </button>
       </div>
     </div>
+
+    <!-- Delete confirmation dialog -->
+    {#if showDeleteConfirm}
+      <div class="confirm-banner">
+        <p>Are you sure you want to archive this recipe?</p>
+        <div class="confirm-actions">
+          <button class="btn" onclick={() => (showDeleteConfirm = false)}>Cancel</button>
+          <button class="btn btn-danger" onclick={handleDelete} disabled={deleting}>
+            {deleting ? "Archiving..." : "Yes, Archive"}
+          </button>
+        </div>
+      </div>
+    {/if}
 
     <!-- Hero photo -->
     {#if recipe.photos.length > 0 && recipe.photos[0]}
@@ -157,19 +161,19 @@
     </div>
 
     <!-- Dietary tags -->
-    {#if dietaryTags.length > 0}
+    {#if recipe.dietary_tags.length > 0}
       <div class="tags-section">
-        {#each dietaryTags as tag (tag)}
-          <DietaryBadge {tag} />
+        {#each recipe.dietary_tags as tag (tag)}
+          <DietaryBadge tag={tag as DietaryTag} />
         {/each}
       </div>
     {/if}
 
     <!-- Ingredients -->
-    {#if recipe.ingredients.length > 0}
+    {#if recipe.ingredientGroups.length > 0}
       <section class="recipe-section">
         <h2>Ingredients</h2>
-        {#each recipe.ingredients as group, i (i)}
+        {#each recipe.ingredientGroups as group, i (i)}
           {#if group.label}
             <h3 class="group-label">{group.label}</h3>
           {/if}
@@ -194,10 +198,10 @@
     {/if}
 
     <!-- Instructions -->
-    {#if recipe.instructions.length > 0}
+    {#if recipe.instructionGroups.length > 0}
       <section class="recipe-section">
         <h2>Instructions</h2>
-        {#each recipe.instructions as group, i (i)}
+        {#each recipe.instructionGroups as group, i (i)}
           {#if group.label}
             <h3 class="group-label">{group.label}</h3>
           {/if}
@@ -214,19 +218,39 @@
     {#if recipe.notes}
       <section class="recipe-section">
         <h2>Notes</h2>
-        <p>{recipe.notes}</p>
+        <p class="notes-text">{recipe.notes}</p>
       </section>
     {/if}
 
     <!-- Classification -->
-    {#if recipe.classification.cuisine || recipe.classification.meal_types}
+    {#if recipe.cuisine || recipe.meal_types.length > 0 || recipe.seasons.length > 0}
       <section class="recipe-section">
         <h2>Classification</h2>
         <div class="classification-grid">
-          {#if recipe.classification.cuisine}
-            <div>
+          {#if recipe.cuisine}
+            <div class="classification-item">
               <span class="meta-label">Cuisine</span>
-              <span>{recipe.classification.cuisine}</span>
+              <span>{recipe.cuisine}</span>
+            </div>
+          {/if}
+          {#if recipe.meal_types.length > 0}
+            <div class="classification-item">
+              <span class="meta-label">Meal Type</span>
+              <div class="classification-tags">
+                {#each recipe.meal_types as mt (mt)}
+                  <span class="classification-tag">{mt}</span>
+                {/each}
+              </div>
+            </div>
+          {/if}
+          {#if recipe.seasons.length > 0}
+            <div class="classification-item">
+              <span class="meta-label">Season</span>
+              <div class="classification-tags">
+                {#each recipe.seasons as s (s)}
+                  <span class="classification-tag">{s}</span>
+                {/each}
+              </div>
             </div>
           {/if}
         </div>
@@ -271,21 +295,29 @@
     margin-bottom: var(--space-2);
   }
 
-  .recipe-status {
+  .status-row {
     display: inline-flex;
     align-items: center;
     gap: var(--space-2);
+  }
+
+  .recipe-status {
     font-size: var(--font-size-sm);
     font-weight: 500;
     color: var(--color-text-secondary);
+    padding: 2px 8px;
+    border-radius: var(--radius-sm);
+    background: var(--color-bg-secondary);
   }
 
   .recipe-status[data-status="Active"] {
     color: var(--color-success);
+    background: var(--color-success-light);
   }
 
   .recipe-status[data-status="Draft"] {
     color: var(--color-warning);
+    background: var(--color-warning-light);
   }
 
   .email-ready {
@@ -294,10 +326,33 @@
     color: var(--color-success);
     border-radius: var(--radius-sm);
     font-size: var(--font-size-xs);
+    font-weight: 500;
   }
 
   .recipe-actions {
     flex-shrink: 0;
+    display: flex;
+    gap: var(--space-2);
+  }
+
+  /* Confirm banner */
+  .confirm-banner {
+    padding: var(--space-4);
+    background: var(--color-warning-light);
+    border: 1px solid var(--color-warning);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--space-6);
+  }
+
+  .confirm-banner p {
+    margin-bottom: var(--space-3);
+    font-weight: 500;
+  }
+
+  .confirm-actions {
+    display: flex;
+    gap: var(--space-2);
+    justify-content: flex-end;
   }
 
   .hero-photo {
@@ -380,6 +435,7 @@
 
   .ingredient-qty {
     font-weight: 600;
+    margin-right: var(--space-1);
   }
 
   .ingredient-unit {
@@ -401,9 +457,37 @@
     line-height: 1.6;
   }
 
+  .notes-text {
+    line-height: 1.6;
+    color: var(--color-text-secondary);
+    white-space: pre-wrap;
+  }
+
   .classification-grid {
     display: flex;
+    flex-wrap: wrap;
     gap: var(--space-6);
+  }
+
+  .classification-item {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+  }
+
+  .classification-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+
+  .classification-tag {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: var(--radius-xl);
+    font-size: var(--font-size-sm);
+    background: var(--color-bg-secondary);
+    border: 1px solid var(--color-border-light);
   }
 
   .loading {
@@ -443,6 +527,10 @@
     .meta-row {
       flex-direction: column;
       gap: var(--space-2);
+    }
+
+    .classification-grid {
+      flex-direction: column;
     }
   }
 </style>
