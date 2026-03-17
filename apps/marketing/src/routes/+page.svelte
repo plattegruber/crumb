@@ -18,7 +18,9 @@
         products that sell.
       </p>
       <div class="hero__actions">
-        <a href="#get-started" class="btn btn--primary btn--large">Get started free</a>
+        <a href="https://dash.makedough.app/sign-up" class="btn btn--primary btn--large"
+          >Get started free</a
+        >
         <a href="/features" class="btn btn--secondary btn--large">See features</a>
       </div>
     </div>
@@ -215,13 +217,15 @@
 <!-- CTA -->
 <section class="section cta-section">
   <div class="container">
-    <div class="cta-block" id="get-started">
+    <div class="cta-block">
       <h2>Ready to turn your recipes into revenue?</h2>
       <p>
         Connect your Kit account and start building your recipe-powered email business today. Free
         to start, no credit card required.
       </p>
-      <a href="#get-started" class="btn btn--primary btn--large">Get started free</a>
+      <a href="https://dash.makedough.app/sign-up" class="btn btn--primary btn--large"
+        >Get started free</a
+      >
     </div>
   </div>
 </section>

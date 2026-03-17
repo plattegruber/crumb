@@ -35,7 +35,7 @@
       <div class="blog-post__cta">
         <h3>Ready to try Dough?</h3>
         <p>Connect your Kit account and start building your recipe-powered email business.</p>
-        <a href="/#get-started" class="btn btn--primary">Get started free</a>
+        <a href="https://dash.makedough.app/sign-up" class="btn btn--primary">Get started free</a>
       </div>
     </footer>
   </div>
