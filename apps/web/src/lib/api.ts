@@ -254,8 +254,17 @@ export interface EngagementScoresResponse {
   scores: RecipeEngagementScore[];
 }
 
+export interface ProductRecommendation {
+  dietaryTag: string;
+  subscriberCount: number;
+  engagementRate: number;
+  recipeCount: number;
+  avgScore: number;
+  message: string;
+}
+
 export interface RecommendationsResponse {
-  recommendations: unknown[];
+  recommendations: ProductRecommendation[];
 }
 
 export const analytics = {
@@ -285,7 +294,7 @@ export const analytics = {
     return res.scores;
   },
 
-  async getRecommendations(): Promise<unknown[]> {
+  async getRecommendations(): Promise<ProductRecommendation[]> {
     const res = await apiFetch<RecommendationsResponse>("/analytics/recommendations");
     return res.recommendations;
   },
@@ -295,18 +304,34 @@ export const analytics = {
 // Segmentation endpoints
 // ---------------------------------------------------------------------------
 
+export interface SegmentData {
+  subscriber_count: number;
+  engagement_rate: number;
+  growth_rate_30d: number;
+  top_recipe_ids: readonly string[];
+}
+
+export interface SegmentProfileData {
+  creator_id: string;
+  computed_at: string;
+  segments: Record<string, SegmentData>;
+}
+
 export interface SegmentProfileResponse {
-  profile: unknown | null;
+  profile: SegmentProfileData | null;
 }
 
 export const segmentation = {
-  async getProfile(): Promise<unknown | null> {
+  async getProfile(): Promise<SegmentProfileData | null> {
     const res = await apiFetch<SegmentProfileResponse>("/segments");
     return res.profile;
   },
 
-  async computeProfile(): Promise<unknown> {
-    return apiFetch<unknown>("/segments/compute", { method: "POST" });
+  async computeProfile(): Promise<SegmentProfileData> {
+    const res = await apiFetch<{ profile: SegmentProfileData }>("/segments/compute", {
+      method: "POST",
+    });
+    return res.profile;
   },
 
   async inferDietaryTags(recipeId: RecipeId | string): Promise<unknown> {
@@ -327,17 +352,55 @@ export const segmentation = {
 // Automation endpoints
 // ---------------------------------------------------------------------------
 
+export interface SeasonalDrop {
+  id: string;
+  creator_id: string;
+  label: string;
+  start_date: string;
+  end_date: string;
+  collection_id: string;
+  target_segment: string | null;
+  recurrence: string;
+  last_processed_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface AutomationConfig {
+  creator_id: string;
+  save_recipe_sequence_id: string | null;
+  sends_this_month: number;
+  sends_month_reset_at: string | null;
+}
+
 export const automation = {
-  async getSeasonalDrops(): Promise<unknown[]> {
-    const res = await apiFetch<{ drops: unknown[] }>("/automation/seasonal-drops");
+  async getSeasonalDrops(): Promise<SeasonalDrop[]> {
+    const res = await apiFetch<{ drops: SeasonalDrop[] }>("/automation/seasonal-drops");
     return res.drops;
   },
 
-  async createSeasonalDrop(input: Record<string, unknown>): Promise<unknown> {
-    return apiFetch<unknown>("/automation/seasonal-drops", {
+  async createSeasonalDrop(input: Record<string, unknown>): Promise<SeasonalDrop> {
+    return apiFetch<SeasonalDrop>("/automation/seasonal-drops", {
       method: "POST",
       body: JSON.stringify(input),
     });
+  },
+
+  async deleteSeasonalDrop(id: string): Promise<void> {
+    await apiFetch<unknown>(`/automation/seasonal-drops/${id}`, {
+      method: "DELETE",
+    });
+  },
+
+  async getConfig(): Promise<AutomationConfig | null> {
+    try {
+      return await apiFetch<AutomationConfig>("/automation/config");
+    } catch (e) {
+      if (e instanceof ApiError && e.status === 404) {
+        return null;
+      }
+      throw e;
+    }
   },
 
   async createBroadcastDraft(recipeId: RecipeId | string): Promise<unknown> {
