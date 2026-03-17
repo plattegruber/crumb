@@ -16,6 +16,7 @@ export default tseslint.config(
       "**/coverage/**",
       "**/.wrangler/**",
       "**/.astro/**",
+      "**/build/**",
       "**/migrations/**/*.sql",
       ".claude/**",
     ],
@@ -182,7 +183,14 @@ export default tseslint.config(
   // Node globals for config files
   // ---------------------------------------------------------------------------
   {
-    files: ["*.config.js", "*.config.ts", "**/vite.config.ts", "**/vitest.config.ts"],
+    files: [
+      "*.config.js",
+      "*.config.ts",
+      "**/vite.config.ts",
+      "**/vitest.config.ts",
+      "**/build.mjs",
+      "**/scripts/**",
+    ],
     languageOptions: {
       globals: {
         ...globals.node,

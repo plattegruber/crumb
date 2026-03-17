@@ -53,6 +53,7 @@ export async function getClerk(publishableKey: string): Promise<Clerk> {
       attempts++;
     }
 
+    // eslint-disable-next-line @typescript-eslint/consistent-type-imports
     const clerk = win.Clerk as import("@clerk/clerk-js").default;
     if (!clerk) {
       throw new Error("Clerk failed to initialize");
