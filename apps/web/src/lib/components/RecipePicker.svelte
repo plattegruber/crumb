@@ -78,8 +78,9 @@
       tags instanceof Set ||
       (tags && typeof (tags as Iterable<DietaryTag>)[Symbol.iterator] === "function")
     ) {
-      return [...tags] as DietaryTag[];
+      return [...new Set([...tags] as DietaryTag[])];
     }
+    if (Array.isArray(tags)) return [...new Set(tags)] as DietaryTag[];
     return [];
   }
 </script>

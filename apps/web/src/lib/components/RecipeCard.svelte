@@ -14,13 +14,13 @@
     // If it's a JSON string (from flat DB row), parse it
     if (typeof tags === "string") {
       try {
-        return JSON.parse(tags) as DietaryTag[];
+        return [...new Set(JSON.parse(tags) as DietaryTag[])];
       } catch {
         return [];
       }
     }
-    // If it's an array already
-    if (Array.isArray(tags)) return tags as DietaryTag[];
+    // If it's an array already — deduplicate to avoid keyed {#each} errors
+    if (Array.isArray(tags)) return [...new Set(tags)] as DietaryTag[];
     // tags is a ReadonlySet -- convert to array
     if (
       tags instanceof Set ||
