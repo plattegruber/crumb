@@ -38,6 +38,10 @@ export async function createTestTables(d1: D1Database): Promise<void> {
     `CREATE TABLE IF NOT EXISTS collection_recipes (collection_id TEXT NOT NULL, recipe_id TEXT NOT NULL, sort_order INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (collection_id, recipe_id))`,
   );
   await d1.exec(
+    `CREATE TABLE IF NOT EXISTS import_jobs (id TEXT PRIMARY KEY, creator_id TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'Pending', source_type TEXT NOT NULL, source_data TEXT, extract_data TEXT, recipe_id TEXT, error_type TEXT, error_data TEXT, processing_started_at TEXT, created_at TEXT NOT NULL, updated_at TEXT NOT NULL)`,
+  );
+  await d1.exec(`CREATE INDEX IF NOT EXISTS import_jobs_creator_id_idx ON import_jobs(creator_id)`);
+  await d1.exec(
     `CREATE TABLE IF NOT EXISTS recipe_engagement_events (id TEXT PRIMARY KEY, creator_id TEXT NOT NULL, recipe_id TEXT NOT NULL, event_type TEXT NOT NULL, event_data TEXT, kit_subscriber_id TEXT, source TEXT NOT NULL, occurred_at TEXT NOT NULL)`,
   );
   await d1.exec(
@@ -84,6 +88,7 @@ export async function createTestTables(d1: D1Database): Promise<void> {
 export async function cleanTestTables(d1: D1Database): Promise<void> {
   await d1.exec(`DELETE FROM published_listings`);
   await d1.exec(`DELETE FROM lead_magnets`);
+  await d1.exec(`DELETE FROM import_jobs`);
   await d1.exec(`DELETE FROM recipe_engagement_events`);
   await d1.exec(`DELETE FROM recipe_engagement_scores`);
   await d1.exec(`DELETE FROM segment_profiles`);
