@@ -557,7 +557,7 @@ export function createImportService(deps: ImportServiceDeps) {
       .where(eq(schema.importJobs.id, jobId));
 
     // Set up 60-second processing timeout
-    const timeoutMs = 300000; // 5 minutes — matches agent timeout for Claude
+    const timeoutMs = 600000; // 10 minutes for Claude agent
     let timedOut = false;
 
     const processingPromise = (async (): Promise<Result<void, ImportServiceError>> => {
@@ -1504,7 +1504,7 @@ export function createDefaultAgentExtractor(ai?: Ai, anthropicApiKey?: string): 
           anthropicApiKey,
           fetchFn,
           maxTurns: 30,
-          timeoutMs: 300000, // 5 minutes
+          timeoutMs: 600000, // 10 minutes
         },
         input,
       );

@@ -32,13 +32,13 @@ queue = "dough-render-pipeline"
 [[queues.consumers]]
 queue = "dough-import-pipeline"
 max_batch_size = 10
-max_batch_timeout = 300
+max_batch_timeout = 30
 max_retries = 3
 
 [[queues.consumers]]
 queue = "dough-render-pipeline"
 max_batch_size = 5
-max_batch_timeout = 300
+max_batch_timeout = 30
 max_retries = 3
 
 # ---------- Workers AI ----------
