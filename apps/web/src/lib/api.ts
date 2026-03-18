@@ -80,6 +80,12 @@ async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> 
 
   if (!res.ok) {
     const text = await res.text();
+    console.error("[dough] API error:", {
+      url: fullUrl,
+      status: res.status,
+      body: text.slice(0, 300),
+      hasToken: !!token,
+    });
     let body: unknown;
     try {
       body = JSON.parse(text);
