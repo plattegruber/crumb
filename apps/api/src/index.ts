@@ -44,6 +44,7 @@ app.use(
     allowMethods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowHeaders: ["Content-Type", "Authorization"],
     credentials: true,
+    maxAge: 0, // Prevent browser from caching CORS preflight responses
   }),
 );
 
