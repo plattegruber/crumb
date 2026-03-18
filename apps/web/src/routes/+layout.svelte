@@ -41,12 +41,20 @@
 
   onMount(async () => {
     // Configure API base URL
-    // In local dev, Vite proxies /api → localhost:8787
-    // In production, set VITE_API_BASE_URL to the Worker URL
-    setApiBaseUrl(import.meta.env.VITE_API_BASE_URL ?? "/api");
+    const apiUrl = import.meta.env.VITE_API_BASE_URL;
+    const resolvedApiUrl = apiUrl ?? "/api";
+    console.log("[dough] API config:", {
+      VITE_API_BASE_URL: apiUrl,
+      resolved: resolvedApiUrl,
+      allViteEnv: JSON.stringify(import.meta.env),
+    });
+    setApiBaseUrl(resolvedApiUrl);
 
     // Initialize Clerk
     const publishableKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
+    console.log("[dough] Clerk config:", {
+      VITE_CLERK_PUBLISHABLE_KEY: publishableKey ? `${publishableKey.slice(0, 15)}...` : "MISSING",
+    });
     if (publishableKey) {
       try {
         clerk = await getClerk(publishableKey);

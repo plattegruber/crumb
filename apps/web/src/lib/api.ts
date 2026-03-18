@@ -65,7 +65,15 @@ async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> 
     headers["Authorization"] = `Bearer ${token}`;
   }
 
-  const res = await fetch(`${apiBaseUrl}${path}`, {
+  const fullUrl = `${apiBaseUrl}${path}`;
+  console.log("[dough] apiFetch:", {
+    url: fullUrl,
+    method: options.method ?? "GET",
+    hasToken: !!token,
+    apiBaseUrl,
+  });
+
+  const res = await fetch(fullUrl, {
     ...options,
     headers,
   });
