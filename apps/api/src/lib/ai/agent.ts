@@ -149,11 +149,20 @@ export async function runExtractionAgent(
     createAllTools({
       deps: {
         fetchFn: config.fetchFn,
-        aiRunFn: config.aiRunFn,
+        aiRunFn: config.aiRunFn ?? (async () => ({})),
       },
       visionModel,
       transcriptionModel,
     });
+
+  if (!config.aiRunFn) {
+    return err({
+      type: "ExtractionFailed" as const,
+      reason: "No AI provider configured. Set ANTHROPIC_API_KEY or enable Workers AI.",
+    });
+  }
+
+  const aiRunFn = config.aiRunFn;
 
   // Build tool definitions for the AI model
   const toolDefinitions = tools.map((tool) => ({
@@ -192,7 +201,7 @@ export async function runExtractionAgent(
     let aiResponse: AiResponse;
     const aiCallStart = Date.now();
     try {
-      const rawResponse = await config.aiRunFn(reasoningModel, {
+      const rawResponse = await aiRunFn(reasoningModel, {
         messages,
         tools: toolDefinitions,
         max_tokens: 4096,

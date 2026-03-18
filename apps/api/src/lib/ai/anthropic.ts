@@ -48,7 +48,7 @@ export interface AnthropicAgentConfig {
   readonly tools: AgentTool[];
   readonly maxTurns?: number;
   readonly timeoutMs?: number;
-  readonly fetchFn?: typeof fetch;
+  readonly fetchFn?: (url: string, init?: RequestInit) => Promise<Response>;
 }
 
 /**
