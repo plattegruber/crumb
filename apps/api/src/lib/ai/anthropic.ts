@@ -6,7 +6,7 @@
 // ---------------------------------------------------------------------------
 
 import type { AgentTool } from "./tools.js";
-import { createLogger, truncate } from "../logger.js";
+import { createLogger, truncate, type Logger } from "../logger.js";
 
 /** Default Claude model for agent reasoning. */
 export const CLAUDE_MODEL = "claude-sonnet-4-20250514";
@@ -49,6 +49,8 @@ export interface AnthropicAgentConfig {
   readonly maxTurns?: number;
   readonly timeoutMs?: number;
   readonly fetchFn?: (url: string, init?: RequestInit) => Promise<Response>;
+  /** Optional logger instance. Falls back to createLogger("anthropic-agent"). */
+  readonly logger?: Logger;
 }
 
 /**
@@ -66,7 +68,7 @@ export async function runClaudeAgent(
   textResponse: string | null;
   turns: number;
 }> {
-  const claudeLogger = createLogger("anthropic-agent");
+  const log = config.logger ?? createLogger("anthropic-agent");
   const model = config.model ?? CLAUDE_MODEL;
   const maxTurns = config.maxTurns ?? 30;
   const timeoutMs = config.timeoutMs ?? 300000; // 5 minutes
@@ -101,9 +103,19 @@ export async function runClaudeAgent(
 
   for (let turn = 0; turn < maxTurns; turn++) {
     if (Date.now() - startTime > timeoutMs) {
-      claudeLogger.error("claude_agent_timeout", { turn, elapsedMs: Date.now() - startTime });
+      log.error("claude_agent_timeout", { turn, elapsedMs: Date.now() - startTime });
       return { finalToolCall: null, textResponse: "Agent timed out", turns: turn };
     }
+
+    // -----------------------------------------------------------------------
+    // claude_api_call_start
+    // -----------------------------------------------------------------------
+    log.info("claude_api_call_start", {
+      turn,
+      model,
+      messageCount: messages.length,
+      toolCount: toolDefs.length,
+    });
 
     // Call Anthropic Messages API
     const apiCallStart = Date.now();
@@ -123,26 +135,34 @@ export async function runClaudeAgent(
       }),
     });
 
+    // -----------------------------------------------------------------------
+    // claude_error — API error with status code and body
+    // -----------------------------------------------------------------------
     if (!response.ok) {
       const errorText = await response.text();
-      claudeLogger.error("anthropic_api_error", {
+      const durationMs = Date.now() - apiCallStart;
+      log.error("claude_error", {
         turn,
         status: response.status,
-        error: truncate(errorText, 200),
-        durationMs: Date.now() - apiCallStart,
+        body: truncate(errorText, 200),
+        durationMs,
       });
       throw new Error(`Anthropic API error ${response.status}: ${errorText}`);
     }
 
     const data = (await response.json()) as AnthropicResponse;
+    const apiCallDurationMs = Date.now() - apiCallStart;
 
-    claudeLogger.debug("anthropic_api_call", {
+    // -----------------------------------------------------------------------
+    // claude_api_call_complete
+    // -----------------------------------------------------------------------
+    log.info("claude_api_call_complete", {
       turn,
       model,
-      inputTokens: data.usage.input_tokens,
-      outputTokens: data.usage.output_tokens,
-      stopReason: data.stop_reason,
-      durationMs: Date.now() - apiCallStart,
+      stop_reason: data.stop_reason,
+      input_tokens: data.usage.input_tokens,
+      output_tokens: data.usage.output_tokens,
+      duration_ms: apiCallDurationMs,
     });
 
     // Add assistant response to conversation
@@ -155,12 +175,28 @@ export async function runClaudeAgent(
       for (const block of data.content) {
         if (block.type !== "tool_use") continue;
 
+        // -------------------------------------------------------------------
+        // claude_tool_call — log every tool call from the model
+        // -------------------------------------------------------------------
+        log.info("claude_tool_call", {
+          turn,
+          toolName: block.name,
+          inputSummary: truncate(JSON.stringify(block.input), 200),
+        });
+
         const tool = toolMap.get(block.name);
 
         // Check for terminal tool
         if (block.name === "extract_recipe") {
-          claudeLogger.info("claude_extract_recipe_called", {
+          // -----------------------------------------------------------------
+          // claude_terminal_tool — log recipe title when extract_recipe called
+          // -----------------------------------------------------------------
+          const recipeTitle =
+            typeof block.input["title"] === "string" ? block.input["title"] : null;
+          log.info("claude_terminal_tool", {
             turn: turn + 1,
+            toolName: "extract_recipe",
+            recipeTitle,
             totalDurationMs: Date.now() - startTime,
           });
           return {
@@ -171,7 +207,11 @@ export async function runClaudeAgent(
         }
 
         if (tool === undefined) {
-          claudeLogger.warn("claude_unknown_tool", { turn, toolName: block.name });
+          log.warn("claude_tool_call", {
+            turn,
+            toolName: block.name,
+            error: "Unknown tool",
+          });
           toolResults.push({
             type: "tool_result",
             tool_use_id: block.id,
@@ -184,13 +224,18 @@ export async function runClaudeAgent(
         const toolStart = Date.now();
         try {
           const result = await tool.execute(block.input);
-          claudeLogger.debug("claude_tool_executed", {
+          const toolDurationMs = Date.now() - toolStart;
+
+          // -----------------------------------------------------------------
+          // claude_tool_result — log tool execution result
+          // -----------------------------------------------------------------
+          log.info("claude_tool_result", {
             turn,
             toolName: block.name,
-            inputSummary: truncate(JSON.stringify(block.input), 200),
-            outputSummary: truncate(result, 200),
-            durationMs: Date.now() - toolStart,
+            resultSummary: truncate(result, 200),
+            duration_ms: toolDurationMs,
           });
+
           toolResults.push({
             type: "tool_result",
             tool_use_id: block.id,
@@ -198,11 +243,13 @@ export async function runClaudeAgent(
           });
         } catch (e: unknown) {
           const msg = e instanceof Error ? e.message : "Unknown error";
-          claudeLogger.error("claude_tool_error", {
+          const toolDurationMs = Date.now() - toolStart;
+          log.error("claude_error", {
             turn,
             toolName: block.name,
             error: msg,
-            durationMs: Date.now() - toolStart,
+            duration_ms: toolDurationMs,
+            context: "tool_execution",
           });
           toolResults.push({
             type: "tool_result",
@@ -220,7 +267,11 @@ export async function runClaudeAgent(
         (b): b is { type: "text"; text: string } => b.type === "text",
       );
       const text = textBlocks.map((b) => b.text).join("\n");
-      claudeLogger.info("claude_agent_text_response", {
+
+      // -------------------------------------------------------------------
+      // claude_text_response — model returned text instead of tool call
+      // -------------------------------------------------------------------
+      log.info("claude_text_response", {
         turn: turn + 1,
         responseSummary: truncate(text, 200),
         totalDurationMs: Date.now() - startTime,
@@ -229,7 +280,7 @@ export async function runClaudeAgent(
     }
   }
 
-  claudeLogger.error("claude_agent_max_turns_exceeded", {
+  log.error("claude_agent_max_turns_exceeded", {
     maxTurns,
     totalDurationMs: Date.now() - startTime,
   });

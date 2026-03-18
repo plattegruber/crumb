@@ -48,6 +48,11 @@
 
   const reviewJobs = $derived(allJobs.filter((j) => j.status.type === "NeedsReview"));
 
+  // Failed imports from the last hour — shown prominently above history
+  const recentFailedJobs = $derived(
+    allJobs.filter((j) => j.status.type === "Failed" && Date.now() - j.updated_at < 3600000),
+  );
+
   const historyJobs = $derived(
     allJobs.filter((j) => j.status.type === "Completed" || j.status.type === "Failed"),
   );
@@ -157,17 +162,25 @@
   }
 
   function startBackgroundPolling() {
-    // Poll all active jobs every 5 seconds
+    // Poll all jobs every 10 seconds to catch queue-processed jobs
     jobPollingInterval = setInterval(async () => {
-      if (activeJobs.length === 0 && reviewJobs.length === 0) return;
-
       try {
         const updated = await imports.list(100, 0);
         allJobs = updated;
+
+        // Ensure individual polling is running for any newly-active jobs
+        for (const job of updated) {
+          if (
+            (job.status.type === "Pending" || job.status.type === "Processing") &&
+            !activeJobIntervals.has(job.id)
+          ) {
+            startJobPolling(job.id);
+          }
+        }
       } catch (err: unknown) {
         console.error("Background poll failed:", err);
       }
-    }, 5000);
+    }, 10000);
   }
 
   // ---------------------------------------------------------------------------
@@ -282,7 +295,28 @@
       case "FromWordPressSync":
         return `WordPress: ${source.site_url}`;
       default:
-        return "Unknown source";
+        return "Pasted text";
+    }
+  }
+
+  function getFailedErrorMessage(job: ImportJob): string {
+    if (job.status.type !== "Failed") return "";
+    const error = job.status.error;
+    switch (error.type) {
+      case "FetchFailed":
+        return `Failed to fetch: ${error.reason}`;
+      case "ExtractionFailed":
+        return `Extraction failed: ${error.reason}`;
+      case "VideoTooLong":
+        return `Video too long (${error.duration_seconds}s)`;
+      case "FileTooLarge":
+        return `File too large (${Math.round(error.size_bytes / 1024)}KB)`;
+      case "WordPressAuthFailed":
+        return "WordPress authentication failed";
+      case "Timeout":
+        return "Import timed out. Please try again.";
+      default:
+        return "Import failed. Please try again.";
     }
   }
 
@@ -449,6 +483,17 @@ Ingredients:
       <h2>In Progress</h2>
       <div class="active-jobs">
         {#each activeJobs as job (job.id)}
+          <div class="processing-banner">
+            <span class="spinner"></span>
+            <span>
+              {#if job.status.type === "Pending"}
+                Queued for extraction...
+              {:else}
+                Extracting recipe from {truncateUrl(getSourceLabel(job), 50)}...
+              {/if}
+              This may take up to a few minutes.
+            </span>
+          </div>
           <div class="progress-card card">
             <div class="progress-header">
               <div class="progress-status">
@@ -654,6 +699,31 @@ Ingredients:
           {/if}
         {/each}
       </div>
+    </div>
+  {/if}
+
+  <!-- ===================================================================== -->
+  <!-- Recent Failures                                                      -->
+  <!-- ===================================================================== -->
+
+  {#if recentFailedJobs.length > 0}
+    <div class="import-section">
+      {#each recentFailedJobs as job (job.id)}
+        <div class="failed-banner">
+          <div class="failed-banner-content">
+            <div class="failed-banner-header">
+              <span class="status-badge status-error">Failed</span>
+              <span class="failed-source">{truncateUrl(getSourceLabel(job), 50)}</span>
+            </div>
+            <p class="failed-message">{getFailedErrorMessage(job)}</p>
+          </div>
+          <div class="failed-banner-actions">
+            <button class="btn btn-ghost" onclick={() => handleRetry(job)} disabled={submitting}>
+              Try Again
+            </button>
+          </div>
+        </div>
+      {/each}
     </div>
   {/if}
 
@@ -906,6 +976,74 @@ Ingredients:
   .status-review {
     background: #eef2ff;
     color: #4338ca;
+  }
+
+  /* ===================================================================== */
+  /* Processing banner                                                     */
+  /* ===================================================================== */
+
+  .processing-banner {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-3) var(--space-4);
+    background: var(--color-primary-light, #eef2ff);
+    color: var(--color-primary, #4338ca);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--space-3);
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+  }
+
+  .processing-banner .spinner {
+    flex-shrink: 0;
+  }
+
+  /* ===================================================================== */
+  /* Failed import banner                                                  */
+  /* ===================================================================== */
+
+  .failed-banner {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--space-4);
+    padding: var(--space-4);
+    background: var(--color-danger-light);
+    border: 1px solid var(--color-danger);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--space-3);
+  }
+
+  .failed-banner-content {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .failed-banner-header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    margin-bottom: var(--space-2);
+  }
+
+  .failed-source {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .failed-message {
+    font-size: var(--font-size-sm);
+    color: var(--color-danger);
+    font-weight: 500;
+    margin: 0;
+  }
+
+  .failed-banner-actions {
+    flex-shrink: 0;
   }
 
   /* ===================================================================== */
