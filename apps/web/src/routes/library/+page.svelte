@@ -43,8 +43,12 @@
         [];
       total = ((res as Record<string, unknown>).total as number) ?? 0;
     } catch (e) {
+      const errDetail =
+        e instanceof Error
+          ? { message: e.message, name: e.name, stack: e.stack?.slice(0, 300) }
+          : e;
+      console.error("[dough] fetchRecipes failed:", JSON.stringify(errDetail));
       error = "Failed to load recipes. Please try again.";
-      console.error(e);
     } finally {
       loading = false;
     }

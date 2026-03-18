@@ -65,13 +65,27 @@ async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> 
     headers["Authorization"] = `Bearer ${token}`;
   }
 
-  const res = await fetch(`${apiBaseUrl}${path}`, {
+  const fullUrl = `${apiBaseUrl}${path}`;
+  console.log("[dough] apiFetch:", {
+    url: fullUrl,
+    method: options.method ?? "GET",
+    hasToken: !!token,
+    apiBaseUrl,
+  });
+
+  const res = await fetch(fullUrl, {
     ...options,
     headers,
   });
 
   if (!res.ok) {
     const text = await res.text();
+    console.error("[dough] API error:", {
+      url: fullUrl,
+      status: res.status,
+      body: text.slice(0, 300),
+      hasToken: !!token,
+    });
     let body: unknown;
     try {
       body = JSON.parse(text);
