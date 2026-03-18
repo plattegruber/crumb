@@ -237,8 +237,15 @@ export const imports = {
     });
   },
 
-  async confirm(id: ImportJobId | string): Promise<unknown> {
-    return apiFetch<unknown>(`/imports/${id}/confirm`, { method: "POST" });
+  async createFromText(text: string): Promise<ImportJob> {
+    return apiFetch<ImportJob>("/imports", {
+      method: "POST",
+      body: JSON.stringify({ text }),
+    });
+  },
+
+  async confirm(id: ImportJobId | string): Promise<ImportJob> {
+    return apiFetch<ImportJob>(`/imports/${id}/confirm`, { method: "POST" });
   },
 
   async reject(id: ImportJobId | string): Promise<void> {
