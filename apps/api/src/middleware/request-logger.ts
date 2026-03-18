@@ -8,7 +8,7 @@
 
 import { createMiddleware } from "hono/factory";
 import type { AppEnv } from "./auth.js";
-import { createLogger, type Logger } from "../lib/logger.js";
+import { createLogger, type Logger, truncate, redactSensitive } from "../lib/logger.js";
 import { createMetrics, METRIC, type MetricsCollector } from "../lib/metrics.js";
 
 // ---------------------------------------------------------------------------
@@ -63,12 +63,45 @@ export function requestLogger() {
     c.set("logger", logger);
     c.set("metrics", metrics);
 
+    // Gather query params
+    const queryParams = c.req.query();
+    const hasQuery = Object.keys(queryParams).length > 0;
+
+    // Summarise request body for mutating methods (POST/PUT/PATCH)
+    let bodySummary: string | null = null;
+    const method = c.req.method;
+    if (method === "POST" || method === "PUT" || method === "PATCH") {
+      try {
+        const cloned = c.req.raw.clone();
+        const rawText = await cloned.text();
+        if (rawText.length > 0) {
+          // Try to parse as JSON so we can redact sensitive fields
+          try {
+            const parsed = JSON.parse(rawText) as Record<string, unknown>;
+            const redacted = redactSensitive(parsed);
+            bodySummary = truncate(JSON.stringify(redacted), 200);
+          } catch {
+            bodySummary = truncate(rawText, 200);
+          }
+        }
+      } catch {
+        // Body not readable — skip
+      }
+    }
+
     // Log request start
-    logger.info("request_start", {
+    const startData: Record<string, unknown> = {
       method: c.req.method,
       path: c.req.path,
       userAgent: c.req.header("User-Agent") ?? null,
-    });
+    };
+    if (hasQuery) {
+      startData["query"] = queryParams;
+    }
+    if (bodySummary !== null) {
+      startData["bodySummary"] = bodySummary;
+    }
+    logger.info("request_start", startData);
 
     // Execute downstream handlers
     await next();
@@ -79,13 +112,20 @@ export function requestLogger() {
     // Set response header
     c.header("X-Request-Id", requestId);
 
+    // Retrieve creator ID if set by auth middleware
+    const creatorId: string | undefined = c.get("creatorId" as never) as string | undefined;
+
     // Log request end
-    logger.info("request_end", {
+    const endData: Record<string, unknown> = {
       method: c.req.method,
       path: c.req.path,
       status: c.res.status,
       durationMs,
-    });
+    };
+    if (creatorId !== undefined) {
+      endData["creatorId"] = creatorId;
+    }
+    logger.info("request_end", endData);
 
     // Record metrics
     metrics.increment(METRIC.HttpRequestsTotal, {

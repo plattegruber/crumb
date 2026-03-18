@@ -15,6 +15,7 @@ import {
 import { handleWebhookEvent } from "../services/webhook-handlers.js";
 import { verifyWebhookSignature } from "../lib/kit/webhooks.js";
 import type { KitWebhookPayload } from "../lib/kit/webhooks.js";
+import { createLogger } from "../lib/logger.js";
 
 const analyticsRoutes = new Hono<AppEnv>();
 
@@ -106,6 +107,8 @@ const webhookRoutes = new Hono<AppEnv>();
  * Returns 200 immediately per SPEC 14.2 (async processing).
  */
 webhookRoutes.post("/kit", async (c) => {
+  const webhookLogger = createLogger("webhook-route");
+  const webhookStartTime = Date.now();
   const rawBody = await c.req.text();
   const signature = c.req.header("X-Kit-Signature") ?? "";
 
@@ -114,14 +117,20 @@ webhookRoutes.post("/kit", async (c) => {
   const verifyResult = await verifyWebhookSignature(rawBody, signature, kitSecret);
 
   if (!verifyResult.ok) {
+    webhookLogger.warn("webhook_signature_rejected", {
+      reason: verifyResult.error.type,
+    });
     return c.json({ error: verifyResult.error.message }, 403);
   }
+
+  webhookLogger.info("webhook_signature_verified");
 
   // Parse payload
   let payload: KitWebhookPayload;
   try {
     payload = JSON.parse(rawBody) as KitWebhookPayload;
   } catch {
+    webhookLogger.error("webhook_invalid_json");
     return c.json({ error: "Invalid JSON payload" }, 400);
   }
 
@@ -136,13 +145,31 @@ webhookRoutes.post("/kit", async (c) => {
 
   const db = createDb(c.env.DB);
 
+  webhookLogger.info("webhook_dispatching", {
+    eventType: payload.event,
+    creator: creatorId,
+  });
+
   const result = await handleWebhookEvent(db, creatorId, payload);
+
+  const durationMs = Date.now() - webhookStartTime;
 
   if (!result.ok) {
     // Per SPEC 14.2, still return 200 to acknowledge receipt
     // Errors are logged but don't cause webhook retries
+    webhookLogger.error("webhook_processing_error", {
+      eventType: payload.event,
+      errorType: result.error.type,
+      durationMs,
+    });
     return c.json({ received: true, error: result.error.type }, 200);
   }
+
+  webhookLogger.info("webhook_processed", {
+    eventType: payload.event,
+    action: result.value.action,
+    durationMs,
+  });
 
   return c.json({ received: true, result: result.value }, 200);
 });

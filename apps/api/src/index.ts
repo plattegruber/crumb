@@ -16,7 +16,7 @@ import { createDb } from "./db/index.js";
 import { creators } from "./db/schema.js";
 import { eq } from "drizzle-orm";
 import { handleImportQueue } from "./services/queue-handlers.js";
-import { createLogger } from "./lib/logger.js";
+import { createLogger, type Logger } from "./lib/logger.js";
 import type { Env } from "./env.js";
 
 export type { AppEnv } from "./middleware/auth.js";
@@ -105,6 +105,9 @@ app.use("*", async (c, next) => {
       created_at: now,
       updated_at: now,
     });
+    const autoCreateLogger =
+      (c.get("logger" as never) as Logger | undefined) ?? createLogger("auth");
+    autoCreateLogger.info("creator_auto_created", { creatorId });
   }
   await next();
 });
@@ -174,7 +177,10 @@ export default {
 
     // Create agent extractor using Workers AI binding when available
     const { createDefaultAgentExtractor } = await import("./services/import.js");
-    const agentExtractor = env.AI !== undefined || env.ANTHROPIC_API_KEY !== undefined ? createDefaultAgentExtractor(env.AI, env.ANTHROPIC_API_KEY) : undefined;
+    const agentExtractor =
+      env.AI !== undefined || env.ANTHROPIC_API_KEY !== undefined
+        ? createDefaultAgentExtractor(env.AI, env.ANTHROPIC_API_KEY)
+        : undefined;
 
     await handleImportQueue(
       {

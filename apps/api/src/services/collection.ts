@@ -10,6 +10,9 @@ import { collections, collectionRecipes } from "../db/schema.js";
 import type { CreatorScopedDb } from "../middleware/creator-scope.js";
 import type { Result } from "@dough/shared";
 import { ok, err } from "@dough/shared";
+import { createLogger } from "../lib/logger.js";
+
+const collectionLogger = createLogger("collection");
 
 // ---------------------------------------------------------------------------
 // Types
@@ -70,6 +73,12 @@ export async function createCollection(
     description: input.description ?? null,
     created_at: now,
     updated_at: now,
+  });
+
+  collectionLogger.info("collection_created", {
+    collectionId: input.id,
+    name: input.name,
+    creator: creatorId,
   });
 
   return getCollection(scopedDb, input.id);
@@ -182,6 +191,8 @@ export async function deleteCollection(
   await db
     .delete(collections)
     .where(and(eq(collections.id, collectionId), eq(collections.creator_id, creatorId)));
+
+  collectionLogger.info("collection_deleted", { collectionId, creator: creatorId });
 
   return ok({ id: collectionId });
 }

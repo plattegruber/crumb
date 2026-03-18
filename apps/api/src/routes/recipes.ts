@@ -7,6 +7,7 @@ import { Hono } from "hono";
 import type { AppEnv } from "../middleware/auth.js";
 import { createDb } from "../db/index.js";
 import { withCreatorScope } from "../middleware/creator-scope.js";
+import { createLogger, type Logger } from "../lib/logger.js";
 import {
   createRecipe,
   updateRecipe,
@@ -137,9 +138,16 @@ recipeRoutes.post("/", async (c) => {
     instructionGroups,
   };
 
-  const result = await createRecipe(scopedDb, body);
+  const routeLogger: Logger =
+    (c.get("logger" as never) as Logger | undefined) ?? createLogger("recipe-routes");
+
+  const result = await createRecipe(scopedDb, body, routeLogger);
 
   if (!result.ok) {
+    routeLogger.error("recipe_create_failed", {
+      errorType: result.error.type,
+      title: body.title,
+    });
     return c.json({ error: result.error }, errorToStatus(result.error));
   }
 
@@ -315,9 +323,13 @@ recipeRoutes.put("/:id", async (c) => {
     instructionGroups: updatedInstructionGroups,
   };
 
-  const result = await updateRecipe(scopedDb, recipeId, body);
+  const routeLogger: Logger =
+    (c.get("logger" as never) as Logger | undefined) ?? createLogger("recipe-routes");
+
+  const result = await updateRecipe(scopedDb, recipeId, body, routeLogger);
 
   if (!result.ok) {
+    routeLogger.error("recipe_update_failed", { recipeId, errorType: result.error.type });
     return c.json({ error: result.error }, errorToStatus(result.error));
   }
 
@@ -331,12 +343,15 @@ recipeRoutes.delete("/:id", async (c) => {
   const creatorId = c.get("creatorId");
   const db = createDb(c.env.DB);
   const scopedDb = withCreatorScope(db, creatorId);
+  const routeLogger: Logger =
+    (c.get("logger" as never) as Logger | undefined) ?? createLogger("recipe-routes");
 
   const recipeId = c.req.param("id");
 
-  const result = await deleteRecipe(scopedDb, recipeId);
+  const result = await deleteRecipe(scopedDb, recipeId, routeLogger);
 
   if (!result.ok) {
+    routeLogger.error("recipe_delete_failed", { recipeId, errorType: result.error.type });
     return c.json({ error: result.error }, errorToStatus(result.error));
   }
 

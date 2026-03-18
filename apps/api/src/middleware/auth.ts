@@ -14,6 +14,7 @@ import { verifyToken } from "@clerk/backend";
 import type { Env } from "../env.js";
 import type { CreatorId } from "../types/auth.js";
 import { AuthErrorReason } from "../types/auth.js";
+import { createLogger, type Logger } from "../lib/logger.js";
 
 import type { AppEnv } from "../types/hono.js";
 export type { AppEnv, AppEnvWithLogger } from "../types/hono.js";
@@ -63,17 +64,25 @@ export function extractBearerToken(headerValue: string | null | undefined): stri
  */
 export function clerkAuth(options?: AuthMiddlewareOptions) {
   return createMiddleware<AppEnv>(async (c, next) => {
+    // Attempt to reuse the request-scoped logger if available, otherwise create one
+    const logger: Logger = (c.get("logger" as never) as Logger | undefined) ?? createLogger("auth");
+
     const authHeader = c.req.header("Authorization");
     const token = extractBearerToken(authHeader);
 
     if (token === null) {
+      const reason =
+        authHeader === undefined || authHeader === null
+          ? AuthErrorReason.MISSING_HEADER
+          : AuthErrorReason.MALFORMED_HEADER;
+      logger.warn("auth_failed", {
+        reason,
+        path: c.req.path,
+      });
       return c.json(
         {
           error: "Unauthorized",
-          reason:
-            authHeader === undefined || authHeader === null
-              ? AuthErrorReason.MISSING_HEADER
-              : AuthErrorReason.MALFORMED_HEADER,
+          reason,
         },
         401,
       );
@@ -84,6 +93,10 @@ export function clerkAuth(options?: AuthMiddlewareOptions) {
     const userId = await verifyFn(token, c.env);
 
     if (userId === null) {
+      logger.warn("auth_failed", {
+        reason: AuthErrorReason.VERIFICATION_FAILED,
+        path: c.req.path,
+      });
       return c.json(
         {
           error: "Unauthorized",
@@ -92,6 +105,8 @@ export function clerkAuth(options?: AuthMiddlewareOptions) {
         401,
       );
     }
+
+    logger.debug("auth_success", { creatorId: userId });
 
     c.set("creatorId", userId as CreatorId);
 
