@@ -77,8 +77,8 @@ describe("Collection Routes", () => {
       );
 
       expect(res.status).toBe(201);
-      const body = await res.json<{ collection: { name: string } }>();
-      expect(body.collection.name).toBe("Weeknight Dinners");
+      const body = await res.json<{ name: string }>();
+      expect(body.name).toBe("Weeknight Dinners");
     });
 
     it("returns 400 for empty name", async () => {
@@ -147,8 +147,8 @@ describe("Collection Routes", () => {
       );
 
       expect(res.status).toBe(200);
-      const body = await res.json<{ collection: { name: string } }>();
-      expect(body.collection.name).toBe("Get Test");
+      const body = await res.json<{ name: string }>();
+      expect(body.name).toBe("Get Test");
     });
 
     it("returns 404 for non-existent collection", async () => {
@@ -184,9 +184,9 @@ describe("Collection Routes", () => {
       );
 
       expect(res.status).toBe(200);
-      const body = await res.json<{ collection: { name: string; description: string } }>();
-      expect(body.collection.name).toBe("After");
-      expect(body.collection.description).toBe("Updated");
+      const body = await res.json<{ name: string; description: string }>();
+      expect(body.name).toBe("After");
+      expect(body.description).toBe("Updated");
     });
 
     it("returns 404 when updating non-existent collection", async () => {
@@ -274,8 +274,8 @@ describe("Collection Routes", () => {
       );
 
       expect(res.status).toBe(200);
-      const body = await res.json<{ recipeIds: string[] }>();
-      expect(body.recipeIds).toContain("recipe-add-1");
+      const body = await res.json<{ recipe_ids: string[] }>();
+      expect(body.recipe_ids).toContain("recipe-add-1");
     });
   });
 
@@ -316,8 +316,8 @@ describe("Collection Routes", () => {
       );
 
       expect(res.status).toBe(200);
-      const body = await res.json<{ recipeIds: string[] }>();
-      expect(body.recipeIds).not.toContain("recipe-rm-1");
+      const body = await res.json<{ recipe_ids: string[] }>();
+      expect(body.recipe_ids).not.toContain("recipe-rm-1");
     });
   });
 });
