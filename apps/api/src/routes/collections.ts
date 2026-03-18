@@ -43,9 +43,12 @@ collectionRoutes.post("/", async (c) => {
   const db = createDb(c.env.DB);
   const scopedDb = withCreatorScope(db, creatorId);
 
-  const body = await c.req.json<{ id: string; name: string; description?: string | null }>();
+  const body = await c.req.json<{ id?: string; name: string; description?: string | null }>();
 
-  const result = await createCollection(scopedDb, body);
+  const result = await createCollection(scopedDb, {
+    ...body,
+    id: body.id ?? crypto.randomUUID(),
+  });
 
   if (!result.ok) {
     return c.json({ error: result.error }, errorToStatus(result.error));
