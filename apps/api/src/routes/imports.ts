@@ -31,7 +31,7 @@ const imports = new Hono<AppEnv>();
 /**
  * Build the import service from Hono context bindings.
  */
-function getImportService(c: { env: AppEnv["Bindings"] }) {
+function getImportService(c: { env: AppEnv["Bindings"]; executionCtx?: ExecutionContext }) {
   const db = createDb(c.env.DB);
 
   const importLogger = createLogger("import-routes");
@@ -41,16 +41,17 @@ function getImportService(c: { env: AppEnv["Bindings"] }) {
       try {
         await c.env.IMPORT_QUEUE.send(message);
       } catch (e: unknown) {
-        // Queues are not available in local dev — fall back to synchronous
-        // processing so the import pipeline works end-to-end locally.
+        // Queue send failed — process in background via waitUntil
+        // so the HTTP response returns immediately.
         const errorMsg = e instanceof Error ? e.message : "Unknown error";
         importLogger.warn("queue_send_fallback", {
           importJobId: message.importJobId,
           reason: errorMsg,
-          hint: "Queue unavailable (expected in local dev). Processing synchronously.",
+          hint: "Queue unavailable. Processing via waitUntil background task.",
         });
 
-        // Process the job synchronously as a dev fallback
+        // Use waitUntil to process in the background without blocking the response
+        const ctx = c.executionCtx;
         const fallbackDb = createDb(c.env.DB);
         const fallbackFetcher = createDefaultFetcher();
         const fallbackWordpress = createDefaultWordPressClient(fallbackFetcher);
@@ -66,7 +67,6 @@ function getImportService(c: { env: AppEnv["Bindings"] }) {
           },
         };
 
-        // Create agent extractor for fallback processing
         let fallbackAgent: AgentExtractor | undefined;
         if (c.env.AI !== undefined || c.env.ANTHROPIC_API_KEY !== undefined) {
           fallbackAgent = createDefaultAgentExtractor(c.env.AI, c.env.ANTHROPIC_API_KEY);
@@ -82,12 +82,26 @@ function getImportService(c: { env: AppEnv["Bindings"] }) {
         });
 
         const jobId = createImportJobId(message.importJobId);
-        const result = await fallbackService.processImportJob(jobId);
-        if (!result.ok) {
-          importLogger.warn("queue_fallback_processing_failed", {
-            importJobId: message.importJobId,
-            error: result.error.type,
-          });
+
+        // Process in background — don't block the HTTP response
+        const backgroundTask = fallbackService.processImportJob(jobId).then((result) => {
+          if (!result.ok) {
+            importLogger.warn("queue_fallback_processing_failed", {
+              importJobId: message.importJobId,
+              error: result.error.type,
+            });
+          } else {
+            importLogger.info("queue_fallback_processing_completed", {
+              importJobId: message.importJobId,
+            });
+          }
+        });
+
+        if (ctx && typeof ctx.waitUntil === "function") {
+          ctx.waitUntil(backgroundTask);
+        } else {
+          // In local dev without waitUntil, await synchronously
+          await backgroundTask;
         }
       }
     },
