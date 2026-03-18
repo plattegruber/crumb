@@ -16,7 +16,7 @@ import {
   addRecipeToCollection,
   removeRecipeFromCollection,
 } from "../services/collection.js";
-import type { CollectionError } from "../services/collection.js";
+import type { CollectionError, CollectionWithRecipes } from "../services/collection.js";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
 
 const collectionRoutes = new Hono<AppEnv>();
@@ -33,6 +33,16 @@ function errorToStatus(error: CollectionError): ContentfulStatusCode {
     case "database_error":
       return 500;
   }
+}
+
+/**
+ * Flatten CollectionWithRecipes into the Collection shape expected by clients.
+ */
+function toCollectionResponse(cwr: CollectionWithRecipes) {
+  return {
+    ...cwr.collection,
+    recipe_ids: cwr.recipeIds,
+  };
 }
 
 /**
@@ -54,7 +64,7 @@ collectionRoutes.post("/", async (c) => {
     return c.json({ error: result.error }, errorToStatus(result.error));
   }
 
-  return c.json(result.value, 201);
+  return c.json(toCollectionResponse(result.value), 201);
 });
 
 /**
@@ -71,7 +81,7 @@ collectionRoutes.get("/", async (c) => {
     return c.json({ error: result.error }, errorToStatus(result.error));
   }
 
-  return c.json(result.value, 200);
+  return c.json(result.value.map(toCollectionResponse), 200);
 });
 
 /**
@@ -90,7 +100,7 @@ collectionRoutes.get("/:id", async (c) => {
     return c.json({ error: result.error }, errorToStatus(result.error));
   }
 
-  return c.json(result.value, 200);
+  return c.json(toCollectionResponse(result.value), 200);
 });
 
 /**
@@ -110,7 +120,7 @@ collectionRoutes.put("/:id", async (c) => {
     return c.json({ error: result.error }, errorToStatus(result.error));
   }
 
-  return c.json(result.value, 200);
+  return c.json(toCollectionResponse(result.value), 200);
 });
 
 /**
@@ -149,7 +159,7 @@ collectionRoutes.post("/:id/recipes", async (c) => {
     return c.json({ error: result.error }, errorToStatus(result.error));
   }
 
-  return c.json(result.value, 200);
+  return c.json(toCollectionResponse(result.value), 200);
 });
 
 /**
@@ -169,7 +179,7 @@ collectionRoutes.delete("/:id/recipes/:recipeId", async (c) => {
     return c.json({ error: result.error }, errorToStatus(result.error));
   }
 
-  return c.json(result.value, 200);
+  return c.json(toCollectionResponse(result.value), 200);
 });
 
 export { collectionRoutes };
