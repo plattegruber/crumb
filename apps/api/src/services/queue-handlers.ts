@@ -58,10 +58,14 @@ export async function handleImportQueue(batch: QueueBatch, deps: QueueHandlerDep
   });
 
   for (const message of batch.messages) {
+    const messageStartTime = Date.now();
     try {
       const body = message.body;
       if (body === null || typeof body !== "object" || !("importJobId" in body)) {
         // Invalid message format — ack to avoid infinite retries
+        logger.warn("queue_invalid_message_format", {
+          bodySummary: JSON.stringify(body).slice(0, 200),
+        });
         message.ack();
         continue;
       }
@@ -69,29 +73,50 @@ export async function handleImportQueue(batch: QueueBatch, deps: QueueHandlerDep
       const bodyObj = body as Record<string, unknown>;
       const jobIdStr = bodyObj["importJobId"];
       if (typeof jobIdStr !== "string") {
+        logger.warn("queue_invalid_job_id", { body: bodyObj });
         message.ack();
         continue;
       }
 
       const jobId = createImportJobId(jobIdStr);
+      logger.info("queue_message_processing_start", { jobId });
+
       const result = await importService.processImportJob(jobId);
+      const durationMs = Date.now() - messageStartTime;
 
       if (result.ok) {
+        logger.info("queue_message_ack", { jobId, durationMs });
         message.ack();
       } else {
         const error = result.error;
         if (error.type === "NotFound") {
           // Job doesn't exist — ack to avoid retries
+          logger.warn("queue_message_ack_not_found", { jobId, durationMs });
           message.ack();
         } else if (error.type === "InvalidTransition") {
           // Job is in wrong state (e.g. already processed) — ack
+          logger.warn("queue_message_ack_invalid_transition", {
+            jobId,
+            errorMessage: error.message,
+            durationMs,
+          });
           message.ack();
         } else {
           // Transient error — retry
+          logger.error("queue_message_retry", {
+            jobId,
+            errorType: error.type,
+            durationMs,
+          });
           message.retry();
         }
       }
-    } catch {
+    } catch (e: unknown) {
+      const errorMsg = e instanceof Error ? e.message : "Unknown error";
+      logger.error("queue_message_unexpected_error", {
+        error: errorMsg,
+        durationMs: Date.now() - messageStartTime,
+      });
       // Unexpected error — retry the message
       message.retry();
     }

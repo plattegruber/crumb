@@ -669,6 +669,12 @@ export async function createMealPlan(
     shoppingList = generateShoppingList(recipeData);
   }
 
+  defaultLogger.info("product_created", {
+    productId: input.id,
+    type: PRODUCT_TYPE.MealPlan,
+    dayCount: input.days.length,
+  });
+
   await db.insert(mealPlanDetails).values({
     product_id: input.id,
     days: input.days as unknown as ReadonlyArray<{
@@ -739,6 +745,12 @@ export async function createRecipeCardPack(
   await db.insert(recipeCardPacks).values({
     product_id: input.id,
     recipe_ids: input.recipe_ids as unknown as readonly string[],
+  });
+
+  defaultLogger.info("product_created", {
+    productId: input.id,
+    type: PRODUCT_TYPE.RecipeCardPack,
+    recipeCount: input.recipe_ids.length,
   });
 
   return getProduct(scopedDb, input.id);

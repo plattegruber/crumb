@@ -446,11 +446,19 @@ export async function createRecipe(
   }
 
   // Fetch and return the created recipe
+  const ingredientCount = input.ingredientGroups
+    ? input.ingredientGroups.reduce((sum, g) => sum + g.ingredients.length, 0)
+    : 0;
+  const instructionCount = input.instructionGroups
+    ? input.instructionGroups.reduce((sum, g) => sum + g.instructions.length, 0)
+    : 0;
   logger.info("recipe_created", {
     recipeId: input.id,
     creator: creatorId,
     slug: finalSlug,
     title: input.title,
+    ingredientCount,
+    instructionCount,
   });
   return getRecipe(scopedDb, input.id);
 }
@@ -679,7 +687,7 @@ export async function deleteRecipe(
     .set({ status: "Archived", updated_at: new Date().toISOString() })
     .where(and(eq(recipes.id, recipeId), eq(recipes.creator_id, creatorId)));
 
-  logger.info("recipe_deleted", { recipeId });
+  logger.info("recipe_deleted", { recipeId, creator: creatorId });
 
   return ok({ id: recipeId });
 }
@@ -812,6 +820,7 @@ export async function listRecipes(
   logger: Logger = defaultLogger,
 ): Promise<Result<PaginatedResult<RecipeRow>, RecipeError>> {
   const { db, creatorId } = scopedDb;
+  const searchStartTime = Date.now();
 
   const page = Math.max(1, params.page ?? 1);
   const perPage = Math.min(MAX_PER_PAGE, Math.max(1, params.perPage ?? DEFAULT_PER_PAGE));
@@ -923,7 +932,7 @@ export async function listRecipes(
     .limit(perPage)
     .offset(offset);
 
-  logger.debug("recipe_search", {
+  logger.info("recipe_search", {
     query: params.q ?? null,
     filters: {
       dietaryTags: params.dietaryTags ?? null,
@@ -934,6 +943,7 @@ export async function listRecipes(
     },
     resultCount: rows.length,
     total,
+    durationMs: Date.now() - searchStartTime,
   });
 
   return ok({

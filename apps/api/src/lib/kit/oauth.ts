@@ -114,7 +114,8 @@ export async function refreshToken(
   clientSecret: string,
   fetchFn: FetchFn = globalThis.fetch,
 ): Promise<Result<KitOAuthTokenResponse, KitApiError>> {
-  return tokenRequest(
+  oauthLogger.info("token_refresh_attempt");
+  const result = await tokenRequest(
     {
       grant_type: "refresh_token",
       client_id: clientId,
@@ -123,6 +124,15 @@ export async function refreshToken(
     },
     fetchFn,
   );
+  if (!result.ok) {
+    oauthLogger.error("token_refresh_failed", {
+      status: result.error.status,
+      messages: result.error.messages,
+    });
+  } else {
+    oauthLogger.info("token_refresh_success");
+  }
+  return result;
 }
 
 // ---------------------------------------------------------------------------

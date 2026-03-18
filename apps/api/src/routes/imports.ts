@@ -6,7 +6,7 @@ import { Hono } from "hono";
 import type { AppEnv } from "../middleware/auth.js";
 import { createDb } from "../db/index.js";
 import { createImportJobId } from "@dough/shared";
-import { createLogger } from "../lib/logger.js";
+import { createLogger, type Logger } from "../lib/logger.js";
 import {
   createImportService,
   createDefaultFetcher,
@@ -162,6 +162,8 @@ function errorResponse(error: ImportServiceError): {
 
 imports.post("/", async (c) => {
   const creatorId = c.get("creatorId");
+  const routeLogger: Logger =
+    (c.get("logger" as never) as Logger | undefined) ?? createLogger("import-routes");
   const body = await c.req.json<{
     source_type?: unknown;
     source_data?: unknown;
@@ -193,6 +195,11 @@ imports.post("/", async (c) => {
     return c.json({ error: "ValidationError", message: "source_data must be an object" }, 400);
   }
 
+  routeLogger.info("import_create_request", {
+    creator: creatorId,
+    sourceType,
+  });
+
   const service = getImportService(c);
   const result = await service.createImportJob(
     creatorId,
@@ -202,6 +209,10 @@ imports.post("/", async (c) => {
 
   if (!result.ok) {
     const resp = errorResponse(result.error);
+    routeLogger.error("import_create_failed", {
+      creator: creatorId,
+      errorType: result.error.type,
+    });
     return c.json(resp.body, resp.status);
   }
 
@@ -261,12 +272,17 @@ imports.get("/:id", async (c) => {
 imports.post("/:id/confirm", async (c) => {
   const creatorId = c.get("creatorId");
   const jobId = createImportJobId(c.req.param("id"));
+  const routeLogger: Logger =
+    (c.get("logger" as never) as Logger | undefined) ?? createLogger("import-routes");
+
+  routeLogger.info("import_confirm_request", { jobId, creator: creatorId });
 
   const service = getImportService(c);
   const result = await service.confirmImport(jobId, creatorId);
 
   if (!result.ok) {
     const resp = errorResponse(result.error);
+    routeLogger.error("import_confirm_failed", { jobId, errorType: result.error.type });
     return c.json(resp.body, resp.status);
   }
 
@@ -280,12 +296,17 @@ imports.post("/:id/confirm", async (c) => {
 imports.post("/:id/reject", async (c) => {
   const creatorId = c.get("creatorId");
   const jobId = createImportJobId(c.req.param("id"));
+  const routeLogger: Logger =
+    (c.get("logger" as never) as Logger | undefined) ?? createLogger("import-routes");
+
+  routeLogger.info("import_reject_request", { jobId, creator: creatorId });
 
   const service = getImportService(c);
   const result = await service.rejectImport(jobId, creatorId);
 
   if (!result.ok) {
     const resp = errorResponse(result.error);
+    routeLogger.error("import_reject_failed", { jobId, errorType: result.error.type });
     return c.json(resp.body, resp.status);
   }
 

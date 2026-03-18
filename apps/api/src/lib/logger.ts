@@ -89,6 +89,22 @@ export function redactSensitive(data: Record<string, unknown>): Record<string, u
 }
 
 // ---------------------------------------------------------------------------
+// Truncation helper
+// ---------------------------------------------------------------------------
+
+/**
+ * Truncate a string to `maxLen` characters, appending "..." if truncated.
+ * Safe to call on null/undefined — returns "[null]" or "[undefined]".
+ */
+export function truncate(value: unknown, maxLen: number = 200): string {
+  if (value === null) return "[null]";
+  if (value === undefined) return "[undefined]";
+  const str = typeof value === "string" ? value : JSON.stringify(value);
+  if (str.length <= maxLen) return str;
+  return str.slice(0, maxLen) + "...";
+}
+
+// ---------------------------------------------------------------------------
 // Logger implementation
 // ---------------------------------------------------------------------------
 

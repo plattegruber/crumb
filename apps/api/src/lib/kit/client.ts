@@ -168,8 +168,17 @@ async function request<T>(
     }
   }
 
+  // Log rate limit status on every response
+  const rateLimitLimit = response.headers.get("X-RateLimit-Limit");
+  if (rateLimitRemaining !== null && rateLimitLimit !== null) {
+    kitLogger.debug("kit_api_rate_limit", {
+      endpoint: path,
+      used: `${rateLimitRemaining}/${rateLimitLimit}`,
+    });
+  }
+
   if (response.status === 204) {
-    kitLogger.debug("kit_api_call", { method, endpoint: path, status: 204, durationMs });
+    kitLogger.info("kit_api_call", { method, endpoint: path, status: 204, durationMs });
     // 204 No Content — return empty object as T
     return ok({ data: undefined as unknown as T, status: 204 });
   }
@@ -188,7 +197,7 @@ async function request<T>(
 
   try {
     const data = (await response.json()) as T;
-    kitLogger.debug("kit_api_call", {
+    kitLogger.info("kit_api_call", {
       method,
       endpoint: path,
       status: response.status,

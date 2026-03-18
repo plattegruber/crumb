@@ -19,7 +19,7 @@ import type {
   Slug,
 } from "@dough/shared";
 import { ok, err, createImportJobId, createRecipeId, createUrl, createSlug } from "@dough/shared";
-import { createLogger, type Logger } from "../lib/logger.js";
+import { createLogger, truncate, type Logger } from "../lib/logger.js";
 import {
   runExtractionAgent,
   type AgentInput,
@@ -448,11 +448,13 @@ export function createImportService(deps: ImportServiceDeps) {
       });
 
       await deps.queue.send({ importJobId: id });
+      logger.info("import_queue_send_success", { jobId: id });
 
       logger.info("import_job_created", {
         jobId: id,
         sourceType,
         creator: creatorId,
+        sourceDataSummary: truncate(JSON.stringify(sourceData), 200),
       });
 
       return ok({ id });
@@ -1078,6 +1080,13 @@ export function createImportService(deps: ImportServiceDeps) {
         })
         .where(eq(schema.importJobs.id, jobId));
 
+      logger.info("import_confirmed", {
+        jobId,
+        recipeId,
+        creator: creatorId,
+        title,
+      });
+
       return ok({ recipeId });
     } catch (e) {
       return err({
@@ -1131,6 +1140,8 @@ export function createImportService(deps: ImportServiceDeps) {
         updated_at: now,
       })
       .where(eq(schema.importJobs.id, jobId));
+
+    logger.info("import_rejected", { jobId, creator: creatorId });
 
     return ok(undefined);
   }
@@ -1389,6 +1400,16 @@ export function createImportService(deps: ImportServiceDeps) {
   // -------------------------------------------------------------------------
 
   async function markNeedsReview(jobId: ImportJobId, extract: RecipeExtract): Promise<void> {
+    logger.info("import_job_state_transition", {
+      jobId,
+      from: "Processing",
+      to: IMPORT_STATUS.NeedsReview,
+      title: extract.title ?? null,
+      ingredientGroupCount: extract.ingredients.length,
+      instructionCount: extract.instructions.length,
+      confidence: extract.confidence?.overall ?? null,
+    });
+
     const now = new Date().toISOString();
     // Serialize the extract for storage
     // Convert Set to array for JSON storage
