@@ -4,10 +4,23 @@
 
   const { recipe }: { recipe: Recipe } = $props();
 
-  const heroPhoto = $derived(recipe.photos.length > 0 ? recipe.photos[0] : null);
+  const heroPhoto = $derived(recipe.photos && recipe.photos.length > 0 ? recipe.photos[0] : null);
 
   const dietaryTags = $derived.by((): DietaryTag[] => {
-    const tags = recipe.classification.dietary.tags;
+    // Handle both nested Recipe type and flat DB row
+    const tags =
+      recipe.classification?.dietary?.tags ?? (recipe as Record<string, unknown>).dietary_tags;
+    if (!tags) return [];
+    // If it's a JSON string (from flat DB row), parse it
+    if (typeof tags === "string") {
+      try {
+        return JSON.parse(tags) as DietaryTag[];
+      } catch {
+        return [];
+      }
+    }
+    // If it's an array already
+    if (Array.isArray(tags)) return tags as DietaryTag[];
     // tags is a ReadonlySet -- convert to array
     if (
       tags instanceof Set ||
@@ -18,7 +31,9 @@
     return [];
   });
 
-  const totalTime = $derived(recipe.timing.total_minutes);
+  const totalTime = $derived(
+    recipe.timing?.total_minutes ?? (recipe as Record<string, unknown>).total_minutes ?? null,
+  );
 
   const statusLabel = $derived.by(() => {
     switch (recipe.status) {
@@ -91,9 +106,9 @@
         </span>
       {/if}
 
-      {#if recipe.yield}
+      {#if recipe.yield?.quantity || (recipe as Record<string, unknown>).yield_quantity}
         <span class="meta-item">
-          Serves {recipe.yield.quantity}
+          Serves {recipe.yield?.quantity ?? (recipe as Record<string, unknown>).yield_quantity}
         </span>
       {/if}
     </div>
