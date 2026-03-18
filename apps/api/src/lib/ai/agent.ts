@@ -43,9 +43,9 @@ export interface AgentConfig {
   /** The transcription model for audio. */
   readonly transcriptionModel?: string;
   /** Maximum number of agent turns (safety limit). */
-  readonly maxTurns?: number;
+  readonly maxTurns?: number; // default: 30
   /** Timeout in milliseconds for the entire agent run. */
-  readonly timeoutMs?: number;
+  readonly timeoutMs?: number; // default: 600000 (10 min)
   /** Override the tools used by the agent (for testing). */
   readonly tools?: AgentTool[];
 }
@@ -98,7 +98,7 @@ export async function runExtractionAgent(
   const visionModel = config.visionModel ?? DEFAULT_VISION_MODEL;
   const transcriptionModel = config.transcriptionModel ?? DEFAULT_TRANSCRIPTION_MODEL;
   const maxTurns = config.maxTurns ?? 30;
-  const timeoutMs = config.timeoutMs ?? 300000; // 5 minutes
+  const timeoutMs = config.timeoutMs ?? 600000; // 10 minutes
 
   agentLogger.info("agent_started", {
     inputType: input.type,
