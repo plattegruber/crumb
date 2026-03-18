@@ -163,6 +163,12 @@ A task is NOT considered done until ALL of the following are true:
 
 Do not report a task as complete until step 5 is confirmed.
 
+**Workflow obligation:** After writing code, do NOT stop and wait
+for the user to ask you to commit/push/PR. Automatically drive
+through steps 1–2 (commit, push, open PR) in the same response.
+The user should never have to prompt you to continue the delivery
+pipeline — finishing the code is the midpoint, not the end.
+
 ## Git
 
 - Main branch: `main` — protected, no direct pushes.

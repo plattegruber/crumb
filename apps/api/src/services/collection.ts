@@ -116,11 +116,11 @@ export async function getCollection(
 }
 
 /**
- * List all collections for the creator.
+ * List all collections for the creator, including recipe IDs.
  */
 export async function listCollections(
   scopedDb: CreatorScopedDb<Database>,
-): Promise<Result<readonly CollectionRow[], CollectionError>> {
+): Promise<Result<readonly CollectionWithRecipes[], CollectionError>> {
   const { db, creatorId } = scopedDb;
 
   const rows = await db
@@ -129,7 +129,41 @@ export async function listCollections(
     .where(eq(collections.creator_id, creatorId))
     .orderBy(asc(collections.created_at));
 
-  return ok(rows);
+  if (rows.length === 0) {
+    return ok([]);
+  }
+
+  const collectionIds = rows.map((r) => r.id);
+  const allRecipeRows = await db
+    .select({
+      collection_id: collectionRecipes.collection_id,
+      recipe_id: collectionRecipes.recipe_id,
+    })
+    .from(collectionRecipes)
+    .where(
+      sql`${collectionRecipes.collection_id} IN (${sql.join(
+        collectionIds.map((id) => sql`${id}`),
+        sql`, `,
+      )})`,
+    )
+    .orderBy(asc(collectionRecipes.sort_order));
+
+  const recipesByCollection = new Map<string, string[]>();
+  for (const row of allRecipeRows) {
+    const list = recipesByCollection.get(row.collection_id);
+    if (list) {
+      list.push(row.recipe_id);
+    } else {
+      recipesByCollection.set(row.collection_id, [row.recipe_id]);
+    }
+  }
+
+  const result: CollectionWithRecipes[] = rows.map((row) => ({
+    collection: row,
+    recipeIds: recipesByCollection.get(row.id) ?? [],
+  }));
+
+  return ok(result);
 }
 
 /**
