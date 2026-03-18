@@ -295,4 +295,54 @@ describe("Recipe Routes", () => {
       expect(body.recipe.status).toBe("Archived");
     });
   });
+
+  describe("POST /recipes/:id/duplicate-check", () => {
+    it("checks for duplicate recipes", async () => {
+      // Create a recipe first
+      await app.fetch(
+        new Request("http://localhost/recipes", {
+          method: "POST",
+          headers: {
+            Authorization: "Bearer valid-token",
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            id: "recipe-dup-1",
+            title: "Unique Recipe Title",
+          }),
+        }),
+        testEnv(),
+      );
+
+      const res = await app.fetch(
+        new Request("http://localhost/recipes/recipe-dup-1/duplicate-check", {
+          method: "POST",
+          headers: {
+            Authorization: "Bearer valid-token",
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ title: "Unique Recipe Title" }),
+        }),
+        testEnv(),
+      );
+
+      expect(res.status).toBe(200);
+    });
+  });
+
+  describe("GET /recipes with query params", () => {
+    it("supports search and filter query params", async () => {
+      const res = await app.fetch(
+        new Request(
+          "http://localhost/recipes?q=test&status=Draft&email_ready=true&cuisine=Italian&meal_type=Dinner&season=Summer&max_cook_time_minutes=30&dietary_tags=Vegan,GlutenFree&sort=title&order=asc&page=1&per_page=10",
+          {
+            headers: { Authorization: "Bearer valid-token" },
+          },
+        ),
+        testEnv(),
+      );
+
+      expect(res.status).toBe(200);
+    });
+  });
 });

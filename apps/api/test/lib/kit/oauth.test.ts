@@ -199,6 +199,93 @@ describe("refreshToken", () => {
 });
 
 // ---------------------------------------------------------------------------
+// Edge cases: non-JSON error response and non-JSON success response
+// ---------------------------------------------------------------------------
+
+describe("exchangeCode — edge cases", () => {
+  it("handles non-JSON error response body", async () => {
+    const fetchFn = mockFetch(async () => {
+      return new Response("Server Error", {
+        status: 500,
+        headers: { "Content-Type": "text/plain" },
+      });
+    });
+
+    const result = await exchangeCode(
+      "code",
+      "client123",
+      "secret456",
+      "https://app.example.com/callback",
+      fetchFn,
+    );
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.messages[0]).toContain("500");
+    }
+  });
+
+  it("handles error response without errors array", async () => {
+    const fetchFn = mockFetch(async () => jsonResponse({ message: "bad" }, 400));
+
+    const result = await exchangeCode(
+      "code",
+      "client123",
+      "secret456",
+      "https://app.example.com/callback",
+      fetchFn,
+    );
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.messages[0]).toContain("400");
+    }
+  });
+
+  it("handles non-JSON success response body", async () => {
+    const fetchFn = mockFetch(async () => {
+      return new Response("not json", {
+        status: 200,
+        headers: { "Content-Type": "text/plain" },
+      });
+    });
+
+    const result = await exchangeCode(
+      "code",
+      "client123",
+      "secret456",
+      "https://app.example.com/callback",
+      fetchFn,
+    );
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.messages[0]).toContain("Failed to parse");
+    }
+  });
+
+  it("handles non-Error thrown during fetch", async () => {
+    const fetchFn = mockFetch(async () => {
+      // eslint-disable-next-line no-throw-literal -- testing non-Error throw handling
+      throw { notAnError: true };
+    });
+
+    const result = await exchangeCode(
+      "code",
+      "client123",
+      "secret456",
+      "https://app.example.com/callback",
+      fetchFn,
+    );
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.code).toBe("network_error");
+    }
+  });
+});
+
+// ---------------------------------------------------------------------------
 // Token Encryption / Decryption
 // ---------------------------------------------------------------------------
 

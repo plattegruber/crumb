@@ -723,6 +723,200 @@ describe("Segmentation — Word boundary matching", () => {
 });
 
 // ---------------------------------------------------------------------------
+// confirmDietaryTags and inferAndStoreDietaryTags (D1 integration)
+// ---------------------------------------------------------------------------
+
+import { env } from "cloudflare:test";
+import { createTestTables, cleanTestTables } from "../helpers/db-setup.js";
+import { drizzle } from "drizzle-orm/d1";
+import type { RecipeId, CreatorId as SharedCreatorId } from "@dough/shared";
+import {
+  confirmDietaryTags,
+  inferAndStoreDietaryTags,
+  getSegmentProfile,
+} from "../../src/services/segmentation.js";
+
+describe("Segmentation — confirmDietaryTags (D1)", () => {
+  const CREATOR_ID = "seg-creator-1" as SharedCreatorId;
+  const NOW = new Date().toISOString();
+
+  async function setup() {
+    await createTestTables(env.DB);
+    await cleanTestTables(env.DB);
+    await env.DB.exec(
+      `INSERT INTO creators (id, email, name, password_hash, subscription_tier, subscription_started_at, created_at, updated_at) VALUES ('${CREATOR_ID}', 'seg@test.com', 'Seg', '', 'Creator', '${NOW}', '${NOW}', '${NOW}')`,
+    );
+    await env.DB.exec(
+      `INSERT INTO recipes (id, creator_id, title, slug, status, created_at, updated_at) VALUES ('seg-r-1', '${CREATOR_ID}', 'Seg Recipe', 'seg-recipe', 'Draft', '${NOW}', '${NOW}')`,
+    );
+  }
+
+  it("confirms tags and stores them in the database", async () => {
+    await setup();
+    const db = drizzle(env.DB);
+    const result = await confirmDietaryTags(db, "seg-r-1" as RecipeId, CREATOR_ID, [
+      DIETARY_TAG.Vegan,
+      DIETARY_TAG.GlutenFree,
+    ]);
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.value.confirmed).toBe(true);
+      expect(result.value.tags).toContain(DIETARY_TAG.Vegan);
+      expect(result.value.tags).toContain(DIETARY_TAG.GlutenFree);
+    }
+  });
+
+  it("returns error for non-existent recipe", async () => {
+    await setup();
+    const db = drizzle(env.DB);
+    const result = await confirmDietaryTags(db, "nonexistent" as RecipeId, CREATOR_ID, [
+      DIETARY_TAG.Vegan,
+    ]);
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.code).toBe("RECIPE_NOT_FOUND");
+    }
+  });
+
+  it("returns error when creator does not own recipe", async () => {
+    await setup();
+    const db = drizzle(env.DB);
+    const result = await confirmDietaryTags(
+      db,
+      "seg-r-1" as RecipeId,
+      "other-creator" as SharedCreatorId,
+      [DIETARY_TAG.Vegan],
+    );
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.code).toBe("NOT_AUTHORIZED");
+    }
+  });
+
+  it("deduplicates confirmed tags", async () => {
+    await setup();
+    const db = drizzle(env.DB);
+    const result = await confirmDietaryTags(db, "seg-r-1" as RecipeId, CREATOR_ID, [
+      DIETARY_TAG.Vegan,
+      DIETARY_TAG.Vegan,
+      DIETARY_TAG.GlutenFree,
+    ]);
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.value.tags).toHaveLength(2);
+    }
+  });
+});
+
+describe("Segmentation — inferAndStoreDietaryTags (D1)", () => {
+  const CREATOR_ID = "seg-infer-creator-1" as SharedCreatorId;
+  const NOW = new Date().toISOString();
+
+  async function setup() {
+    await createTestTables(env.DB);
+    await cleanTestTables(env.DB);
+    await env.DB.exec(
+      `INSERT INTO creators (id, email, name, password_hash, subscription_tier, subscription_started_at, created_at, updated_at) VALUES ('${CREATOR_ID}', 'infer@test.com', 'Infer', '', 'Creator', '${NOW}', '${NOW}', '${NOW}')`,
+    );
+  }
+
+  it("infers and stores tags for a recipe with ingredients", async () => {
+    await setup();
+    await env.DB.exec(
+      `INSERT INTO recipes (id, creator_id, title, slug, status, created_at, updated_at) VALUES ('infer-r-1', '${CREATOR_ID}', 'Rice Bowl', 'rice-bowl', 'Draft', '${NOW}', '${NOW}')`,
+    );
+    await env.DB.exec(
+      `INSERT INTO ingredient_groups (id, recipe_id, sort_order) VALUES (100, 'infer-r-1', 0)`,
+    );
+    await env.DB.exec(
+      `INSERT INTO ingredients (id, group_id, item, sort_order) VALUES ('infer-ing-1', 100, 'rice', 0)`,
+    );
+    await env.DB.exec(
+      `INSERT INTO ingredients (id, group_id, item, sort_order) VALUES ('infer-ing-2', 100, 'avocado', 1)`,
+    );
+
+    const db = drizzle(env.DB);
+    const result = await inferAndStoreDietaryTags(db, "infer-r-1" as RecipeId, CREATOR_ID);
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.value.state.type).toBe("Unconfirmed");
+      expect(result.value.state.tags.has(DIETARY_TAG.Vegan)).toBe(true);
+    }
+  });
+
+  it("infers tags for recipe with no ingredients", async () => {
+    await setup();
+    await env.DB.exec(
+      `INSERT INTO recipes (id, creator_id, title, slug, status, created_at, updated_at) VALUES ('infer-r-2', '${CREATOR_ID}', 'Empty Recipe', 'empty-recipe', 'Draft', '${NOW}', '${NOW}')`,
+    );
+
+    const db = drizzle(env.DB);
+    const result = await inferAndStoreDietaryTags(db, "infer-r-2" as RecipeId, CREATOR_ID);
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      // Empty ingredient list = all tags except Keto
+      expect(result.value.state.tags.has(DIETARY_TAG.Vegan)).toBe(true);
+    }
+  });
+
+  it("returns error for non-existent recipe", async () => {
+    await setup();
+    const db = drizzle(env.DB);
+    const result = await inferAndStoreDietaryTags(db, "nonexistent" as RecipeId, CREATOR_ID);
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.code).toBe("RECIPE_NOT_FOUND");
+    }
+  });
+});
+
+describe("Segmentation — getSegmentProfile (D1)", () => {
+  const CREATOR_ID = "seg-profile-creator-1" as SharedCreatorId;
+  const NOW = new Date().toISOString();
+
+  async function setup() {
+    await createTestTables(env.DB);
+    await cleanTestTables(env.DB);
+    await env.DB.exec(
+      `INSERT INTO creators (id, email, name, password_hash, subscription_tier, subscription_started_at, created_at, updated_at) VALUES ('${CREATOR_ID}', 'profile@test.com', 'Profile', '', 'Creator', '${NOW}', '${NOW}', '${NOW}')`,
+    );
+  }
+
+  it("returns null when no profile exists", async () => {
+    await setup();
+    const db = drizzle(env.DB);
+    const result = await getSegmentProfile(db, CREATOR_ID);
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.value).toBeNull();
+    }
+  });
+
+  it("returns profile when one exists", async () => {
+    await setup();
+    const segments = JSON.stringify({
+      Vegan: {
+        subscriber_count: 10,
+        engagement_rate: 0.2,
+        growth_rate_30d: 0.05,
+        top_recipe_ids: [],
+      },
+    });
+    await env.DB.exec(
+      `INSERT INTO segment_profiles (creator_id, computed_at, segments) VALUES ('${CREATOR_ID}', '${NOW}', '${segments}')`,
+    );
+
+    const db = drizzle(env.DB);
+    const result = await getSegmentProfile(db, CREATOR_ID);
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.value).not.toBeNull();
+      expect(result.value?.creator_id).toBe(CREATOR_ID);
+    }
+  });
+});
+
+// ---------------------------------------------------------------------------
 // Segment profile computation (mock Kit API)
 // ---------------------------------------------------------------------------
 
