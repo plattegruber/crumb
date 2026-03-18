@@ -163,7 +163,7 @@
     <!-- Dietary tags -->
     {#if recipe.dietary_tags.length > 0}
       <div class="tags-section">
-        {#each recipe.dietary_tags as tag (tag)}
+        {#each [...new Set(recipe.dietary_tags)] as tag (tag)}
           <DietaryBadge tag={tag as DietaryTag} />
         {/each}
       </div>
@@ -237,7 +237,7 @@
             <div class="classification-item">
               <span class="meta-label">Meal Type</span>
               <div class="classification-tags">
-                {#each recipe.meal_types as mt (mt)}
+                {#each [...new Set(recipe.meal_types)] as mt (mt)}
                   <span class="classification-tag">{mt}</span>
                 {/each}
               </div>
@@ -247,7 +247,7 @@
             <div class="classification-item">
               <span class="meta-label">Season</span>
               <div class="classification-tags">
-                {#each recipe.seasons as s (s)}
+                {#each [...new Set(recipe.seasons)] as s (s)}
                   <span class="classification-tag">{s}</span>
                 {/each}
               </div>
