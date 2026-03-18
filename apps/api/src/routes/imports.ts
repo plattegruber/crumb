@@ -5,7 +5,15 @@
 import { Hono } from "hono";
 import type { AppEnv } from "../middleware/auth.js";
 import { createDb } from "../db/index.js";
-import { createImportJobId } from "@dough/shared";
+import type * as schema from "../db/schema.js";
+import { createImportJobId, createUrl, createRecipeId, createCreatorId } from "@dough/shared";
+import type {
+  ImportJob,
+  ImportSource,
+  ImportStatus,
+  ImportError,
+  RecipeExtract,
+} from "@dough/shared";
 import { createLogger, type Logger } from "../lib/logger.js";
 import {
   createImportService,
@@ -157,6 +165,165 @@ function errorResponse(error: ImportServiceError): {
 }
 
 // ---------------------------------------------------------------------------
+// DB row -> ImportJob transform
+// ---------------------------------------------------------------------------
+
+/**
+ * Build the ImportSource discriminated union from flat DB fields.
+ */
+function buildImportSource(
+  sourceType: string,
+  sourceData: Record<string, unknown> | null,
+): ImportSource {
+  const data = sourceData ?? {};
+  switch (sourceType) {
+    case "FromUrl": {
+      const raw = typeof data["url"] === "string" ? data["url"] : "";
+      const url = createUrl(raw);
+      return { type: "FromUrl", url: url ?? (raw as ReturnType<typeof createUrl> & string) };
+    }
+    case "FromInstagramPost": {
+      const raw = typeof data["url"] === "string" ? data["url"] : "";
+      const url = createUrl(raw);
+      return {
+        type: "FromInstagramPost",
+        url: url ?? (raw as ReturnType<typeof createUrl> & string),
+      };
+    }
+    case "FromTikTokVideo": {
+      const raw = typeof data["url"] === "string" ? data["url"] : "";
+      const url = createUrl(raw);
+      return {
+        type: "FromTikTokVideo",
+        url: url ?? (raw as ReturnType<typeof createUrl> & string),
+      };
+    }
+    case "FromYouTubeVideo": {
+      const raw = typeof data["url"] === "string" ? data["url"] : "";
+      const url = createUrl(raw);
+      return {
+        type: "FromYouTubeVideo",
+        url: url ?? (raw as ReturnType<typeof createUrl> & string),
+      };
+    }
+    case "FromScreenshot": {
+      const uploadId = typeof data["upload_id"] === "string" ? data["upload_id"] : "";
+      return { type: "FromScreenshot", upload_id: uploadId };
+    }
+    case "FromInstagramBulk": {
+      const handle = typeof data["account_handle"] === "string" ? data["account_handle"] : "";
+      return { type: "FromInstagramBulk", account_handle: handle };
+    }
+    case "FromWordPressSync": {
+      const raw = typeof data["site_url"] === "string" ? data["site_url"] : "";
+      const url = createUrl(raw);
+      return {
+        type: "FromWordPressSync",
+        site_url: url ?? (raw as ReturnType<typeof createUrl> & string),
+      };
+    }
+    default: {
+      // Fallback: treat unknown source types as FromUrl with empty url
+      const raw = typeof data["url"] === "string" ? data["url"] : "";
+      const url = createUrl(raw);
+      return { type: "FromUrl", url: url ?? (raw as ReturnType<typeof createUrl> & string) };
+    }
+  }
+}
+
+/**
+ * Build the ImportError discriminated union from flat DB fields.
+ */
+function buildImportError(
+  errorType: string | null,
+  errorData: Record<string, unknown> | null,
+): ImportError {
+  const data = errorData ?? {};
+  switch (errorType) {
+    case "FetchFailed":
+      return {
+        type: "FetchFailed",
+        reason: typeof data["reason"] === "string" ? data["reason"] : "Unknown fetch error",
+      };
+    case "VideoTooLong":
+      return {
+        type: "VideoTooLong",
+        duration_seconds:
+          typeof data["duration_seconds"] === "number" ? data["duration_seconds"] : 0,
+      };
+    case "FileTooLarge":
+      return {
+        type: "FileTooLarge",
+        size_bytes: typeof data["size_bytes"] === "number" ? data["size_bytes"] : 0,
+      };
+    case "WordPressAuthFailed":
+      return { type: "WordPressAuthFailed" };
+    case "Timeout":
+      return { type: "Timeout" };
+    case "ExtractionFailed":
+    default:
+      return {
+        type: "ExtractionFailed",
+        reason: typeof data["reason"] === "string" ? data["reason"] : "Unknown error",
+      };
+  }
+}
+
+/**
+ * Transform a flat DB row into the ImportJob discriminated union shape
+ * expected by the frontend.
+ */
+function rowToImportJob(row: typeof schema.importJobs.$inferSelect): ImportJob {
+  const source = buildImportSource(row.source_type, row.source_data ?? null);
+
+  let status: ImportStatus;
+  switch (row.status) {
+    case "Processing":
+      status = {
+        type: "Processing",
+        source,
+        started_at: row.processing_started_at
+          ? Date.parse(row.processing_started_at)
+          : Date.parse(row.created_at),
+      };
+      break;
+    case "NeedsReview":
+      status = {
+        type: "NeedsReview",
+        source,
+        extract: (row.extract_data ?? {}) as unknown as RecipeExtract,
+      };
+      break;
+    case "Completed":
+      status = {
+        type: "Completed",
+        source,
+        recipe_id: createRecipeId(row.recipe_id ?? ""),
+      };
+      break;
+    case "Failed":
+      status = {
+        type: "Failed",
+        source,
+        error: buildImportError(row.error_type ?? null, row.error_data ?? null),
+      };
+      break;
+    case "Pending":
+    default:
+      status = { type: "Pending", source };
+      break;
+  }
+
+  return {
+    id: createImportJobId(row.id),
+    creator_id: createCreatorId(row.creator_id),
+    status,
+    created_at: Date.parse(row.created_at),
+    updated_at: Date.parse(row.updated_at),
+  };
+}
+
+// ---------------------------------------------------------------------------
 // POST /imports — create import job
 // ---------------------------------------------------------------------------
 
@@ -216,7 +383,15 @@ imports.post("/", async (c) => {
     return c.json(resp.body, resp.status);
   }
 
-  return c.json(result.value, 201);
+  // Fetch the created row to return a full ImportJob shape
+  const jobResult = await service.getImportJob(createImportJobId(result.value.id), creatorId);
+
+  if (!jobResult.ok) {
+    // Fallback: return minimal shape with the id
+    return c.json(result.value, 201);
+  }
+
+  return c.json(rowToImportJob(jobResult.value), 201);
 });
 
 // ---------------------------------------------------------------------------
@@ -243,7 +418,7 @@ imports.get("/", async (c) => {
     return c.json(resp.body, resp.status);
   }
 
-  return c.json({ jobs: result.value }, 200);
+  return c.json({ jobs: result.value.map(rowToImportJob) }, 200);
 });
 
 // ---------------------------------------------------------------------------
@@ -262,7 +437,7 @@ imports.get("/:id", async (c) => {
     return c.json(resp.body, resp.status);
   }
 
-  return c.json(result.value, 200);
+  return c.json(rowToImportJob(result.value), 200);
 });
 
 // ---------------------------------------------------------------------------
@@ -286,7 +461,15 @@ imports.post("/:id/confirm", async (c) => {
     return c.json(resp.body, resp.status);
   }
 
-  return c.json(result.value, 200);
+  // Fetch the updated row to return a full ImportJob shape
+  const jobResult = await service.getImportJob(jobId, creatorId);
+
+  if (!jobResult.ok) {
+    // Fallback: return the recipeId
+    return c.json(result.value, 200);
+  }
+
+  return c.json(rowToImportJob(jobResult.value), 200);
 });
 
 // ---------------------------------------------------------------------------

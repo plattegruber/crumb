@@ -11,7 +11,7 @@ import type { AgentTool, FetchFn, AiRunFn } from "./tools.js";
 import { createAllTools, parseExtractRecipeOutput } from "./tools.js";
 import { EXTRACTION_AGENT_SYSTEM_PROMPT, buildUserMessage } from "./prompts.js";
 import { runClaudeAgent } from "./anthropic.js";
-import { createLogger, truncate } from "../logger.js";
+import { createLogger, truncate, type Logger } from "../logger.js";
 
 // ---------------------------------------------------------------------------
 // Agent configuration
@@ -48,6 +48,8 @@ export interface AgentConfig {
   readonly timeoutMs?: number; // default: 600000 (10 min)
   /** Override the tools used by the agent (for testing). */
   readonly tools?: AgentTool[];
+  /** Optional logger instance. Falls back to createLogger("ai-agent"). */
+  readonly logger?: Logger;
 }
 
 /**
@@ -94,7 +96,7 @@ export async function runExtractionAgent(
   config: AgentConfig,
   input: AgentInput,
 ): Promise<Result<RecipeExtract, ImportError>> {
-  const agentLogger = createLogger("ai-agent");
+  const agentLogger = config.logger ?? createLogger("ai-agent");
   const visionModel = config.visionModel ?? DEFAULT_VISION_MODEL;
   const transcriptionModel = config.transcriptionModel ?? DEFAULT_TRANSCRIPTION_MODEL;
   const maxTurns = config.maxTurns ?? 30;
@@ -197,6 +199,16 @@ export async function runExtractionAgent(
       return err({ type: "Timeout" as const });
     }
 
+    // -----------------------------------------------------------------------
+    // workersai_api_call_start
+    // -----------------------------------------------------------------------
+    agentLogger.info("workersai_api_call_start", {
+      turn,
+      model: reasoningModel,
+      messageCount: messages.length,
+      toolCount: toolDefinitions.length,
+    });
+
     // Call the AI model
     let aiResponse: AiResponse;
     const aiCallStart = Date.now();
@@ -208,18 +220,26 @@ export async function runExtractionAgent(
       });
 
       aiResponse = rawResponse as AiResponse;
-      agentLogger.debug("ai_model_call", {
+      const callDurationMs = Date.now() - aiCallStart;
+
+      // workersai_api_call_complete
+      agentLogger.info("workersai_api_call_complete", {
         turn,
         model: reasoningModel,
-        durationMs: Date.now() - aiCallStart,
+        hasToolCalls:
+          aiResponse.tool_calls !== undefined &&
+          aiResponse.tool_calls !== null &&
+          aiResponse.tool_calls.length > 0,
+        hasTextResponse: aiResponse.response !== undefined && aiResponse.response !== null,
+        duration_ms: callDurationMs,
       });
     } catch (e: unknown) {
       const message = e instanceof Error ? e.message : "Unknown AI model error";
-      agentLogger.error("ai_model_call_failed", {
+      agentLogger.error("workersai_error", {
         turn,
         model: reasoningModel,
         error: message,
-        durationMs: Date.now() - aiCallStart,
+        duration_ms: Date.now() - aiCallStart,
       });
       return err({
         type: "ExtractionFailed" as const,
@@ -241,11 +261,22 @@ export async function runExtractionAgent(
 
       // Process each tool call
       for (const toolCall of aiResponse.tool_calls) {
+        // workersai_tool_call
+        agentLogger.info("workersai_tool_call", {
+          turn,
+          toolName: toolCall.name,
+          inputSummary: truncate(JSON.stringify(toolCall.arguments), 200),
+        });
+
         const tool = toolMap.get(toolCall.name);
 
         if (tool === undefined) {
           // Unknown tool — tell the agent
-          agentLogger.warn("agent_unknown_tool", { turn, toolName: toolCall.name });
+          agentLogger.warn("workersai_tool_call", {
+            turn,
+            toolName: toolCall.name,
+            error: "Unknown tool",
+          });
           messages.push({
             role: "tool",
             content: JSON.stringify({
@@ -259,11 +290,17 @@ export async function runExtractionAgent(
         // Check if this is the terminal extract_recipe tool
         if (toolCall.name === "extract_recipe") {
           const totalDurationMs = Date.now() - startTime;
-          agentLogger.info("agent_extract_recipe_called", {
+          const recipeTitle =
+            typeof toolCall.arguments["title"] === "string" ? toolCall.arguments["title"] : null;
+
+          // workersai_terminal_tool
+          agentLogger.info("workersai_terminal_tool", {
             turn: turn + 1,
+            toolName: "extract_recipe",
+            recipeTitle,
             totalDurationMs,
-            inputSummary: truncate(JSON.stringify(toolCall.arguments), 200),
           });
+
           const extractResult = parseExtractRecipeOutput(toolCall.arguments);
           if (extractResult.ok) {
             agentLogger.info("agent_completed", {
@@ -282,12 +319,14 @@ export async function runExtractionAgent(
         const toolStart = Date.now();
         try {
           const result = await tool.execute(toolCall.arguments);
-          agentLogger.debug("agent_tool_executed", {
+          const toolDurationMs = Date.now() - toolStart;
+
+          // workersai_tool_result
+          agentLogger.info("workersai_tool_result", {
             turn,
             toolName: toolCall.name,
-            inputSummary: truncate(JSON.stringify(toolCall.arguments), 200),
-            outputSummary: truncate(result, 200),
-            durationMs: Date.now() - toolStart,
+            resultSummary: truncate(result, 200),
+            duration_ms: toolDurationMs,
           });
           messages.push({
             role: "tool",
@@ -296,11 +335,12 @@ export async function runExtractionAgent(
           });
         } catch (e: unknown) {
           const message = e instanceof Error ? e.message : "Unknown tool error";
-          agentLogger.error("agent_tool_error", {
+          agentLogger.error("workersai_error", {
             turn,
             toolName: toolCall.name,
             error: message,
-            durationMs: Date.now() - toolStart,
+            duration_ms: Date.now() - toolStart,
+            context: "tool_execution",
           });
           messages.push({
             role: "tool",
@@ -312,8 +352,8 @@ export async function runExtractionAgent(
         }
       }
     } else if (aiResponse.response !== undefined && aiResponse.response !== null) {
-      // The model returned a text response instead of a tool call.
-      agentLogger.debug("agent_text_response", {
+      // workersai_text_response — model returned text instead of a tool call
+      agentLogger.info("workersai_text_response", {
         turn,
         responseSummary: truncate(aiResponse.response, 200),
       });
@@ -388,6 +428,7 @@ async function runWithClaude(
         maxTurns,
         timeoutMs,
         fetchFn: config.fetchFn,
+        logger: config.logger,
       },
       buildUserMessage(input),
     );
