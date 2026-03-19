@@ -191,8 +191,8 @@
               {#if recipe}
                 <a href="/library/{recipe.id}" class="row-title">{recipe.title}</a>
                 <span class="row-meta">
-                  {#if recipe.timing.total_minutes !== null}
-                    {formatTime(recipe.timing.total_minutes)}
+                  {#if (recipe.timing?.total_minutes ?? recipe.total_minutes ?? null) !== null}
+                    {formatTime(recipe.timing?.total_minutes ?? recipe.total_minutes ?? null)}
                   {/if}
                 </span>
               {:else}
