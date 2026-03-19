@@ -46,6 +46,13 @@ max_retries = 3
 [ai]
 binding = "AI"
 
+# ---------- Media Transformations ----------
+# Video processing binding for frame extraction and audio extraction.
+# Docs: https://developers.cloudflare.com/stream/transform-videos/bindings/
+
+[media]
+binding = "MEDIA"
+
 # ---------- Environment Variables ----------
 
 [vars]

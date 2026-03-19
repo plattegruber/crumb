@@ -5,6 +5,59 @@
  * Secret values (CLERK_SECRET_KEY, KIT_CLIENT_SECRET) are set via
  * `npx wrangler secret put <NAME>` and never appear in source.
  */
+
+// ---------------------------------------------------------------------------
+// Media Transformations binding type
+// ---------------------------------------------------------------------------
+// The Media Transformations binding was announced 2026-03-18 and is not yet
+// included in @cloudflare/workers-types. We declare the type manually based
+// on the official documentation:
+// https://developers.cloudflare.com/stream/transform-videos/bindings/
+// ---------------------------------------------------------------------------
+
+/** Options for the `.transform()` step (resize / crop). */
+export interface MediaTransformOptions {
+  readonly width?: number;
+  readonly height?: number;
+  readonly fit?: "contain" | "cover" | "scale-down";
+}
+
+/** Options for the `.output()` step. */
+export interface MediaOutputOptions {
+  readonly mode: "video" | "frame" | "spritesheet" | "audio";
+  /** Start timestamp, e.g. "2s", "1m". */
+  readonly time?: string;
+  /** Duration for video/audio/spritesheet modes, e.g. "5s". */
+  readonly duration?: string;
+  /** Number of frames (spritesheet mode only). */
+  readonly imageCount?: number;
+  /** Output format: "jpg" | "png" for frame, "m4a" for audio. */
+  readonly format?: string;
+  /** Include audio track in video mode (default: true). */
+  readonly audio?: boolean;
+}
+
+/** The result of a media transformation pipeline. */
+export interface MediaTransformResult {
+  /** Return the result as an HTTP Response. */
+  response(): Promise<Response>;
+  /** Return the result as a ReadableStream. */
+  media(): Promise<ReadableStream<Uint8Array>>;
+  /** Return the MIME content-type of the result. */
+  contentType(): Promise<string>;
+}
+
+/** Intermediate builder after `.input()`, before `.output()`. */
+export interface MediaTransformPipeline {
+  transform(options: MediaTransformOptions): MediaTransformPipeline;
+  output(options: MediaOutputOptions): MediaTransformResult;
+}
+
+/** Cloudflare Media Transformations binding (env.MEDIA). */
+export interface MediaTransformations {
+  input(source: ReadableStream<Uint8Array>): MediaTransformPipeline;
+}
+
 export interface Env {
   // --- Cloudflare Bindings ---
   DB: D1Database;
@@ -12,6 +65,10 @@ export interface Env {
   CACHE: KVNamespace;
   IMPORT_QUEUE: Queue;
   RENDER_QUEUE: Queue;
+
+  // --- Media Transformations ---
+  /** Media Transformations binding for video processing (frame/audio extraction). */
+  MEDIA?: MediaTransformations;
 
   // --- Clerk ---
   CLERK_PUBLISHABLE_KEY: string;
