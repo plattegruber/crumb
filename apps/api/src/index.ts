@@ -18,6 +18,7 @@ import { creators } from "./db/schema.js";
 import { eq } from "drizzle-orm";
 import { handleImportQueue } from "./services/queue-handlers.js";
 import { createLogger, type Logger } from "./lib/logger.js";
+import { createAxiomSink } from "./lib/axiom.js";
 import type { Env } from "./env.js";
 
 export type { AppEnv } from "./middleware/auth.js";
@@ -153,7 +154,23 @@ app.route("/imports", imports);
 export default {
   fetch: app.fetch,
   async queue(batch: MessageBatch<Record<string, unknown>>, env: Env): Promise<void> {
-    const logger = createLogger("queue-handler", undefined, env.LOG_LEVEL);
+    // Create Axiom sink when credentials are available (deployed environment)
+    const axiomSink =
+      env.AXIOM_TOKEN !== undefined && env.AXIOM_DATASET !== undefined
+        ? createAxiomSink(env.AXIOM_TOKEN, env.AXIOM_DATASET)
+        : null;
+
+    // Generate a correlation ID for the entire queue batch so all logs
+    // (including agent tool calls deep in the import pipeline) can be traced.
+    const correlationId = crypto.randomUUID();
+
+    const logger = createLogger(
+      "queue-handler",
+      correlationId, // use as requestId for correlation
+      env.LOG_LEVEL,
+      axiomSink,
+      correlationId,
+    );
     logger.info("queue_batch_received", {
       queueName: "import-pipeline",
       messageCount: batch.messages.length,
@@ -187,20 +204,29 @@ export default {
         ? createDefaultAgentExtractor(env.AI, env.ANTHROPIC_API_KEY)
         : undefined;
 
-    await handleImportQueue(
-      {
-        messages: batch.messages.map((msg) => ({
-          body: msg.body,
-          ack: () => msg.ack(),
-          retry: () => msg.retry(),
-        })),
-      },
-      { db, queue, extractor, agentExtractor },
-    );
+    try {
+      await handleImportQueue(
+        {
+          messages: batch.messages.map((msg) => ({
+            body: msg.body,
+            ack: () => msg.ack(),
+            retry: () => msg.retry(),
+          })),
+        },
+        { db, queue, extractor, agentExtractor, logger },
+      );
 
-    logger.info("queue_batch_completed", {
-      queueName: "import-pipeline",
-      messageCount: batch.messages.length,
-    });
+      logger.info("queue_batch_completed", {
+        queueName: "import-pipeline",
+        messageCount: batch.messages.length,
+      });
+    } finally {
+      // Flush all buffered logs to Axiom at the end of queue processing.
+      // In queue handlers there is no waitUntil, so we flush synchronously
+      // before the handler returns.
+      if (axiomSink !== null) {
+        await axiomSink.flush();
+      }
+    }
   },
 };

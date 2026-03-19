@@ -6,7 +6,7 @@
 
 import type { Database } from "../db/index.js";
 import { createImportJobId } from "@dough/shared";
-import { createLogger } from "../lib/logger.js";
+import { createLogger, type Logger } from "../lib/logger.js";
 import {
   createImportService,
   createDefaultFetcher,
@@ -21,6 +21,8 @@ export interface QueueHandlerDeps {
   readonly queue: ImportQueue;
   readonly extractor: RecipeExtractor;
   readonly agentExtractor?: AgentExtractor;
+  /** Pre-configured logger (with Axiom sink when available). Falls back to console-only. */
+  readonly logger?: Logger;
 }
 
 export interface QueueMessage {
@@ -43,7 +45,7 @@ export interface QueueBatch {
  * 3. Ack on success, retry on error
  */
 export async function handleImportQueue(batch: QueueBatch, deps: QueueHandlerDeps): Promise<void> {
-  const logger = createLogger("queue-handler");
+  const logger = deps.logger ?? createLogger("queue-handler");
   const fetcher = createDefaultFetcher();
   const wordpress = createDefaultWordPressClient(fetcher);
 
