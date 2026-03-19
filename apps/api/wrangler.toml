@@ -51,6 +51,7 @@ binding = "AI"
 [vars]
 CLERK_PUBLISHABLE_KEY = "pk_live_Y2xlcmsubWFrZWRvdWdoLmFwcCQ"
 LOG_LEVEL = "info"
+AXIOM_DATASET = "dough"
 # KIT_CLIENT_ID = "placeholder"  # Optional — only needed for production OAuth flow
 
 # ---------- Local Development ----------
