@@ -9,3 +9,6 @@ export { generateTempKey, uploadToTempR2, cleanupTempR2 } from "./temp-storage.j
 
 export { resolveInstagramVideoUrl } from "./instagram-resolver.js";
 export type { InstagramVideoInfo } from "./instagram-resolver.js";
+
+export { processVideo, computeTimestamps } from "./processor.js";
+export type { VideoProcessorDeps, VideoProcessResult } from "./processor.js";
