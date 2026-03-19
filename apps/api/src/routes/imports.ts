@@ -236,6 +236,12 @@ function buildImportSource(
         site_url: url ?? (raw as ReturnType<typeof createUrl> & string),
       };
     }
+    case "FromText": {
+      // FromText imports don't have a URL — return as FromUrl with the
+      // original text stashed in the URL field so retry / display still works.
+      // The frontend's getSourceLabel default case already shows "Pasted text".
+      return { type: "FromUrl", url: "" as ReturnType<typeof createUrl> & string };
+    }
     default: {
       // Fallback: treat unknown source types as FromUrl with empty url
       const raw = typeof data["url"] === "string" ? data["url"] : "";

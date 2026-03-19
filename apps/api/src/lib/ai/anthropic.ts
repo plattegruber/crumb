@@ -276,7 +276,29 @@ export async function runClaudeAgent(
         responseSummary: truncate(text, 200),
         totalDurationMs: Date.now() - startTime,
       });
-      return { finalToolCall: null, textResponse: text, turns: turn + 1 };
+
+      // Try to parse it as a recipe extract JSON before giving up.
+      // If it can't be parsed, ask the model to call extract_recipe and
+      // continue the loop — matching the Workers AI retry behaviour.
+      const parsed = tryParseAsJson(text);
+      if (parsed !== null) {
+        return {
+          finalToolCall: { name: "extract_recipe", arguments: parsed },
+          textResponse: null,
+          turns: turn + 1,
+        };
+      }
+
+      // Ask the model to use the extract_recipe tool instead of text
+      messages.push({
+        role: "user",
+        content: [
+          {
+            type: "text" as const,
+            text: "Please use the extract_recipe tool to submit the structured recipe data. Do not respond with text — use the tool. If you were unable to extract a complete recipe, still call extract_recipe with whatever information you gathered and set overall_confidence to a low value.",
+          },
+        ],
+      });
     }
   }
 
@@ -285,4 +307,27 @@ export async function runClaudeAgent(
     totalDurationMs: Date.now() - startTime,
   });
   return { finalToolCall: null, textResponse: "Max turns exceeded", turns: maxTurns };
+}
+
+// ---------------------------------------------------------------------------
+// Helper: try to parse a text response as a recipe JSON object
+// ---------------------------------------------------------------------------
+
+function tryParseAsJson(text: string): Record<string, unknown> | null {
+  try {
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (jsonMatch === null) return null;
+
+    const parsed: unknown = JSON.parse(jsonMatch[0]);
+    if (parsed === null || typeof parsed !== "object" || Array.isArray(parsed)) return null;
+
+    const obj = parsed as Record<string, unknown>;
+    // Must look like a recipe (has title and ingredients or instructions)
+    if ("title" in obj && ("ingredients" in obj || "instructions" in obj)) {
+      return obj;
+    }
+    return null;
+  } catch {
+    return null;
+  }
 }

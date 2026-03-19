@@ -678,4 +678,84 @@ describe("runExtractionAgent", () => {
       expect(result.error.reason).toContain("empty response");
     }
   });
+
+  // ---------------------------------------------------------------------------
+  // Test: Claude agent retries when model returns text instead of tool call
+  // ---------------------------------------------------------------------------
+
+  it("Claude path retries with tool-use prompt when model returns text", async () => {
+    let callCount = 0;
+
+    // Mock Anthropic API — first returns text, second returns extract_recipe tool call
+    const mockFetch: FetchFn = async (url: string, _init?: RequestInit) => {
+      if (url === "https://api.anthropic.com/v1/messages") {
+        callCount++;
+        if (callCount === 1) {
+          // First call: model returns text (end_turn)
+          return new Response(
+            JSON.stringify({
+              id: "msg_1",
+              content: [
+                {
+                  type: "text",
+                  text: "I could not find a recipe on this Instagram page.",
+                },
+              ],
+              stop_reason: "end_turn",
+              usage: { input_tokens: 100, output_tokens: 50 },
+            }),
+            { status: 200 },
+          );
+        }
+        // Second call: after retry prompt, model calls extract_recipe
+        return new Response(
+          JSON.stringify({
+            id: "msg_2",
+            content: [
+              {
+                type: "tool_use",
+                id: "tu_1",
+                name: "extract_recipe",
+                input: {
+                  title: "Instagram Recipe",
+                  ingredients: JSON.stringify([
+                    {
+                      label: null,
+                      ingredients: [{ raw_text: "1 cup flour", confidence: 0.6 }],
+                    },
+                  ]),
+                  instructions: JSON.stringify(["Mix and bake"]),
+                  overall_confidence: 0.4,
+                },
+              },
+            ],
+            stop_reason: "tool_use",
+            usage: { input_tokens: 200, output_tokens: 80 },
+          }),
+          { status: 200 },
+        );
+      }
+      // Non-API fetches (e.g., tool fetch_url calls)
+      return new Response("Not Found", { status: 404 });
+    };
+
+    const config: AgentConfig = {
+      anthropicApiKey: "test-key",
+      fetchFn: mockFetch,
+      maxTurns: 10,
+      timeoutMs: 30000,
+      tools: [createExtractRecipeTool()],
+    };
+
+    const result = await runExtractionAgent(config, {
+      type: "url",
+      content: "https://www.instagram.com/reels/test123/",
+    });
+
+    expect(callCount).toBe(2); // Verifies the retry happened
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.value.title).toBe("Instagram Recipe");
+    expect(result.value.confidence.overall).toBe(0.4);
+  });
 });
