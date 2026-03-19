@@ -10,7 +10,7 @@ import { err } from "@dough/shared";
 import type { AgentTool, FetchFn, AiRunFn } from "./tools.js";
 import { createAllTools, parseExtractRecipeOutput } from "./tools.js";
 import { EXTRACTION_AGENT_SYSTEM_PROMPT, buildUserMessage } from "./prompts.js";
-import { runClaudeAgent } from "./anthropic.js";
+import { runClaudeAgent, type AnthropicAgentConfig } from "./anthropic.js";
 import { createLogger, truncate, type Logger } from "../logger.js";
 
 // ---------------------------------------------------------------------------
@@ -50,6 +50,8 @@ export interface AgentConfig {
   readonly tools?: AgentTool[];
   /** Optional logger instance. Falls back to createLogger("ai-agent"). */
   readonly logger?: Logger;
+  /** Custom fetch for the Anthropic SDK — used in tests to mock API calls. */
+  readonly anthropicFetchFn?: AnthropicAgentConfig["fetchFn"];
 }
 
 /**
@@ -427,8 +429,8 @@ async function runWithClaude(
         tools,
         maxTurns,
         timeoutMs,
-        fetchFn: config.fetchFn,
         logger: config.logger,
+        fetchFn: config.anthropicFetchFn,
       },
       buildUserMessage(input),
     );

@@ -1,42 +1,16 @@
 // ---------------------------------------------------------------------------
 // Anthropic Claude adapter for the extraction agent
 // ---------------------------------------------------------------------------
-// Translates between our agent's tool-calling protocol and the Anthropic
-// Messages API. Uses Claude Sonnet 4 for superior agentic reasoning.
+// Uses the official @anthropic-ai/sdk for the Messages API with native
+// tool use. Claude handles recipe extraction via a multi-turn agent loop.
 // ---------------------------------------------------------------------------
 
+import Anthropic from "@anthropic-ai/sdk";
 import type { AgentTool } from "./tools.js";
 import { createLogger, truncate, type Logger } from "../logger.js";
 
-/** Default Claude model for agent reasoning. */
-export const CLAUDE_MODEL = "claude-sonnet-4-20250514";
-
-/**
- * Anthropic Messages API types (minimal subset we need).
- */
-interface AnthropicMessage {
-  role: "user" | "assistant";
-  content: string | AnthropicContentBlock[];
-}
-
-type AnthropicContentBlock =
-  | { type: "text"; text: string }
-  | { type: "image"; source: { type: "base64"; media_type: string; data: string } }
-  | { type: "tool_use"; id: string; name: string; input: Record<string, unknown> }
-  | { type: "tool_result"; tool_use_id: string; content: string };
-
-interface AnthropicToolDef {
-  name: string;
-  description: string;
-  input_schema: Record<string, unknown>;
-}
-
-interface AnthropicResponse {
-  id: string;
-  content: AnthropicContentBlock[];
-  stop_reason: "end_turn" | "tool_use" | "max_tokens" | "stop_sequence";
-  usage: { input_tokens: number; output_tokens: number };
-}
+/** Default Claude model for agent reasoning (alias). */
+export const CLAUDE_MODEL = "claude-sonnet-4-0";
 
 /**
  * Configuration for the Anthropic-backed agent.
@@ -48,21 +22,21 @@ export interface AnthropicAgentConfig {
   readonly tools: AgentTool[];
   readonly maxTurns?: number;
   readonly timeoutMs?: number;
-  readonly fetchFn?: (url: string, init?: RequestInit) => Promise<Response>;
   /** Optional logger instance. Falls back to createLogger("anthropic-agent"). */
   readonly logger?: Logger;
+  /** Custom fetch for the Anthropic SDK — used in tests to mock API calls. */
+  readonly fetchFn?: Anthropic["_options"]["fetch"];
 }
 
 /**
  * Run the agent loop using the Anthropic Messages API with native tool use.
  *
- * This is a direct implementation rather than going through the AiRunFn
- * abstraction, because Claude's tool use protocol is richer (tool_use_id,
- * multi-turn tool results, vision via content blocks).
+ * Uses the official SDK which provides typed requests/responses, automatic
+ * retries on 429/5xx, and proper error classes.
  */
 export async function runClaudeAgent(
   config: AnthropicAgentConfig,
-  userMessage: string | AnthropicContentBlock[],
+  userMessage: string,
 ): Promise<{
   finalToolCall: { name: string; arguments: Record<string, unknown> } | null;
   textResponse: string | null;
@@ -72,16 +46,20 @@ export async function runClaudeAgent(
   const model = config.model ?? CLAUDE_MODEL;
   const maxTurns = config.maxTurns ?? 30;
   const timeoutMs = config.timeoutMs ?? 300000; // 5 minutes
-  const fetchFn = config.fetchFn ?? globalThis.fetch;
 
-  // Build Anthropic tool definitions
-  const toolDefs: AnthropicToolDef[] = config.tools.map((tool) => ({
+  const client = new Anthropic({
+    apiKey: config.apiKey,
+    ...(config.fetchFn !== undefined ? { fetch: config.fetchFn } : {}),
+  });
+
+  // Build Anthropic tool definitions from our AgentTool interface
+  const toolDefs: Anthropic.Tool[] = config.tools.map((tool) => ({
     name: tool.name,
     description: tool.description,
     input_schema: {
-      type: "object",
-      properties: tool.parameters.properties,
-      required: tool.parameters.required ?? [],
+      type: "object" as const,
+      properties: tool.parameters.properties as Record<string, unknown>,
+      required: tool.parameters.required as string[],
     },
   }));
 
@@ -92,12 +70,7 @@ export async function runClaudeAgent(
   }
 
   // Initialize conversation
-  const messages: AnthropicMessage[] = [
-    {
-      role: "user",
-      content: typeof userMessage === "string" ? userMessage : userMessage,
-    },
-  ];
+  const messages: Anthropic.MessageParam[] = [{ role: "user", content: userMessage }];
 
   const startTime = Date.now();
 
@@ -117,40 +90,33 @@ export async function runClaudeAgent(
       toolCount: toolDefs.length,
     });
 
-    // Call Anthropic Messages API
+    // Call Anthropic Messages API via SDK (auto-retries 429/5xx)
     const apiCallStart = Date.now();
-    const response = await fetchFn("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: {
-        "x-api-key": config.apiKey,
-        "content-type": "application/json",
-        "anthropic-version": "2023-06-01",
-      },
-      body: JSON.stringify({
+    let response: Anthropic.Message;
+    try {
+      response = await client.messages.create({
         model,
         max_tokens: 4096,
         system: config.systemPrompt,
         tools: toolDefs,
         messages,
-      }),
-    });
-
-    // -----------------------------------------------------------------------
-    // claude_error — API error with status code and body
-    // -----------------------------------------------------------------------
-    if (!response.ok) {
-      const errorText = await response.text();
-      const durationMs = Date.now() - apiCallStart;
-      log.error("claude_error", {
-        turn,
-        status: response.status,
-        body: truncate(errorText, 200),
-        durationMs,
       });
-      throw new Error(`Anthropic API error ${response.status}: ${errorText}`);
+    } catch (error: unknown) {
+      const durationMs = Date.now() - apiCallStart;
+      if (error instanceof Anthropic.APIError) {
+        log.error("claude_error", {
+          turn,
+          status: error.status,
+          body: truncate(error.message, 200),
+          durationMs,
+        });
+        throw new Error(`Anthropic API error ${error.status}: ${error.message}`, { cause: error });
+      }
+      const msg = error instanceof Error ? error.message : "Unknown error";
+      log.error("claude_error", { turn, error: msg, durationMs });
+      throw error;
     }
 
-    const data = (await response.json()) as AnthropicResponse;
     const apiCallDurationMs = Date.now() - apiCallStart;
 
     // -----------------------------------------------------------------------
@@ -159,21 +125,23 @@ export async function runClaudeAgent(
     log.info("claude_api_call_complete", {
       turn,
       model,
-      stop_reason: data.stop_reason,
-      input_tokens: data.usage.input_tokens,
-      output_tokens: data.usage.output_tokens,
+      stop_reason: response.stop_reason,
+      input_tokens: response.usage.input_tokens,
+      output_tokens: response.usage.output_tokens,
       duration_ms: apiCallDurationMs,
     });
 
     // Add assistant response to conversation
-    messages.push({ role: "assistant", content: data.content });
+    messages.push({ role: "assistant", content: response.content });
 
     // Check if the model wants to use tools
-    if (data.stop_reason === "tool_use") {
-      const toolResults: AnthropicContentBlock[] = [];
+    if (response.stop_reason === "tool_use") {
+      const toolResults: Anthropic.ToolResultBlockParam[] = [];
 
-      for (const block of data.content) {
+      for (const block of response.content) {
         if (block.type !== "tool_use") continue;
+
+        const toolInput = block.input as Record<string, unknown>;
 
         // -------------------------------------------------------------------
         // claude_tool_call — log every tool call from the model
@@ -181,18 +149,13 @@ export async function runClaudeAgent(
         log.info("claude_tool_call", {
           turn,
           toolName: block.name,
-          inputSummary: truncate(JSON.stringify(block.input), 200),
+          inputSummary: truncate(JSON.stringify(toolInput), 200),
         });
-
-        const tool = toolMap.get(block.name);
 
         // Check for terminal tool
         if (block.name === "extract_recipe") {
-          // -----------------------------------------------------------------
-          // claude_terminal_tool — log recipe title when extract_recipe called
-          // -----------------------------------------------------------------
           const recipeTitle =
-            typeof block.input["title"] === "string" ? block.input["title"] : null;
+            typeof toolInput["title"] === "string" ? (toolInput["title"] as string) : null;
           log.info("claude_terminal_tool", {
             turn: turn + 1,
             toolName: "extract_recipe",
@@ -200,11 +163,13 @@ export async function runClaudeAgent(
             totalDurationMs: Date.now() - startTime,
           });
           return {
-            finalToolCall: { name: block.name, arguments: block.input },
+            finalToolCall: { name: block.name, arguments: toolInput },
             textResponse: null,
             turns: turn + 1,
           };
         }
+
+        const tool = toolMap.get(block.name);
 
         if (tool === undefined) {
           log.warn("claude_tool_call", {
@@ -223,12 +188,9 @@ export async function runClaudeAgent(
         // Execute the tool
         const toolStart = Date.now();
         try {
-          const result = await tool.execute(block.input);
+          const result = await tool.execute(toolInput);
           const toolDurationMs = Date.now() - toolStart;
 
-          // -----------------------------------------------------------------
-          // claude_tool_result — log tool execution result
-          // -----------------------------------------------------------------
           log.info("claude_tool_result", {
             turn,
             toolName: block.name,
@@ -263,8 +225,8 @@ export async function runClaudeAgent(
       messages.push({ role: "user", content: toolResults });
     } else {
       // Model returned a text response (end_turn)
-      const textBlocks = data.content.filter(
-        (b): b is { type: "text"; text: string } => b.type === "text",
+      const textBlocks = response.content.filter(
+        (b): b is Anthropic.TextBlock => b.type === "text",
       );
       const text = textBlocks.map((b) => b.text).join("\n");
 
@@ -292,12 +254,8 @@ export async function runClaudeAgent(
       // Ask the model to use the extract_recipe tool instead of text
       messages.push({
         role: "user",
-        content: [
-          {
-            type: "text" as const,
-            text: "Please use the extract_recipe tool to submit the structured recipe data. Do not respond with text — use the tool. If you were unable to extract a complete recipe, still call extract_recipe with whatever information you gathered and set overall_confidence to a low value.",
-          },
-        ],
+        content:
+          "Please use the extract_recipe tool to submit the structured recipe data. Do not respond with text — use the tool. If you were unable to extract a complete recipe, still call extract_recipe with whatever information you gathered and set overall_confidence to a low value.",
       });
     }
   }
