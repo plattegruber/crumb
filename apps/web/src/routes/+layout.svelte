@@ -6,6 +6,7 @@
   import { setApiBaseUrl } from "$lib/api.js";
   import { getClerk, isSignedIn as checkSignedIn } from "$lib/clerk.js";
   import { createLogger } from "$lib/logger.js";
+  import { reportError, setErrorReporterBaseUrl } from "$lib/error-reporter.js";
   import type Clerk from "@clerk/clerk-js";
 
   const { data, children }: { data: LayoutData; children: import("svelte").Snippet } = $props();
@@ -42,6 +43,12 @@
 
   const layoutLogger = createLogger("layout");
 
+  function handleBoundaryError(error: unknown): void {
+    reportError("svelte-boundary", error, {
+      route: typeof window !== "undefined" ? window.location.pathname : "unknown",
+    });
+  }
+
   onMount(async () => {
     // Configure API base URL
     const apiUrl = import.meta.env.VITE_API_BASE_URL;
@@ -51,6 +58,7 @@
       resolved: resolvedApiUrl,
     });
     setApiBaseUrl(resolvedApiUrl);
+    setErrorReporterBaseUrl(resolvedApiUrl);
 
     // Initialize Clerk
     const publishableKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
@@ -212,12 +220,32 @@
 
     <!-- Main content -->
     <main class="main-content">
-      {@render children()}
+      <svelte:boundary onerror={handleBoundaryError}>
+        {@render children()}
+        {#snippet failed(_error)}
+          <div class="boundary-error">
+            <h2>Something went wrong</h2>
+            <p>An unexpected error occurred. Try refreshing the page.</p>
+            <button class="btn btn-primary" onclick={() => window.location.reload()}>
+              Refresh
+            </button>
+          </div>
+        {/snippet}
+      </svelte:boundary>
     </main>
   </div>
 {:else}
   <!-- Public pages / auth pages -->
-  {@render children()}
+  <svelte:boundary onerror={handleBoundaryError}>
+    {@render children()}
+    {#snippet failed(_error)}
+      <div class="boundary-error">
+        <h2>Something went wrong</h2>
+        <p>An unexpected error occurred. Try refreshing the page.</p>
+        <button class="btn btn-primary" onclick={() => window.location.reload()}> Refresh </button>
+      </div>
+    {/snippet}
+  </svelte:boundary>
 {/if}
 
 <style>
@@ -404,5 +432,20 @@
       padding: var(--space-4);
       padding-top: calc(var(--header-height) + var(--space-4));
     }
+  }
+
+  .boundary-error {
+    text-align: center;
+    padding: var(--space-16);
+    color: var(--color-text-secondary);
+  }
+
+  .boundary-error h2 {
+    color: var(--color-text);
+    margin-bottom: var(--space-2);
+  }
+
+  .boundary-error p {
+    margin-bottom: var(--space-6);
   }
 </style>

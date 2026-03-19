@@ -1,37 +1,29 @@
 /**
  * SvelteKit client-side error hook.
  *
- * Catches all unhandled client errors (uncaught exceptions in load
- * functions, rendering errors, etc.) and logs them with full context
- * via the structured logger. Without this file, these errors vanish
- * silently in the browser.
+ * Catches unhandled client errors (uncaught exceptions in load
+ * functions, rendering errors, etc.) and reports them via the
+ * error reporter (→ Axiom). Also installs global window.onerror
+ * and unhandledrejection handlers to catch everything else.
  */
 
 import type { HandleClientError } from "@sveltejs/kit";
-import { createLogger } from "$lib/logger.js";
+import { reportError, installGlobalErrorHandlers } from "$lib/error-reporter.js";
 
-const logger = createLogger("hooks");
+// Install global handlers on module load — catches errors from
+// onMount callbacks, setTimeout, async event handlers, etc.
+installGlobalErrorHandlers();
 
 export const handleError: HandleClientError = ({ error, event, status, message }) => {
   const errorId = `client-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
-  const errorData: Record<string, unknown> = {
+  reportError("hooks-client", error, {
     errorId,
     status,
     message,
     routeId: event.route.id ?? "unknown",
     url: event.url.pathname,
-  };
-
-  if (error instanceof Error) {
-    errorData.errorName = error.name;
-    errorData.errorMessage = error.message;
-    errorData.stack = error.stack ?? null;
-  } else {
-    errorData.rawError = String(error);
-  }
-
-  logger.error("Unhandled client error", errorData);
+  });
 
   return {
     message,
