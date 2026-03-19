@@ -166,8 +166,8 @@ describe("Recipe Routes", () => {
       );
 
       expect(res.status).toBe(200);
-      const body = await res.json<{ data: unknown[]; total: number }>();
-      expect(body.data).toHaveLength(1);
+      const body = await res.json<{ recipes: unknown[]; total: number }>();
+      expect(body.recipes).toHaveLength(1);
       expect(body.total).toBe(1);
     });
   });
