@@ -191,7 +191,8 @@ recipeRoutes.get("/", async (c) => {
     return c.json({ error: result.error }, errorToStatus(result.error));
   }
 
-  return c.json(result.value, 200);
+  const { data, total, page: pg, perPage: pp } = result.value;
+  return c.json({ recipes: data, total, page: pg, per_page: pp }, 200);
 });
 
 /**
