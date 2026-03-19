@@ -90,6 +90,10 @@ export interface Env {
   /** Anthropic API key for Claude-powered recipe extraction. */
   ANTHROPIC_API_KEY?: string;
 
+  // --- RapidAPI ---
+  /** RapidAPI key for Instagram video resolution. Set via `npx wrangler secret put RAPIDAPI_KEY`. */
+  RAPIDAPI_KEY?: string;
+
   // --- Observability ---
   LOG_LEVEL: string;
   /** Axiom API token — set via `npx wrangler secret put AXIOM_TOKEN`. */
