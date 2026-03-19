@@ -5,6 +5,7 @@
   import { onMount } from "svelte";
   import { setApiBaseUrl } from "$lib/api.js";
   import { getClerk, isSignedIn as checkSignedIn } from "$lib/clerk.js";
+  import { createLogger } from "$lib/logger.js";
   import type Clerk from "@clerk/clerk-js";
 
   const { data, children }: { data: LayoutData; children: import("svelte").Snippet } = $props();
@@ -39,33 +40,40 @@
     );
   }
 
+  const layoutLogger = createLogger("layout");
+
   onMount(async () => {
     // Configure API base URL
     const apiUrl = import.meta.env.VITE_API_BASE_URL;
     const resolvedApiUrl = apiUrl ?? "/api";
-    console.log("[dough] API config:", {
-      VITE_API_BASE_URL: apiUrl,
+    layoutLogger.info("API config resolved", {
+      VITE_API_BASE_URL: apiUrl ?? null,
       resolved: resolvedApiUrl,
-      allViteEnv: JSON.stringify(import.meta.env),
     });
     setApiBaseUrl(resolvedApiUrl);
 
     // Initialize Clerk
     const publishableKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
-    console.log("[dough] Clerk config:", {
-      VITE_CLERK_PUBLISHABLE_KEY: publishableKey ? `${publishableKey.slice(0, 15)}...` : "MISSING",
+    layoutLogger.info("Clerk initializing", {
+      hasPublishableKey: !!publishableKey,
+      keyPrefix: publishableKey ? publishableKey.slice(0, 8) : null,
     });
     if (publishableKey) {
       try {
         clerk = await getClerk(publishableKey);
         clerkLoaded = true;
         clerkSignedIn = checkSignedIn();
+        layoutLogger.info("Clerk initialized", { signedIn: clerkSignedIn });
       } catch (e) {
-        console.error("Failed to initialize Clerk:", e);
+        layoutLogger.error("Clerk initialization failed", {
+          error: e instanceof Error ? e.message : String(e),
+          stack: e instanceof Error ? (e.stack ?? null) : null,
+        });
         clerkLoaded = true;
       }
     } else {
       // No Clerk key -- skip auth for development
+      layoutLogger.warn("No Clerk publishable key — auth disabled");
       clerkLoaded = true;
     }
   });

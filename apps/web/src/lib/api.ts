@@ -5,6 +5,7 @@
  * as ApiError instances so callers can handle them uniformly.
  */
 import { getSessionToken } from "./clerk.js";
+import { createLogger, truncate } from "./logger.js";
 import type {
   Recipe,
   RecipeId,
@@ -24,6 +25,8 @@ import type {
 // ---------------------------------------------------------------------------
 // Configuration
 // ---------------------------------------------------------------------------
+
+const logger = createLogger("api");
 
 let apiBaseUrl = "";
 
@@ -53,6 +56,7 @@ async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> 
   const token = await getSessionToken();
 
   if (!token && !apiBaseUrl) {
+    logger.warn("API call without auth or base URL", { path });
     throw new ApiError(401, { error: "Not authenticated" });
   }
 
@@ -65,25 +69,42 @@ async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> 
     headers["Authorization"] = `Bearer ${token}`;
   }
 
+  const method = options.method ?? "GET";
   const fullUrl = `${apiBaseUrl}${path}`;
-  console.log("[dough] apiFetch:", {
+  const startTime = performance.now();
+
+  logger.debug("API request start", {
+    method,
     url: fullUrl,
-    method: options.method ?? "GET",
     hasToken: !!token,
-    apiBaseUrl,
   });
 
-  const res = await fetch(fullUrl, {
-    ...options,
-    headers,
-  });
+  let res: Response;
+  try {
+    res = await fetch(fullUrl, { ...options, headers });
+  } catch (networkError) {
+    const durationMs = Math.round(performance.now() - startTime);
+    logger.error("API network error", {
+      method,
+      url: fullUrl,
+      durationMs,
+      error: networkError instanceof Error ? networkError.message : String(networkError),
+    });
+    throw networkError;
+  }
+
+  const durationMs = Math.round(performance.now() - startTime);
+  const requestId = res.headers.get("X-Request-Id");
 
   if (!res.ok) {
     const text = await res.text();
-    console.error("[dough] API error:", {
+    logger.error("API request failed", {
+      method,
       url: fullUrl,
       status: res.status,
-      body: text.slice(0, 300),
+      durationMs,
+      requestId,
+      body: truncate(text, 300),
       hasToken: !!token,
     });
     let body: unknown;
@@ -94,6 +115,14 @@ async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> 
     }
     throw new ApiError(res.status, body);
   }
+
+  logger.info("API request succeeded", {
+    method,
+    url: fullUrl,
+    status: res.status,
+    durationMs,
+    requestId,
+  });
 
   return (await res.json()) as T;
 }
