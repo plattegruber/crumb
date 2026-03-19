@@ -686,15 +686,20 @@ describe("runExtractionAgent", () => {
   it("Claude path retries with tool-use prompt when model returns text", async () => {
     let callCount = 0;
 
-    // Mock Anthropic API — first returns text, second returns extract_recipe tool call
-    const mockFetch: FetchFn = async (url: string, _init?: RequestInit) => {
-      if (url === "https://api.anthropic.com/v1/messages") {
+    // Mock fetch intercepting SDK requests to Anthropic API.
+    // The SDK passes a Request object (or URL string) as the first argument.
+    const mockFetch = async (input: RequestInfo | URL, _init?: RequestInit) => {
+      const url = typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
+      if (url.includes("/v1/messages")) {
         callCount++;
         if (callCount === 1) {
           // First call: model returns text (end_turn)
           return new Response(
             JSON.stringify({
               id: "msg_1",
+              type: "message",
+              role: "assistant",
+              model: "claude-sonnet-4-0",
               content: [
                 {
                   type: "text",
@@ -704,13 +709,16 @@ describe("runExtractionAgent", () => {
               stop_reason: "end_turn",
               usage: { input_tokens: 100, output_tokens: 50 },
             }),
-            { status: 200 },
+            { status: 200, headers: { "content-type": "application/json" } },
           );
         }
         // Second call: after retry prompt, model calls extract_recipe
         return new Response(
           JSON.stringify({
             id: "msg_2",
+            type: "message",
+            role: "assistant",
+            model: "claude-sonnet-4-0",
             content: [
               {
                 type: "tool_use",
@@ -732,16 +740,19 @@ describe("runExtractionAgent", () => {
             stop_reason: "tool_use",
             usage: { input_tokens: 200, output_tokens: 80 },
           }),
-          { status: 200 },
+          { status: 200, headers: { "content-type": "application/json" } },
         );
       }
       // Non-API fetches (e.g., tool fetch_url calls)
       return new Response("Not Found", { status: 404 });
     };
 
+    const dummyFetchFn: FetchFn = async () => new Response("Not Found", { status: 404 });
+
     const config: AgentConfig = {
       anthropicApiKey: "test-key",
-      fetchFn: mockFetch,
+      fetchFn: dummyFetchFn,
+      anthropicFetchFn: mockFetch,
       maxTurns: 10,
       timeoutMs: 30000,
       tools: [createExtractRecipeTool()],

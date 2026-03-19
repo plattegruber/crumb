@@ -12,6 +12,7 @@
     "db:setup": "bash scripts/setup-local-db.sh"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.80.0",
     "@clerk/backend": "^3.2.0",
     "@dough/shared": "workspace:*",
     "drizzle-orm": "^0.38.0",
