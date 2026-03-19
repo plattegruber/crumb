@@ -35,4 +35,8 @@ export interface Env {
 
   // --- Observability ---
   LOG_LEVEL: string;
+  /** Axiom API token — set via `npx wrangler secret put AXIOM_TOKEN`. */
+  AXIOM_TOKEN?: string;
+  /** Axiom dataset name for log ingest. */
+  AXIOM_DATASET?: string;
 }

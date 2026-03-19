@@ -3,11 +3,17 @@
  *
  * Outputs JSON lines to console.log (Workers runtime captures these).
  * Each log line includes: timestamp, level, message, service, requestId,
- * plus any extra data.
+ * correlationId, sessionId, plus any extra data.
  *
  * Log levels are controlled by the LOG_LEVEL env var (default: "info").
+ *
+ * When an AxiomSink is attached, every log entry is also pushed to the
+ * sink buffer for batched ingest at request end.
+ *
  * No external dependencies -- lightweight for Workers runtime.
  */
+
+import type { AxiomSink } from "./axiom.js";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -18,7 +24,12 @@ export interface Logger {
   warn(message: string, data?: Record<string, unknown>): void;
   error(message: string, data?: Record<string, unknown>): void;
   debug(message: string, data?: Record<string, unknown>): void;
-  child(overrides: { service?: string; requestId?: string }): Logger;
+  child(overrides: {
+    service?: string;
+    requestId?: string;
+    correlationId?: string;
+    sessionId?: string;
+  }): Logger;
 }
 
 export const LOG_LEVEL = {
@@ -111,7 +122,10 @@ export function truncate(value: unknown, maxLen: number = 200): string {
 interface LoggerOptions {
   readonly service: string;
   readonly requestId: string | null;
+  readonly correlationId: string | null;
+  readonly sessionId: string | null;
   readonly minLevel: number;
+  readonly sink: AxiomSink | null;
 }
 
 function writeLog(
@@ -133,6 +147,14 @@ function writeLog(
     entry["requestId"] = options.requestId;
   }
 
+  if (options.correlationId !== null) {
+    entry["correlationId"] = options.correlationId;
+  }
+
+  if (options.sessionId !== null) {
+    entry["sessionId"] = options.sessionId;
+  }
+
   if (data !== undefined) {
     const safe = redactSensitive(data);
     for (const [key, value] of Object.entries(safe)) {
@@ -142,6 +164,11 @@ function writeLog(
 
   // Workers runtime captures console.log as structured log output
   console.log(JSON.stringify(entry));
+
+  // Push to Axiom sink if attached (best-effort, flush happens later)
+  if (options.sink !== null) {
+    options.sink.push(entry);
+  }
 }
 
 function createLoggerInternal(options: LoggerOptions): Logger {
@@ -158,11 +185,19 @@ function createLoggerInternal(options: LoggerOptions): Logger {
     debug(message: string, data?: Record<string, unknown>): void {
       writeLog(options, "debug", message, data);
     },
-    child(overrides: { service?: string; requestId?: string }): Logger {
+    child(overrides: {
+      service?: string;
+      requestId?: string;
+      correlationId?: string;
+      sessionId?: string;
+    }): Logger {
       return createLoggerInternal({
         service: overrides.service ?? options.service,
         requestId: overrides.requestId ?? options.requestId,
+        correlationId: overrides.correlationId ?? options.correlationId,
+        sessionId: overrides.sessionId ?? options.sessionId,
         minLevel: options.minLevel,
+        sink: options.sink,
       });
     },
   };
@@ -178,12 +213,25 @@ function createLoggerInternal(options: LoggerOptions): Logger {
  * @param service - The service/module name that emits logs (e.g. "recipe", "kit").
  * @param requestId - Optional request ID for correlation.
  * @param logLevel - The minimum log level to output. Defaults to "info".
+ * @param sink - Optional Axiom sink for batched log ingest.
+ * @param correlationId - Optional correlation ID from the frontend.
+ * @param sessionId - Optional session ID from the frontend.
  */
-export function createLogger(service: string, requestId?: string, logLevel?: string): Logger {
+export function createLogger(
+  service: string,
+  requestId?: string,
+  logLevel?: string,
+  sink?: AxiomSink | null,
+  correlationId?: string,
+  sessionId?: string,
+): Logger {
   return createLoggerInternal({
     service,
     requestId: requestId ?? null,
+    correlationId: correlationId ?? null,
+    sessionId: sessionId ?? null,
     minLevel: parseLogLevel(logLevel),
+    sink: sink ?? null,
   });
 }
 

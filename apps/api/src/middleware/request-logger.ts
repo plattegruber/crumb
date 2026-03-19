@@ -1,15 +1,20 @@
 /**
  * Request logging middleware for Hono.
  *
- * Generates a unique requestId, logs request start/end,
- * sets X-Request-Id response header, and attaches a logger
- * and requestId to the Hono context for downstream use.
+ * Generates a unique requestId, reads X-Correlation-Id and X-Session-Id
+ * from the incoming request, logs request start/end, sets response
+ * headers, and attaches a logger and requestId to the Hono context
+ * for downstream use.
+ *
+ * When AXIOM_TOKEN is configured, logs are also buffered and flushed
+ * to Axiom via ctx.waitUntil() at the end of each request.
  */
 
 import { createMiddleware } from "hono/factory";
 import type { AppEnv } from "./auth.js";
 import { createLogger, type Logger, truncate, redactSensitive } from "../lib/logger.js";
 import { createMetrics, METRIC, type MetricsCollector } from "../lib/metrics.js";
+import { createAxiomSink, type AxiomSink } from "../lib/axiom.js";
 
 // ---------------------------------------------------------------------------
 // Extended AppEnv with logger and request context
@@ -20,6 +25,8 @@ import { createMetrics, METRIC, type MetricsCollector } from "../lib/metrics.js"
  */
 export interface RequestLoggerVariables {
   readonly requestId: string;
+  readonly correlationId: string | null;
+  readonly sessionId: string | null;
   readonly logger: Logger;
   readonly metrics: MetricsCollector;
 }
@@ -41,25 +48,53 @@ export type AppEnvWithLogger = {
  * Request logging middleware.
  *
  * - Generates a unique requestId (crypto.randomUUID())
+ * - Reads X-Correlation-Id and X-Session-Id from request headers
  * - Logs request start: method, path, user agent
  * - Logs request end: status code, duration (ms)
  * - Sets X-Request-Id response header
- * - Attaches logger, metrics, and requestId to Hono context
+ * - Attaches logger, metrics, requestId, correlationId, sessionId to Hono context
+ * - Flushes Axiom sink via waitUntil when AXIOM_TOKEN is configured
  */
 export function requestLogger() {
   return createMiddleware<AppEnvWithLogger>(async (c, next) => {
     const requestId = crypto.randomUUID();
     const startTime = Date.now();
 
+    // Read correlation headers from the frontend
+    const correlationId = c.req.header("X-Correlation-Id") ?? null;
+    const sessionId = c.req.header("X-Session-Id") ?? null;
+
     // Determine log level from env var
     const logLevelStr: string | undefined = c.env.LOG_LEVEL ?? undefined;
 
-    // Create logger scoped to this request
-    const logger = createLogger("api", requestId, logLevelStr);
+    // Create Axiom sink if token is configured (deployed environment only)
+    let axiomSink: AxiomSink | null = null;
+    const axiomToken: string | undefined = (c.env as unknown as Record<string, string | undefined>)[
+      "AXIOM_TOKEN"
+    ];
+    const axiomDataset: string | undefined = (
+      c.env as unknown as Record<string, string | undefined>
+    )["AXIOM_DATASET"];
+
+    if (axiomToken && axiomDataset) {
+      axiomSink = createAxiomSink(axiomToken, axiomDataset);
+    }
+
+    // Create logger scoped to this request with correlation context
+    const logger = createLogger(
+      "api",
+      requestId,
+      logLevelStr,
+      axiomSink,
+      correlationId ?? undefined,
+      sessionId ?? undefined,
+    );
     const metrics = createMetrics(logger);
 
     // Store in context for downstream use
     c.set("requestId", requestId);
+    c.set("correlationId", correlationId);
+    c.set("sessionId", sessionId);
     c.set("logger", logger);
     c.set("metrics", metrics);
 
@@ -109,7 +144,7 @@ export function requestLogger() {
     // Calculate duration
     const durationMs = Date.now() - startTime;
 
-    // Set response header
+    // Set response headers
     c.header("X-Request-Id", requestId);
 
     // Retrieve creator ID if set by auth middleware
@@ -140,5 +175,10 @@ export function requestLogger() {
       },
       durationMs,
     );
+
+    // Flush Axiom sink asynchronously — does not block the response
+    if (axiomSink !== null) {
+      c.executionCtx.waitUntil(axiomSink.flush());
+    }
   });
 }

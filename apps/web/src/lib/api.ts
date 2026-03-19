@@ -6,6 +6,7 @@
  */
 import { getSessionToken } from "./clerk.js";
 import { createLogger, truncate } from "./logger.js";
+import { getSessionId, generateCorrelationId } from "./correlation.js";
 import type {
   Recipe,
   RecipeId,
@@ -60,8 +61,12 @@ async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> 
     throw new ApiError(401, { error: "Not authenticated" });
   }
 
+  const correlationId = generateCorrelationId();
+
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
+    "X-Correlation-Id": correlationId,
+    "X-Session-Id": getSessionId(),
     ...(options.headers as Record<string, string> | undefined),
   };
 

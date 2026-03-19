@@ -42,7 +42,7 @@ app.use(
       "https://makedough.app",
     ],
     allowMethods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowHeaders: ["Content-Type", "Authorization"],
+    allowHeaders: ["Content-Type", "Authorization", "X-Correlation-Id", "X-Session-Id"],
     credentials: true,
     maxAge: 0, // Prevent browser from caching CORS preflight responses
   }),
