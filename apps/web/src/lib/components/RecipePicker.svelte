@@ -73,15 +73,32 @@
   }
 
   function getDietaryTags(recipe: Recipe): DietaryTag[] {
-    const tags = recipe.classification.dietary.tags;
+    const tags =
+      recipe.classification?.dietary?.tags ?? (recipe as Record<string, unknown>).dietary_tags;
+    if (!tags) return [];
+    if (typeof tags === "string") {
+      try {
+        return [...new Set(JSON.parse(tags) as DietaryTag[])];
+      } catch {
+        return [];
+      }
+    }
+    if (Array.isArray(tags)) return [...new Set(tags)] as DietaryTag[];
     if (
       tags instanceof Set ||
       (tags && typeof (tags as Iterable<DietaryTag>)[Symbol.iterator] === "function")
     ) {
       return [...new Set([...tags] as DietaryTag[])];
     }
-    if (Array.isArray(tags)) return [...new Set(tags)] as DietaryTag[];
     return [];
+  }
+
+  function getTime(recipe: Recipe): number | null {
+    return (
+      recipe.timing?.total_minutes ??
+      ((recipe as Record<string, unknown>).total_minutes as number | null) ??
+      null
+    );
   }
 </script>
 
@@ -121,8 +138,8 @@
             <div class="picker-item-info">
               <span class="picker-item-title">{recipe.title}</span>
               <span class="picker-item-meta">
-                {#if recipe.timing.total_minutes !== null}
-                  <span>{formatTime(recipe.timing.total_minutes)}</span>
+                {#if getTime(recipe) !== null}
+                  <span>{formatTime(getTime(recipe))}</span>
                 {/if}
                 {#each tags.slice(0, 3) as tag (tag)}
                   <DietaryBadge {tag} />
