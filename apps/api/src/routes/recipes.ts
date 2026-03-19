@@ -17,6 +17,7 @@ import {
   checkDuplicates,
 } from "../services/recipe.js";
 import type {
+  RecipeWithRelations,
   CreateRecipeInput,
   CreateIngredientGroupInput,
   CreateIngredientInput,
@@ -53,6 +54,18 @@ function errorToStatus(error: RecipeError): ContentfulStatusCode {
     case "database_error":
       return 500;
   }
+}
+
+/**
+ * Flatten the nested getRecipe result into the Recipe shape expected by clients.
+ */
+function toRecipeResponse(val: RecipeWithRelations) {
+  return {
+    ...val.recipe,
+    ingredientGroups: val.ingredientGroups,
+    instructionGroups: val.instructionGroups,
+    photos: val.photos,
+  };
 }
 
 /**
@@ -151,7 +164,7 @@ recipeRoutes.post("/", async (c) => {
     return c.json({ error: result.error }, errorToStatus(result.error));
   }
 
-  return c.json(result.value, 201);
+  return c.json(toRecipeResponse(result.value), 201);
 });
 
 /**
@@ -213,7 +226,16 @@ recipeRoutes.get("/:id", async (c) => {
     return c.json({ error: result.error }, errorToStatus(result.error));
   }
 
-  return c.json(result.value, 200);
+  const { recipe, ingredientGroups, instructionGroups, photos } = result.value;
+  return c.json(
+    {
+      ...recipe,
+      ingredientGroups,
+      instructionGroups,
+      photos,
+    },
+    200,
+  );
 });
 
 /**
@@ -334,7 +356,7 @@ recipeRoutes.put("/:id", async (c) => {
     return c.json({ error: result.error }, errorToStatus(result.error));
   }
 
-  return c.json(result.value, 200);
+  return c.json(toRecipeResponse(result.value), 200);
 });
 
 /**
