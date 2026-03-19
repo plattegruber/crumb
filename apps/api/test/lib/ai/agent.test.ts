@@ -769,4 +769,107 @@ describe("runExtractionAgent", () => {
     expect(result.value.title).toBe("Instagram Recipe");
     expect(result.value.confidence.overall).toBe(0.4);
   });
+
+  // ---------------------------------------------------------------------------
+  // Test: Claude agent handles tool_use blocks when stop_reason is max_tokens
+  // ---------------------------------------------------------------------------
+
+  it("Claude path processes tool_use blocks even when stop_reason is max_tokens", async () => {
+    let callCount = 0;
+
+    const mockFetch = async (input: RequestInfo | URL, _init?: RequestInit) => {
+      const url = typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
+      if (url.includes("/v1/messages")) {
+        callCount++;
+        if (callCount === 1) {
+          // Response hit max_tokens but includes a completed tool_use block
+          return new Response(
+            JSON.stringify({
+              id: "msg_1",
+              type: "message",
+              role: "assistant",
+              model: "claude-sonnet-4-0",
+              content: [
+                {
+                  type: "text",
+                  text: "Let me fetch the page to extract the recipe.",
+                },
+                {
+                  type: "tool_use",
+                  id: "tu_fetch",
+                  name: "fetch_url",
+                  input: { url: "https://example.com/recipe" },
+                },
+              ],
+              stop_reason: "max_tokens",
+              usage: { input_tokens: 100, output_tokens: 4096 },
+            }),
+            { status: 200, headers: { "content-type": "application/json" } },
+          );
+        }
+        // Second call: model calls extract_recipe with the fetched data
+        return new Response(
+          JSON.stringify({
+            id: "msg_2",
+            type: "message",
+            role: "assistant",
+            model: "claude-sonnet-4-0",
+            content: [
+              {
+                type: "tool_use",
+                id: "tu_extract",
+                name: "extract_recipe",
+                input: {
+                  title: "Max Tokens Recipe",
+                  ingredients: JSON.stringify([
+                    {
+                      label: null,
+                      ingredients: [{ raw_text: "2 cups rice", confidence: 0.9 }],
+                    },
+                  ]),
+                  instructions: JSON.stringify(["Cook the rice"]),
+                  overall_confidence: 0.8,
+                },
+              },
+            ],
+            stop_reason: "tool_use",
+            usage: { input_tokens: 300, output_tokens: 100 },
+          }),
+          { status: 200, headers: { "content-type": "application/json" } },
+        );
+      }
+      // Tool fetch_url returns recipe HTML
+      return new Response("<html><body><h1>Rice Recipe</h1><p>2 cups rice</p></body></html>", {
+        status: 200,
+      });
+    };
+
+    const dummyFetchFn: FetchFn = async () =>
+      new Response("<html><body>Rice Recipe</body></html>", { status: 200 });
+
+    const config: AgentConfig = {
+      anthropicApiKey: "test-key",
+      fetchFn: dummyFetchFn,
+      anthropicFetchFn: mockFetch,
+      maxTurns: 10,
+      timeoutMs: 30000,
+      tools: [
+        createFetchUrlTool({ fetchFn: dummyFetchFn, aiRunFn: async () => ({}) }),
+        createExtractRecipeTool(),
+      ],
+    };
+
+    const result = await runExtractionAgent(config, {
+      type: "url",
+      content: "https://example.com/recipe",
+    });
+
+    // Should have made 2 API calls: first with tool_use in max_tokens response,
+    // second where model extracts the recipe. Without the fix, the second call
+    // would fail with a 400 because tool_result was missing.
+    expect(callCount).toBe(2);
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.value.title).toBe("Max Tokens Recipe");
+  });
 });
