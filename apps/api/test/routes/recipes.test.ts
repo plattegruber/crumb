@@ -198,8 +198,8 @@ describe("Recipe Routes", () => {
       );
 
       expect(res.status).toBe(200);
-      const body = await res.json<{ recipe: { title: string } }>();
-      expect(body.recipe.title).toBe("Get Test Recipe");
+      const body = await res.json<{ title: string }>();
+      expect(body.title).toBe("Get Test Recipe");
     });
 
     it("returns 404 for non-existent recipe", async () => {
@@ -248,9 +248,9 @@ describe("Recipe Routes", () => {
       );
 
       expect(res.status).toBe(200);
-      const body = await res.json<{ recipe: { title: string; description: string } }>();
-      expect(body.recipe.title).toBe("After Update");
-      expect(body.recipe.description).toBe("Updated description");
+      const body = await res.json<{ title: string; description: string }>();
+      expect(body.title).toBe("After Update");
+      expect(body.description).toBe("Updated description");
     });
   });
 
@@ -291,8 +291,8 @@ describe("Recipe Routes", () => {
       );
 
       expect(getRes.status).toBe(200);
-      const body = await getRes.json<{ recipe: { status: string } }>();
-      expect(body.recipe.status).toBe("Archived");
+      const body = await getRes.json<{ status: string }>();
+      expect(body.status).toBe("Archived");
     });
   });
 
