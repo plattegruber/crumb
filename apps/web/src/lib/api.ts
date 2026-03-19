@@ -503,8 +503,8 @@ export interface CreateMealPlanInput {
 export const products = {
   async list(): Promise<Product[]> {
     try {
-      const res = await apiFetch<{ products: Product[] } | Product[]>("/products");
-      return Array.isArray(res) ? res : res.products;
+      const res = await apiFetch<{ data: Product[] } | Product[]>("/products");
+      return Array.isArray(res) ? res : res.data;
     } catch {
       return [];
     }

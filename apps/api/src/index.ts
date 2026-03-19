@@ -12,6 +12,7 @@ import { automationRoutes, createSaveRedirectRoutes } from "./routes/automation.
 import { productRoutes } from "./routes/products.js";
 import { publishingRoutes } from "./routes/publishing.js";
 import { settingsRoutes } from "./routes/settings.js";
+import { clientErrorRoutes } from "./routes/client-errors.js";
 import { createDb } from "./db/index.js";
 import { creators } from "./db/schema.js";
 import { eq } from "drizzle-orm";
@@ -27,7 +28,7 @@ export type { AuthContext, CreatorId } from "./types/auth.js";
 const PUBLIC_PATHS = new Set(["/health"]);
 
 /** Paths/prefixes that are public (webhook HMAC or save redirect). */
-const PUBLIC_PATH_PREFIXES = ["/webhooks/", "/save/"];
+const PUBLIC_PATH_PREFIXES = ["/webhooks/", "/save/", "/client-errors"];
 
 const app = new Hono<AppEnvWithLogger>();
 
@@ -79,6 +80,9 @@ app.route("/webhooks", webhookRoutes);
 
 // Save This Recipe redirect endpoint (public, no auth required)
 app.route("/save", createSaveRedirectRoutes());
+
+// Client error ingest (public, no auth — errors can happen before auth)
+app.route("/client-errors", clientErrorRoutes);
 
 // Ensure a creator record exists for the authenticated user.
 // Auto-creates on first request so Clerk users don't need a separate signup.
