@@ -136,7 +136,8 @@ describe("Recipe Routes", () => {
 
       expect(res.status).toBe(201);
       const body = await res.json<Record<string, unknown>>();
-      expect(body).toHaveProperty("recipe");
+      expect(body).toHaveProperty("id");
+      expect(body).toHaveProperty("title");
     });
   });
 
