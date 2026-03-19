@@ -134,8 +134,11 @@ export async function runClaudeAgent(
     // Add assistant response to conversation
     messages.push({ role: "assistant", content: response.content });
 
-    // Check if the model wants to use tools
-    if (response.stop_reason === "tool_use") {
+    // Check if the response contains tool_use blocks — branch on actual
+    // content rather than stop_reason, because a "max_tokens" response can
+    // still include completed tool_use blocks that need tool_results.
+    const hasToolUse = response.content.some((block) => block.type === "tool_use");
+    if (hasToolUse) {
       const toolResults: Anthropic.ToolResultBlockParam[] = [];
 
       for (const block of response.content) {
