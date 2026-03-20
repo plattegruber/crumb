@@ -204,6 +204,27 @@ export default {
         ? createDefaultAgentExtractor(env.AI, env.ANTHROPIC_API_KEY)
         : undefined;
 
+    // Build video processing deps when the required bindings are available.
+    // All fields are optional — the import service degrades gracefully.
+    const aiBinding = env.AI;
+    const videoDeps =
+      env.RAPIDAPI_KEY !== undefined
+        ? {
+            rapidApiKey: env.RAPIDAPI_KEY,
+            bucket: env.STORAGE,
+            media: env.MEDIA ?? null,
+            aiRunFn: aiBinding
+              ? (model: string, inputs: Record<string, unknown>) =>
+                  aiBinding.run(
+                    model as Parameters<Ai["run"]>[0],
+                    inputs as Parameters<Ai["run"]>[1],
+                  ) as Promise<unknown>
+              : undefined,
+            anthropicApiKey: env.ANTHROPIC_API_KEY,
+            fetchFn: (url: string, init?: RequestInit) => globalThis.fetch(url, init),
+          }
+        : undefined;
+
     try {
       await handleImportQueue(
         {
@@ -213,7 +234,7 @@ export default {
             retry: () => msg.retry(),
           })),
         },
-        { db, queue, extractor, agentExtractor, logger },
+        { db, queue, extractor, agentExtractor, videoDeps, logger },
       );
 
       logger.info("queue_batch_completed", {

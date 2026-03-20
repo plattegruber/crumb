@@ -52,8 +52,11 @@ IMPORTANT:
  * Builds the user message describing the input to extract from.
  */
 export function buildUserMessage(input: {
-  type: "url" | "text" | "image";
+  type: "url" | "text" | "image" | "video";
   content: string;
+  transcript?: string | null;
+  frameTexts?: readonly string[];
+  caption?: string | null;
 }): string {
   switch (input.type) {
     case "url":
@@ -62,5 +65,37 @@ export function buildUserMessage(input: {
       return `Extract a recipe from this text:\n\n${input.content}`;
     case "image":
       return `Extract a recipe from this image. The image is provided as base64 data: ${input.content}`;
+    case "video":
+      return buildVideoMessage(input);
   }
+}
+
+/**
+ * Build a rich user message from pre-processed video data.
+ */
+function buildVideoMessage(input: {
+  content: string;
+  transcript?: string | null;
+  frameTexts?: readonly string[];
+  caption?: string | null;
+}): string {
+  const captionSection = input.caption ?? "No caption available";
+  const transcriptSection = input.transcript ?? "No transcript available";
+  const frameTextSection =
+    input.frameTexts !== undefined && input.frameTexts.length > 0
+      ? input.frameTexts.join("\n")
+      : "No on-screen text detected";
+
+  return `Extract a recipe from this video content.
+
+## Video Caption
+${captionSection}
+
+## Audio Transcript
+${transcriptSection}
+
+## On-Screen Text (from video frames)
+${frameTextSection}
+
+Use ALL of this information together to extract the complete recipe. The transcript contains spoken instructions and ingredient callouts. The on-screen text may contain ingredient lists, measurements, or recipe cards shown in the video.`;
 }

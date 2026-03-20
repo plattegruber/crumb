@@ -8,6 +8,7 @@ import {
   type AgentConfig,
   type AgentInput,
 } from "../../../src/lib/ai/agent.js";
+import { buildUserMessage } from "../../../src/lib/ai/prompts.js";
 import type { AiRunFn, FetchFn } from "../../../src/lib/ai/tools.js";
 import {
   createFetchUrlTool,
@@ -871,5 +872,207 @@ describe("runExtractionAgent", () => {
     expect(result.ok).toBe(true);
     if (!result.ok) return;
     expect(result.value.title).toBe("Max Tokens Recipe");
+  });
+
+  // ---------------------------------------------------------------------------
+  // Test: video input with pre-processed transcript and frame texts
+  // ---------------------------------------------------------------------------
+
+  it("extracts recipe from video input with transcript and frame texts", async () => {
+    const fetchFn = createScriptedFetchFn(new Map());
+
+    const { aiRunFn } = createScriptedAiRunFn([
+      // The agent receives pre-processed video data and directly extracts
+      {
+        tool_calls: [
+          {
+            name: "extract_recipe",
+            arguments: {
+              title: "Spicy Garlic Noodles",
+              description: "Quick garlic noodles from a reel",
+              ingredients: JSON.stringify([
+                {
+                  label: null,
+                  ingredients: [
+                    { raw_text: "8 oz noodles", confidence: 0.85 },
+                    { raw_text: "4 cloves garlic, minced", confidence: 0.9 },
+                    { raw_text: "2 tbsp soy sauce", confidence: 0.8 },
+                    { raw_text: "1 tbsp chili oil", confidence: 0.8 },
+                  ],
+                },
+              ]),
+              instructions: JSON.stringify([
+                "Cook noodles according to package",
+                "Saut\u00e9 garlic until fragrant",
+                "Toss noodles with soy sauce and chili oil",
+              ]),
+              overall_confidence: 0.85,
+            },
+          },
+        ],
+      },
+    ]);
+
+    const tools = [createExtractRecipeTool()];
+
+    const config: AgentConfig = {
+      aiRunFn,
+      fetchFn,
+      maxTurns: 10,
+      timeoutMs: 30000,
+      tools,
+    };
+
+    const input: AgentInput = {
+      type: "video",
+      content: "https://www.instagram.com/reel/ABC123/",
+      transcript:
+        "Today we're making spicy garlic noodles. You'll need eight ounces of noodles, four cloves of garlic minced, two tablespoons of soy sauce, and one tablespoon of chili oil. First cook the noodles according to package directions. Then saut\u00e9 the garlic until fragrant. Finally toss everything together with the soy sauce and chili oil.",
+      frameTexts: [
+        "SPICY GARLIC NOODLES",
+        "8 oz noodles\n4 cloves garlic\n2 tbsp soy sauce\n1 tbsp chili oil",
+        "Step 1: Cook noodles",
+      ],
+      caption: "The BEST garlic noodles! Recipe below. #cooking #noodles #garlic #spicy",
+    };
+
+    const result = await runExtractionAgent(config, input);
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+
+    expect(result.value.title).toBe("Spicy Garlic Noodles");
+    expect(result.value.ingredients).toHaveLength(1);
+    const group = result.value.ingredients[0];
+    expect(group).toBeDefined();
+    if (group) {
+      expect(group.ingredients).toHaveLength(4);
+    }
+    expect(result.value.instructions).toHaveLength(3);
+    expect(result.value.confidence.overall).toBe(0.85);
+  });
+
+  // ---------------------------------------------------------------------------
+  // Test: video input with only transcript (no frame texts)
+  // ---------------------------------------------------------------------------
+
+  it("extracts recipe from video input with only transcript", async () => {
+    const fetchFn = createScriptedFetchFn(new Map());
+
+    const { aiRunFn } = createScriptedAiRunFn([
+      {
+        tool_calls: [
+          {
+            name: "extract_recipe",
+            arguments: {
+              title: "Simple Soup",
+              ingredients: JSON.stringify([
+                {
+                  label: null,
+                  ingredients: [
+                    { raw_text: "1 onion", confidence: 0.7 },
+                    { raw_text: "2 cups broth", confidence: 0.7 },
+                  ],
+                },
+              ]),
+              instructions: JSON.stringify(["Chop onion", "Add broth and simmer"]),
+              overall_confidence: 0.65,
+            },
+          },
+        ],
+      },
+    ]);
+
+    const config: AgentConfig = {
+      aiRunFn,
+      fetchFn,
+      maxTurns: 10,
+      timeoutMs: 30000,
+      tools: [createExtractRecipeTool()],
+    };
+
+    const input: AgentInput = {
+      type: "video",
+      content: "https://www.instagram.com/reel/XYZ789/",
+      transcript: "Today we're making simple soup. You need one onion and two cups of broth.",
+      frameTexts: [],
+      caption: null,
+    };
+
+    const result = await runExtractionAgent(config, input);
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.value.title).toBe("Simple Soup");
+    expect(result.value.confidence.overall).toBe(0.65);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// buildUserMessage tests
+// ---------------------------------------------------------------------------
+
+describe("buildUserMessage", () => {
+  it("builds URL message", () => {
+    const msg = buildUserMessage({ type: "url", content: "https://example.com" });
+    expect(msg).toBe("Extract a recipe from this URL: https://example.com");
+  });
+
+  it("builds text message", () => {
+    const msg = buildUserMessage({ type: "text", content: "Recipe here" });
+    expect(msg).toContain("Extract a recipe from this text:");
+    expect(msg).toContain("Recipe here");
+  });
+
+  it("builds image message", () => {
+    const msg = buildUserMessage({ type: "image", content: "base64data" });
+    expect(msg).toContain("base64 data");
+  });
+
+  it("builds video message with all fields", () => {
+    const msg = buildUserMessage({
+      type: "video",
+      content: "https://www.instagram.com/reel/ABC/",
+      transcript: "spoken words here",
+      frameTexts: ["text from frame 1", "text from frame 2"],
+      caption: "My awesome recipe #cooking",
+    });
+
+    expect(msg).toContain("Extract a recipe from this video content.");
+    expect(msg).toContain("## Video Caption");
+    expect(msg).toContain("My awesome recipe #cooking");
+    expect(msg).toContain("## Audio Transcript");
+    expect(msg).toContain("spoken words here");
+    expect(msg).toContain("## On-Screen Text (from video frames)");
+    expect(msg).toContain("text from frame 1");
+    expect(msg).toContain("text from frame 2");
+  });
+
+  it("builds video message with missing optional fields", () => {
+    const msg = buildUserMessage({
+      type: "video",
+      content: "https://www.instagram.com/reel/XYZ/",
+      transcript: null,
+      frameTexts: [],
+      caption: null,
+    });
+
+    expect(msg).toContain("No caption available");
+    expect(msg).toContain("No transcript available");
+    expect(msg).toContain("No on-screen text detected");
+  });
+
+  it("builds video message with only transcript", () => {
+    const msg = buildUserMessage({
+      type: "video",
+      content: "https://www.instagram.com/reel/DEF/",
+      transcript: "This is the recipe transcript",
+      frameTexts: [],
+      caption: null,
+    });
+
+    expect(msg).toContain("This is the recipe transcript");
+    expect(msg).toContain("No caption available");
+    expect(msg).toContain("No on-screen text detected");
   });
 });

@@ -58,8 +58,14 @@ export interface AgentConfig {
  * Input to the extraction agent.
  */
 export interface AgentInput {
-  readonly type: "url" | "text" | "image";
+  readonly type: "url" | "text" | "image" | "video";
   readonly content: string;
+  /** Only present for type: "video" — pre-processed transcript from audio. */
+  readonly transcript?: string | null;
+  /** Only present for type: "video" — on-screen text extracted from keyframes. */
+  readonly frameTexts?: readonly string[];
+  /** Only present for type: "video" — caption from the social media post. */
+  readonly caption?: string | null;
 }
 
 // ---------------------------------------------------------------------------
