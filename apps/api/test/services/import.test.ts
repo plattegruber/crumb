@@ -13,16 +13,19 @@ import {
   extractVisibleText,
   parseDuration,
   type RecipeExtractor,
+  type AgentExtractor,
   type HttpFetcher,
   type WordPressClient,
   type ImportQueue,
   type ImportServiceDeps,
   type WordPressRecipe,
+  type VideoDeps,
 } from "../../src/services/import.js";
 import { handleImportQueue, type QueueMessage } from "../../src/services/queue-handlers.js";
 import type { RecipeExtract, ImportError, Result } from "@dough/shared";
 import { ok, err, createImportJobId, createCreatorId } from "@dough/shared";
 import type { Database } from "../../src/db/index.js";
+import type { AgentInput } from "../../src/lib/ai/agent.js";
 
 // @ts-expect-error -- Vite handles ?raw imports at build time
 import migrationSql from "../../src/db/migrations/0001_initial_schema.sql?raw";
@@ -1584,6 +1587,246 @@ describe("Import Pipeline", () => {
         expect(job.error_type).toBe("ExtractionFailed");
         const errorData = job.error_data as Record<string, unknown>;
         expect(errorData["reason"]).toContain("couldn't extract a recipe");
+      }
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // Video import pipeline integration
+  // -------------------------------------------------------------------------
+
+  describe("video import pipeline", () => {
+    /**
+     * Create a mock agent extractor that captures the input for assertions.
+     */
+    function createCapturingAgentExtractor(extract: RecipeExtract): {
+      extractor: AgentExtractor;
+      capturedInputs: AgentInput[];
+    } {
+      const capturedInputs: AgentInput[] = [];
+      return {
+        capturedInputs,
+        extractor: {
+          async extract(input: AgentInput) {
+            capturedInputs.push(input);
+            return ok(extract);
+          },
+        },
+      };
+    }
+
+    /**
+     * Create minimal mock video deps with a mock RapidAPI resolver
+     * that returns fixture data.
+     */
+    function createMockVideoDeps(overrides: Partial<VideoDeps> = {}): VideoDeps {
+      return {
+        rapidApiKey: "test-rapid-key",
+        bucket: createMockR2Bucket(),
+        media: null,
+        fetchFn: async (url: string) => {
+          // Mock RapidAPI response for Instagram resolver
+          if (url.includes("instagram-reels-downloader")) {
+            return new Response(
+              JSON.stringify({
+                video_url: "https://cdn.instagram.com/video/test.mp4",
+                caption: "Delicious recipe video! #cooking",
+                duration: 30,
+              }),
+              { status: 200, headers: { "content-type": "application/json" } },
+            );
+          }
+          // Mock video download
+          if (url.includes("cdn.instagram.com")) {
+            return new Response(new ArrayBuffer(1024), {
+              status: 200,
+              headers: { "content-type": "video/mp4", "content-length": "1024" },
+            });
+          }
+          return new Response("Not Found", { status: 404 });
+        },
+        ...overrides,
+      };
+    }
+
+    /**
+     * Create a minimal mock R2 bucket.
+     */
+    function createMockR2Bucket(): R2Bucket {
+      const store = new Map<string, ArrayBuffer | ReadableStream>();
+      return {
+        put: async (key: string, data: ArrayBuffer | ReadableStream) => {
+          store.set(key, data);
+          return {} as R2ObjectBody;
+        },
+        get: async (key: string) => {
+          const data = store.get(key);
+          if (data === undefined) return null;
+          // Return a minimal R2ObjectBody shape
+          const body =
+            data instanceof ArrayBuffer
+              ? new ReadableStream({
+                  start(controller) {
+                    controller.enqueue(new Uint8Array(data));
+                    controller.close();
+                  },
+                })
+              : data;
+          return { body, arrayBuffer: async () => data as ArrayBuffer } as unknown as R2ObjectBody;
+        },
+        delete: async (_keys: string | string[]) => {
+          if (Array.isArray(_keys)) {
+            for (const k of _keys) store.delete(k);
+          } else {
+            store.delete(_keys);
+          }
+        },
+        list: async (_opts?: R2ListOptions) => ({
+          objects: [...store.keys()]
+            .filter((k) => (_opts?.prefix ? k.startsWith(_opts.prefix) : true))
+            .map((key) => ({ key }) as R2Object),
+          truncated: false,
+          cursor: "",
+          delimitedPrefixes: [],
+        }),
+        head: async () => null,
+        createMultipartUpload: async () => ({}) as R2MultipartUpload,
+        resumeMultipartUpload: () => ({}) as R2MultipartUpload,
+      } as unknown as R2Bucket;
+    }
+
+    it("processes Instagram reel URL through video pipeline", async () => {
+      const db = getDb();
+      const extract = makeExtract({
+        title: "Video Garlic Noodles",
+        description: "From an Instagram reel",
+      });
+      const { extractor: agentExtractor, capturedInputs } = createCapturingAgentExtractor(extract);
+      const videoDeps = createMockVideoDeps();
+
+      const service = createImportService(createTestDeps(db, { agentExtractor, videoDeps }));
+
+      const createResult = await service.createImportJob(CREATOR_ID, "FromUrl", {
+        url: "https://www.instagram.com/reel/ABC123/",
+      });
+      expect(createResult.ok).toBe(true);
+      if (!createResult.ok) return;
+
+      await service.processImportJob(createResult.value.id);
+
+      // Verify the agent was called with video input type
+      expect(capturedInputs).toHaveLength(1);
+      const input = capturedInputs[0];
+      expect(input).toBeDefined();
+      if (input) {
+        expect(input.type).toBe("video");
+        expect(input.content).toBe("https://www.instagram.com/reel/ABC123/");
+        expect(input.caption).toBe("Delicious recipe video! #cooking");
+      }
+
+      // Verify job status
+      const jobs = await db
+        .select()
+        .from(schema.importJobs)
+        .where(eq(schema.importJobs.id, createResult.value.id));
+      const job = jobs[0];
+      expect(job).toBeDefined();
+      if (job) {
+        expect(job.status).toBe("NeedsReview");
+        const extractData = job.extract_data as Record<string, unknown>;
+        expect(extractData["title"]).toBe("Video Garlic Noodles");
+      }
+    });
+
+    it("falls back to agent oEmbed when video deps are not available", async () => {
+      const db = getDb();
+      const extract = makeExtract({
+        title: "Fallback Recipe",
+      });
+      const { extractor: agentExtractor, capturedInputs } = createCapturingAgentExtractor(extract);
+
+      // No videoDeps — should fall back to agent with type: "url"
+      const service = createImportService(createTestDeps(db, { agentExtractor }));
+
+      const createResult = await service.createImportJob(CREATOR_ID, "FromUrl", {
+        url: "https://www.instagram.com/reel/ABC123/",
+      });
+      expect(createResult.ok).toBe(true);
+      if (!createResult.ok) return;
+
+      await service.processImportJob(createResult.value.id);
+
+      // Agent should be called with URL type (not video), since videoDeps is missing
+      expect(capturedInputs).toHaveLength(1);
+      const input = capturedInputs[0];
+      expect(input).toBeDefined();
+      if (input) {
+        expect(input.type).toBe("url");
+      }
+    });
+
+    it("falls back to agent oEmbed when RapidAPI resolver fails", async () => {
+      const db = getDb();
+      const extract = makeExtract({
+        title: "OEmbed Fallback Recipe",
+      });
+      const { extractor: agentExtractor, capturedInputs } = createCapturingAgentExtractor(extract);
+
+      // VideoDeps present but RapidAPI returns error
+      const videoDeps = createMockVideoDeps({
+        fetchFn: async (url: string) => {
+          if (url.includes("instagram-reels-downloader")) {
+            return new Response("Server Error", { status: 500 });
+          }
+          return new Response("Not Found", { status: 404 });
+        },
+      });
+
+      const service = createImportService(createTestDeps(db, { agentExtractor, videoDeps }));
+
+      const createResult = await service.createImportJob(CREATOR_ID, "FromUrl", {
+        url: "https://www.instagram.com/reel/FAIL123/",
+      });
+      expect(createResult.ok).toBe(true);
+      if (!createResult.ok) return;
+
+      await service.processImportJob(createResult.value.id);
+
+      // Should fall back to agent with URL type
+      expect(capturedInputs).toHaveLength(1);
+      const input = capturedInputs[0];
+      expect(input).toBeDefined();
+      if (input) {
+        expect(input.type).toBe("url");
+        expect(input.content).toBe("https://www.instagram.com/reel/FAIL123/");
+      }
+    });
+
+    it("does not trigger video pipeline for non-video URLs", async () => {
+      const db = getDb();
+      const extract = makeExtract({
+        title: "Normal URL Recipe",
+      });
+      const { extractor: agentExtractor, capturedInputs } = createCapturingAgentExtractor(extract);
+      const videoDeps = createMockVideoDeps();
+
+      const service = createImportService(createTestDeps(db, { agentExtractor, videoDeps }));
+
+      const createResult = await service.createImportJob(CREATOR_ID, "FromUrl", {
+        url: "https://example.com/regular-recipe",
+      });
+      expect(createResult.ok).toBe(true);
+      if (!createResult.ok) return;
+
+      await service.processImportJob(createResult.value.id);
+
+      // Should go straight to agent with URL type (not video)
+      expect(capturedInputs).toHaveLength(1);
+      const input = capturedInputs[0];
+      expect(input).toBeDefined();
+      if (input) {
+        expect(input.type).toBe("url");
+        expect(input.content).toBe("https://example.com/regular-recipe");
       }
     });
   });

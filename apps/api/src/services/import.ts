@@ -26,6 +26,14 @@ import {
   type AiRunFn,
   type FetchFn,
 } from "../lib/ai/index.js";
+import {
+  detectVideoPlatform,
+  resolveInstagramVideoUrl,
+  processVideo,
+  cleanupTempR2,
+  type VideoProcessorDeps,
+} from "../lib/video/index.js";
+import type { MediaTransformations } from "../env.js";
 
 // ---------------------------------------------------------------------------
 // Import status constants
@@ -408,6 +416,27 @@ function generateSlug(title: string): Slug {
 // Import Service
 // ---------------------------------------------------------------------------
 
+/**
+ * Optional video processing dependencies.
+ * When all required fields are present, the import service can process
+ * Instagram reel URLs through the video pipeline (transcription + vision).
+ * When absent or incomplete, the service falls back to oEmbed-only extraction.
+ */
+export interface VideoDeps {
+  /** RapidAPI key for Instagram video URL resolution. */
+  readonly rapidApiKey: string;
+  /** R2 bucket for temporary video artifacts. */
+  readonly bucket: R2Bucket;
+  /** Cloudflare Media Transformations binding (optional — degrades gracefully). */
+  readonly media: MediaTransformations | null;
+  /** Workers AI run function for Whisper transcription. */
+  readonly aiRunFn?: AiRunFn;
+  /** Anthropic API key for Claude vision on frames. */
+  readonly anthropicApiKey?: string;
+  /** Fetch function for downloading video content. */
+  readonly fetchFn: FetchFn;
+}
+
 export interface ImportServiceDeps {
   readonly db: Database;
   readonly queue: ImportQueue;
@@ -416,6 +445,8 @@ export interface ImportServiceDeps {
   readonly wordpress: WordPressClient;
   /** Optional AI agent extractor. When provided, the agent handles all extraction. */
   readonly agentExtractor?: AgentExtractor;
+  /** Optional video processing deps. When provided, enables video pipeline for Instagram reels. */
+  readonly videoDeps?: VideoDeps;
   readonly generateId?: () => string;
   readonly logger?: Logger;
 }
@@ -651,6 +682,24 @@ export function createImportService(deps: ImportServiceDeps) {
       return ok(undefined);
     }
 
+    // Check if this is a video URL that we can process through the video pipeline.
+    const videoDetection = detectVideoPlatform(url);
+    if (
+      videoDetection.platform === "instagram_reel" &&
+      deps.videoDeps !== undefined &&
+      deps.agentExtractor !== undefined
+    ) {
+      const videoResult = await processVideoImport(jobId, url, deps.videoDeps);
+      if (videoResult !== null) {
+        return videoResult;
+      }
+      // If video processing returned null, fall through to the agent with oEmbed
+      logger.info("video_import_fallthrough", {
+        jobId,
+        reason: "Video processing returned null, falling back to agent with oEmbed",
+      });
+    }
+
     // If the agent extractor is available, use it for all URL imports.
     // The agent will handle schema.org, plain text, link-following, etc.
     if (deps.agentExtractor !== undefined) {
@@ -809,6 +858,102 @@ export function createImportService(deps: ImportServiceDeps) {
 
     await markNeedsReview(jobId, extract);
     return ok(undefined);
+  }
+
+  // -------------------------------------------------------------------------
+  // Video import pipeline (Instagram reels)
+  // -------------------------------------------------------------------------
+
+  /**
+   * Attempt to process a URL as a video through the full video pipeline.
+   *
+   * Returns a Result on success or failure. Returns null if we should fall
+   * through to the standard agent-based extraction (e.g. if the Instagram
+   * resolver fails and we want to try oEmbed instead).
+   */
+  async function processVideoImport(
+    jobId: ImportJobId,
+    url: string,
+    videoDeps: VideoDeps,
+  ): Promise<Result<void, ImportServiceError> | null> {
+    logger.info("video_import_start", { jobId, url });
+
+    // Step 1: Resolve the Instagram CDN URL via RapidAPI
+    const resolveResult = await resolveInstagramVideoUrl(
+      url,
+      videoDeps.rapidApiKey,
+      videoDeps.fetchFn,
+      logger,
+    );
+
+    if (!resolveResult.ok) {
+      // Resolution failed — fall through to oEmbed-based agent extraction
+      logger.warn("video_import_resolve_failed", {
+        jobId,
+        errorType: resolveResult.error.type,
+        reason: "reason" in resolveResult.error ? resolveResult.error.reason : null,
+      });
+      return null;
+    }
+
+    const videoInfo = resolveResult.value;
+
+    // Step 2: Process the video (download, transcribe audio, extract frames)
+    const processorDeps: VideoProcessorDeps = {
+      fetchFn: videoDeps.fetchFn,
+      bucket: videoDeps.bucket,
+      media: videoDeps.media,
+      aiRunFn: videoDeps.aiRunFn,
+      anthropicApiKey: videoDeps.anthropicApiKey,
+      logger,
+    };
+
+    let tempR2Keys: readonly string[] = [];
+    try {
+      const processResult = await processVideo(
+        processorDeps,
+        jobId,
+        videoInfo.videoUrl,
+        videoInfo.caption,
+        videoInfo.durationSeconds,
+      );
+
+      if (!processResult.ok) {
+        // Video processing failed — fall through to oEmbed
+        logger.warn("video_import_process_failed", {
+          jobId,
+          errorType: processResult.error.type,
+          reason: "reason" in processResult.error ? processResult.error.reason : null,
+        });
+        return null;
+      }
+
+      const videoData = processResult.value;
+      tempR2Keys = videoData.tempR2Keys;
+
+      // Step 3: Feed enriched content into the agent as a "video" input
+      const agentInput: AgentInput = {
+        type: "video",
+        content: url,
+        transcript: videoData.transcript,
+        frameTexts: videoData.frameTexts,
+        caption: videoData.caption,
+      };
+
+      logger.info("video_import_agent_start", {
+        jobId,
+        hasTranscript: videoData.transcript !== null,
+        frameTextCount: videoData.frameTexts.length,
+        hasCaption: videoData.caption !== null,
+      });
+
+      return processAgentImport(jobId, agentInput);
+    } finally {
+      // Step 4: Always clean up temp R2 files
+      if (tempR2Keys.length > 0) {
+        await cleanupTempR2(videoDeps.bucket, jobId, logger);
+      }
+    }
   }
 
   // -------------------------------------------------------------------------

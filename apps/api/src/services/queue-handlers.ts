@@ -14,6 +14,7 @@ import {
   type RecipeExtractor,
   type AgentExtractor,
   type ImportQueue,
+  type VideoDeps,
 } from "./import.js";
 
 export interface QueueHandlerDeps {
@@ -21,6 +22,8 @@ export interface QueueHandlerDeps {
   readonly queue: ImportQueue;
   readonly extractor: RecipeExtractor;
   readonly agentExtractor?: AgentExtractor;
+  /** Optional video processing deps. When provided, enables video pipeline for Instagram reels. */
+  readonly videoDeps?: VideoDeps;
   /** Pre-configured logger (with Axiom sink when available). Falls back to console-only. */
   readonly logger?: Logger;
 }
@@ -54,6 +57,7 @@ export async function handleImportQueue(batch: QueueBatch, deps: QueueHandlerDep
     queue: deps.queue,
     extractor: deps.extractor,
     agentExtractor: deps.agentExtractor,
+    videoDeps: deps.videoDeps,
     fetcher,
     wordpress,
     logger,
