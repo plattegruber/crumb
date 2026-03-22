@@ -4,6 +4,7 @@
   import { goto } from "$app/navigation";
   import type { ImportJob, RecipeExtract } from "@dough/shared";
   import { imports } from "$lib/api.js";
+  import { isVideoUrl } from "$lib/url-detect.js";
 
   // ---------------------------------------------------------------------------
   // State
@@ -64,6 +65,9 @@
   const totalHistoryPages = $derived(Math.ceil(historyJobs.length / PAGE_SIZE));
 
   const hasAnyJobs = $derived(allJobs.length > 0);
+
+  // Video URL detection — cosmetic indicator, actual routing is server-side
+  const videoDetection = $derived(isVideoUrl(importUrl));
 
   // ---------------------------------------------------------------------------
   // Import submission
@@ -447,6 +451,28 @@
             {submitting ? "Importing..." : "Import"}
           </button>
         </div>
+        {#if videoDetection.isVideo}
+          <div class="video-detect-banner">
+            <svg
+              class="video-detect-icon"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <polygon points="23 7 16 12 23 17 23 7" />
+              <rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
+            </svg>
+            <span>
+              {videoDetection.platform} video detected &mdash; we'll extract the recipe from the audio
+              and on-screen text
+            </span>
+          </div>
+        {/if}
       {:else}
         <p class="form-hint">Paste the full recipe text and we'll extract the structured data.</p>
         <textarea
@@ -949,6 +975,24 @@ Ingredients:
     border-radius: var(--radius-md);
     margin-bottom: var(--space-4);
     font-size: var(--font-size-sm);
+  }
+
+  .video-detect-banner {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-3);
+    margin-top: var(--space-3);
+    background: var(--color-primary-light, #eef2ff);
+    color: var(--color-primary, #4338ca);
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    line-height: 1.4;
+  }
+
+  .video-detect-icon {
+    flex-shrink: 0;
   }
 
   /* ===================================================================== */
